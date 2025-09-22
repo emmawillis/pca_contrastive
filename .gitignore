@@ -1,0 +1,16 @@
+datasets/UNI2_panda_encodings_by_patch/
+mri_data/images/
+mri_data/nnUNet_raw_data/
+mri_model/baseline_weights_gland_seg/
+mri_model/picai_baseline/
+_mri_results/
+
+histopathology_model/MIL-Lab/results/
+histopathology_data/UNI2_panda_encodings_by_patch/
+histopathology_results/
+
+mri_embeddings/
+mri_model/baseline_weights_gland_seg/
+mri_model_medsam/frozen_medsam_results/
+
+mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth

@@ -1,0 +1,49 @@
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/train_isup_nnunet_v1.py \
+  --images_root "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/images" \
+  --splits_path "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/splits.json" \
+  --fold 0 \
+  --marksheet_csv "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet.csv" \
+  --fold_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/baseline_weights_gland_seg/fold_0" \
+  --output_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_results/runs_isup_fold0" \
+  --epochs 30 --freeze_epochs 5 --unfreeze_top_k 2 \
+  --head_lr 1e-3 --encoder_lr 3e-4 \
+  --num_workers 0
+
+
+--
+
+
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/train_isup_nnunet_v1.py \
+  --images_root "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/images" \
+  --labels_root "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels" \
+  --crop_to_gland \
+  --splits_path "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/splits.json" \
+  --fold 0 \
+  --marksheet_csv "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet.csv" \
+  --fold_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/baseline_weights_gland_seg" \
+  --output_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_results/runs_isup_fold0" \
+  --epochs 20 --freeze_epochs 5 --unfreeze_top_k 2 \
+  --head_lr 1e-3 --encoder_lr 3e-4 \
+  --num_workers 0 --device mps \
+  --target_spacing "3.0,1.0,1.0" --center_crop 0 --depth_stride 1 \
+  --log_every 10 --balance --tau 0.3
+
+
+--
+
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/train_isup_nnunet_v1.py \
+  --images_root "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/images" \
+  --labels_root "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels" \
+  --crop_to_gland \
+  --splits_path "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/splits.json" \
+  --fold 0 \
+  --marksheet_csv "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet.csv" \
+  --fold_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model/baseline_weights_gland_seg" \
+  --output_dir "/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_results/runs_isup_fold0" \
+  --epochs 80 --freeze_epochs 10 --unfreeze_top_k 2 \
+  --head_lr 1e-3 --encoder_lr 2e-5 \
+  --batch_size 1 --num_workers 0 --device mps \
+  --modalities "t2w,hbv,adc" \
+  --target_spacing "3.0,1.0,1.0" --center_crop 0 --depth_stride 1 \
+  --fix_depth 32 --fix_hw 192 \
+  --log_every 10 --balance --tau 0.3

@@ -1,0 +1,11 @@
+data is from 
+https://huggingface.co/MahmoodLab/UNI2-h
+foundation model
+
+they trained it on histopathology data from 'Over 200 million image tiles sampled from over 350k diverse H&E and IHC slides sourced from Mass General Brigham.'
+they  evaluated it on PANDA for ISUP classification 
+so they published their PANDA patch encodings here https://huggingface.co/datasets/MahmoodLab/UNI2-h-features
+which is what i have saved here
+
+they used attention based MIL model (described in their paper here https://www.nature.com/articles/s41591-024-02857-3)
+i copied their model in /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_model/abmil_isup.py
