@@ -9,6 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 
+MEDSAM_INPUT_SIZE=512 #1024
 
 # 1) deterministic (X,Y,Z) -> (Z,Y,X)
 def load_nii(path):
@@ -20,8 +21,8 @@ def load_nii(path):
 # 2) center pad to 1024x1024
 def pad_to_square_1024(img):  # img: [3,H,W]
     _, H, W = img.shape
-    pad_h = 1024 - H
-    pad_w = 1024 - W
+    pad_h = MEDSAM_INPUT_SIZE - H
+    pad_w = MEDSAM_INPUT_SIZE - W
     top = pad_h // 2
     bottom = pad_h - top
     left = pad_w // 2
@@ -46,9 +47,9 @@ def percentile_clip_minmax(vol: np.ndarray,
 def resize_longest_to_1024(img: torch.Tensor) -> torch.Tensor:
     """img: [3,H,W] in [0,1]; resize longest side to 1024 (keep aspect)."""
     _, H, W = img.shape
-    if H == 1024 and W == 1024:
+    if H == MEDSAM_INPUT_SIZE and W == MEDSAM_INPUT_SIZE:
         return img
-    scale = 1024.0 / max(H, W)
+    scale = MEDSAM_INPUT_SIZE / max(H, W)
     newH, newW = int(round(H * scale)), int(round(W * scale))
     img = img.unsqueeze(0)  # [1,3,H,W]
     img = F.interpolate(img, size=(newH, newW), mode="bilinear", align_corners=False)
@@ -153,7 +154,7 @@ class PiCAI_MultiSeq_2D_Bag(Dataset):
             bag.append(img)
 
         bag = torch.stack(bag, dim=0)                 # [N_slices, 3, 1024, 1024]
-        return bag, isup, case_id
+        return bag, torch.tensor(isup, dtype=torch.long), case_id
 
 
 def collate_one(batch):
@@ -202,7 +203,7 @@ if __name__ == "__main__":
 
     bag, y, cid = next(iter(loader))
     print("First bag:", bag.shape, "label (case_ISUP):", y, "case:", cid)  # -> [N,3,1024,1024]
-    assert bag.ndim == 4 and bag.shape[1:] == (3, 1024, 1024)
+    assert bag.ndim == 4 and bag.shape[1:] == (3, MEDSAM_INPUT_SIZE, MEDSAM_INPUT_SIZE)
 
     # --- save middle slice (all 3 channels + composite RGB) for quick registration check ---
     if False:

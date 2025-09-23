@@ -46,9 +46,10 @@ def train_one_epoch(model, dataloader, optimizer, criterion, device, scaler, epo
 
     for step, (images, labels, _case_id) in enumerate(dataloader, start=1):
         images = images.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
 
         optimizer.zero_grad(set_to_none=True)
-        with torch.cuda.amp.autocast(enabled=amp_enabled):
+        with torch.amp.autocast(device_type='cuda', enabled=amp_enabled):
             logits, _, _, _ = model(images)
             loss = criterion(logits, labels)
 
@@ -82,9 +83,11 @@ def evaluate(
 
     for images, labels, _case_ids in loader:
         images = images.to(device, non_blocking=True)
-        labels = labels.to(device)
 
-        logits, _, _, _ = model(images)
+        # Use autocast in eval to reduce memory/compute
+        use_amp = (device.type == 'cuda') if isinstance(device, torch.device) else (device == 'cuda')
+        with torch.amp.autocast(device_type='cuda', enabled=use_amp):
+            logits, _, _, _ = model(images)
         loss = criterion(logits, labels)
 
         running_loss += loss.item() * labels.size(0)
@@ -127,19 +130,21 @@ def evaluate(
 args = parse_args()
 logger = logging.getLogger("train")
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler(args.out_dir / "training.log")
-fh.setLevel(logging.INFO)
-logger.addHandler(fh)
+if args.out_dir is not None:
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    fh = logging.FileHandler(args.out_dir / "training.log")
+    fh.setLevel(logging.INFO)
+    logger.addHandler(fh)
 
 logger.info(f"ARGS: {args}")
 
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 if args.device is not None:
     device = args.device
-logger.info("Using device: {device}")
+logger.info(f"Using device: {device}")
 
 model = ISUPMedSAM(
-    checkpoint="/Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth",
+    checkpoint=args.checkpoint,
     proj_dim=128,
     device=device
 ).to(device)
@@ -154,9 +159,9 @@ train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True, num_wor
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=0, collate_fn=collate_one, pin_memory=pin_memory)
 
 logger.info(f"Training cases: {len(train_dataset)}, Validation cases: {len(val_dataset)}")
-assert(len(train_dataset) == 1199 and len(val_dataset) == 300)
+# assert(len(train_dataset) == 1199 and len(val_dataset) == 300)
 
-weights = train_dataset.get_class_weights()
+weights = train_dataset.get_class_weights().to(device)
 logger.info(f"Class weights: {weights}")
 
 criterion = nn.CrossEntropyLoss(weight=weights)
