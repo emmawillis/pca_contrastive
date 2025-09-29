@@ -14,3 +14,7 @@ mri_model/baseline_weights_gland_seg/
 mri_model_medsam/frozen_medsam_results/
 
 mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
+venv/
+*.pth
+*.out
+*.pyc

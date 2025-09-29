@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 
-MEDSAM_INPUT_SIZE=512 #1024
+MEDSAM_INPUT_SIZE=256 #1024
 
 # 1) deterministic (X,Y,Z) -> (Z,Y,X)
 def load_nii(path):
@@ -158,9 +158,9 @@ class PiCAI_MultiSeq_2D_Bag(Dataset):
 
 
 def collate_one(batch):
-    """Use when batch_size=1; unwrap (bag, label, case_id)."""
-    assert len(batch) == 1
-    return batch[0]
+    bag, label, cid = batch[0]
+    label = torch.tensor([label], dtype=torch.long)  # <-- ensure shape [1]
+    return bag, label, cid
 
 
 # def collate_pad(batch):

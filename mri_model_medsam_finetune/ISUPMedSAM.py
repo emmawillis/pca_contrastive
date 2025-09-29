@@ -159,7 +159,7 @@ class ISUPMedSAM(nn.Module):
         logits = self.classifier(pooled_embedding)         # [1, 6]
 
         return (
-            logits.squeeze(0),                 # [6]
+            logits,                 # [6]
             pooled_embedding.squeeze(0),       # [proj_dim]
             slice_embeddings,                  # [N, in_dim]
             attn.squeeze(0)                    # [N]

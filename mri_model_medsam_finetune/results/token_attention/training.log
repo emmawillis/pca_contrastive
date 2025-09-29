@@ -1,0 +1,277 @@
+ARGS: Namespace(checkpoint=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth'), images_dir=PosixPath('/project/aip-medilab/ewillis/picai_baseline/picai_baseline/workdir/nnUNet_raw_data/Task2203_picai_baseline/imagesTr'), marksheet_csv=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_data/marksheet_folds.csv'), train_folds=['fold1', 'fold2', 'fold3', 'fold4'], val_folds=['fold0'], epochs=20, batch_size=1, lr=0.0001, weight_decay=0.0001, num_workers=2, proj_dim=128, model_type='vit_b', device=None, out_dir=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_attention'), max_lr_epochs=None, tiny_total=None, tiny_per_class=None, use_weighted_sampler=True, confmat_normalize='true')
+Using device: cuda
+ISUPMedSAM(
+  (image_encoder): ImageEncoderViT(
+    (patch_embed): PatchEmbed(
+      (proj): Conv2d(3, 768, kernel_size=(16, 16), stride=(16, 16))
+    )
+    (blocks): ModuleList(
+      (0-11): 12 x Block(
+        (norm1): LayerNorm((768,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=768, out_features=2304, bias=True)
+          (proj): Linear(in_features=768, out_features=768, bias=True)
+        )
+        (norm2): LayerNorm((768,), eps=1e-06, elementwise_affine=True)
+        (mlp): MLPBlock(
+          (lin1): Linear(in_features=768, out_features=3072, bias=True)
+          (lin2): Linear(in_features=3072, out_features=768, bias=True)
+          (act): GELU(approximate='none')
+        )
+      )
+    )
+    (neck): Identity()
+  )
+  (token_pool): TokenAttnPool(
+    (fc): Linear(in_features=768, out_features=128, bias=True)
+    (gate): Linear(in_features=768, out_features=128, bias=True)
+    (a): Linear(in_features=128, out_features=1, bias=True)
+    (tanh): Tanh()
+    (sigmoid): Sigmoid()
+  )
+  (projector): ABMILProjector(
+    (attn_fc): Sequential(
+      (0): Linear(in_features=768, out_features=256, bias=True)
+      (1): Tanh()
+    )
+    (attn_score): Linear(in_features=256, out_features=1, bias=True)
+    (embed_head): Sequential(
+      (0): Linear(in_features=768, out_features=128, bias=True)
+      (1): ReLU()
+      (2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+    )
+  )
+  (classifier): Linear(in_features=128, out_features=6, bias=True)
+)
+Training cases: 1200, Validation cases: 300
+Class weights: tensor([0.1082, 0.4218, 0.3992, 0.9398, 2.3201, 1.8108], device='cuda:0')
+ARGS: Namespace(checkpoint=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth'), images_dir=PosixPath('/project/aip-medilab/ewillis/picai_baseline/picai_baseline/workdir/nnUNet_raw_data/Task2203_picai_baseline/imagesTr'), marksheet_csv=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_data/marksheet_folds.csv'), train_folds=['fold1', 'fold2', 'fold3', 'fold4'], val_folds=['fold0'], epochs=20, batch_size=1, lr=0.0001, weight_decay=0.0001, num_workers=2, proj_dim=128, model_type='vit_b', device=None, out_dir=PosixPath('/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_attention'), max_lr_epochs=None, tiny_total=None, tiny_per_class=None, use_weighted_sampler=True, confmat_normalize='true')
+Using device: cuda
+ISUPMedSAM(
+  (image_encoder): ImageEncoderViT(
+    (patch_embed): PatchEmbed(
+      (proj): Conv2d(3, 768, kernel_size=(16, 16), stride=(16, 16))
+    )
+    (blocks): ModuleList(
+      (0-11): 12 x Block(
+        (norm1): LayerNorm((768,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=768, out_features=2304, bias=True)
+          (proj): Linear(in_features=768, out_features=768, bias=True)
+        )
+        (norm2): LayerNorm((768,), eps=1e-06, elementwise_affine=True)
+        (mlp): MLPBlock(
+          (lin1): Linear(in_features=768, out_features=3072, bias=True)
+          (lin2): Linear(in_features=3072, out_features=768, bias=True)
+          (act): GELU(approximate='none')
+        )
+      )
+    )
+    (neck): Identity()
+  )
+  (token_pool): TokenAttnPool(
+    (fc): Linear(in_features=768, out_features=128, bias=True)
+    (gate): Linear(in_features=768, out_features=128, bias=True)
+    (a): Linear(in_features=128, out_features=1, bias=True)
+    (tanh): Tanh()
+    (sigmoid): Sigmoid()
+  )
+  (projector): ABMILProjector(
+    (attn_fc): Sequential(
+      (0): Linear(in_features=768, out_features=256, bias=True)
+      (1): Tanh()
+    )
+    (attn_score): Linear(in_features=256, out_features=1, bias=True)
+    (embed_head): Sequential(
+      (0): Linear(in_features=768, out_features=128, bias=True)
+      (1): ReLU()
+      (2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+    )
+  )
+  (classifier): Linear(in_features=128, out_features=6, bias=True)
+)
+Training cases: 1200, Validation cases: 300
+Class weights: tensor([0.1082, 0.4218, 0.3992, 0.9398, 2.3201, 1.8108], device='cuda:0')
+Epoch 1/20 | Train Loss: 1.8379, Train Acc: 0.1700 | Val Loss: 1.6954, Val Acc: 0.5167, Val AUC: 0.4815, Val Balanced Acc: 0.1605 | Val Class Acc: {0: 0.9627329192546584, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.963 0.000 0.000 0.000 0.037 0.000
+     1 1.000 0.000 0.000 0.000 0.000 0.000
+     2 0.917 0.000 0.000 0.000 0.083 0.000
+     3 0.950 0.000 0.000 0.000 0.050 0.000
+     4 1.000 0.000 0.000 0.000 0.000 0.000
+     5 0.909 0.000 0.000 0.000 0.091 0.000
+Saved best model to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_attention
+Epoch 2/20 | Train Loss: 1.7971, Train Acc: 0.1992 | Val Loss: 1.7904, Val Acc: 0.1900, Val AUC: 0.5203, Val Balanced Acc: 0.2261 | Val Class Acc: {0: 0.2795031055900621, 1: 0.07692307692307693, 2: 0.0, 3: 0.0, 4: 1.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.280 0.000 0.000 0.000 0.720 0.000
+     1 0.346 0.077 0.000 0.000 0.577 0.000
+     2 0.271 0.062 0.000 0.000 0.667 0.000
+     3 0.300 0.050 0.000 0.000 0.650 0.000
+     4 0.000 0.000 0.000 0.000 1.000 0.000
+     5 0.000 0.000 0.000 0.000 1.000 0.000
+Saved best model to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_attention
+Epoch 3/20 | Train Loss: 1.7658, Train Acc: 0.2133 | Val Loss: 1.8124, Val Acc: 0.0800, Val AUC: 0.5534, Val Balanced Acc: 0.1747 | Val Class Acc: {0: 0.0, 1: 0.0, 2: 0.16666666666666666, 3: 0.7, 4: 0.0, 5: 0.18181818181818182}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.000 0.000 0.081 0.814 0.000 0.106
+     1 0.000 0.000 0.192 0.750 0.000 0.058
+     2 0.000 0.000 0.167 0.792 0.000 0.042
+     3 0.000 0.000 0.200 0.700 0.000 0.100
+     4 0.000 0.000 0.000 0.625 0.000 0.375
+     5 0.000 0.000 0.000 0.818 0.000 0.182
+Epoch 4/20 | Train Loss: 1.6721, Train Acc: 0.2733 | Val Loss: 1.7828, Val Acc: 0.3067, Val AUC: 0.4904, Val Balanced Acc: 0.1321 | Val Class Acc: {0: 0.5217391304347826, 1: 0.0, 2: 0.14583333333333334, 3: 0.0, 4: 0.125, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.522 0.000 0.180 0.000 0.292 0.006
+     1 0.404 0.000 0.250 0.000 0.346 0.000
+     2 0.438 0.000 0.146 0.000 0.396 0.021
+     3 0.250 0.000 0.250 0.000 0.450 0.050
+     4 0.625 0.000 0.125 0.000 0.125 0.125
+     5 0.182 0.000 0.455 0.000 0.364 0.000
+Epoch 5/20 | Train Loss: 1.6316, Train Acc: 0.3017 | Val Loss: 1.8008, Val Acc: 0.1000, Val AUC: nan, Val Balanced Acc: 0.1974 | Val Class Acc: {0: 0.037267080745341616, 1: 0.0, 2: 0.20833333333333334, 3: 0.45, 4: 0.125, 5: 0.36363636363636365}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.037 0.000 0.143 0.559 0.143 0.118
+     1 0.019 0.000 0.231 0.577 0.077 0.096
+     2 0.021 0.000 0.208 0.500 0.167 0.104
+     3 0.050 0.000 0.300 0.450 0.100 0.100
+     4 0.000 0.000 0.000 0.500 0.125 0.375
+     5 0.000 0.000 0.000 0.364 0.273 0.364
+Epoch 6/20 | Train Loss: 1.5114, Train Acc: 0.3433 | Val Loss: 1.7607, Val Acc: 0.0600, Val AUC: nan, Val Balanced Acc: 0.1398 | Val Class Acc: {0: 0.006211180124223602, 1: 0.0, 2: 0.041666666666666664, 3: 0.7, 4: 0.0, 5: 0.09090909090909091}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.006 0.006 0.056 0.820 0.037 0.075
+     1 0.000 0.000 0.096 0.808 0.038 0.058
+     2 0.021 0.021 0.042 0.833 0.042 0.042
+     3 0.000 0.000 0.100 0.700 0.150 0.050
+     4 0.000 0.000 0.125 0.625 0.000 0.250
+     5 0.091 0.000 0.000 0.727 0.091 0.091
+Epoch 7/20 | Train Loss: 1.4264, Train Acc: 0.3742 | Val Loss: 1.7720, Val Acc: 0.1400, Val AUC: 0.4879, Val Balanced Acc: 0.1649 | Val Class Acc: {0: 0.043478260869565216, 1: 0.19230769230769232, 2: 0.4375, 3: 0.1, 4: 0.125, 5: 0.09090909090909091}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.043 0.236 0.385 0.217 0.087 0.031
+     1 0.115 0.192 0.519 0.058 0.019 0.096
+     2 0.021 0.312 0.438 0.146 0.062 0.021
+     3 0.100 0.200 0.500 0.100 0.100 0.000
+     4 0.125 0.000 0.250 0.125 0.125 0.375
+     5 0.091 0.364 0.182 0.182 0.091 0.091
+Epoch 8/20 | Train Loss: 1.2837, Train Acc: 0.4167 | Val Loss: 1.9607, Val Acc: 0.0800, Val AUC: 0.5351, Val Balanced Acc: 0.1620 | Val Class Acc: {0: 0.018633540372670808, 1: 0.038461538461538464, 2: 0.08333333333333333, 3: 0.65, 4: 0.0, 5: 0.18181818181818182}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.019 0.068 0.056 0.764 0.031 0.062
+     1 0.000 0.038 0.096 0.846 0.000 0.019
+     2 0.000 0.125 0.083 0.750 0.021 0.021
+     3 0.000 0.150 0.100 0.650 0.050 0.050
+     4 0.000 0.125 0.000 0.625 0.000 0.250
+     5 0.000 0.091 0.182 0.545 0.000 0.182
+Epoch 9/20 | Train Loss: 1.3237, Train Acc: 0.4417 | Val Loss: 1.6600, Val Acc: 0.2633, Val AUC: nan, Val Balanced Acc: 0.1886 | Val Class Acc: {0: 0.2484472049689441, 1: 0.6923076923076923, 2: 0.0, 3: 0.1, 4: 0.0, 5: 0.09090909090909091}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.248 0.422 0.031 0.149 0.037 0.112
+     1 0.135 0.692 0.019 0.135 0.000 0.019
+     2 0.167 0.583 0.000 0.167 0.042 0.042
+     3 0.250 0.500 0.000 0.100 0.050 0.100
+     4 0.250 0.375 0.000 0.125 0.000 0.250
+     5 0.455 0.455 0.000 0.000 0.000 0.091
+Epoch 10/20 | Train Loss: 1.0644, Train Acc: 0.5317 | Val Loss: 1.9056, Val Acc: 0.2133, Val AUC: nan, Val Balanced Acc: 0.2028 | Val Class Acc: {0: 0.18012422360248448, 1: 0.23076923076923078, 2: 0.3333333333333333, 3: 0.2, 4: 0.0, 5: 0.2727272727272727}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.180 0.093 0.267 0.211 0.081 0.168
+     1 0.192 0.231 0.327 0.231 0.000 0.019
+     2 0.104 0.188 0.333 0.208 0.083 0.083
+     3 0.000 0.200 0.400 0.200 0.100 0.100
+     4 0.000 0.000 0.375 0.250 0.000 0.375
+     5 0.182 0.000 0.455 0.091 0.000 0.273
+Epoch 11/20 | Train Loss: 1.0015, Train Acc: 0.5567 | Val Loss: 1.6651, Val Acc: 0.3033, Val AUC: nan, Val Balanced Acc: 0.1906 | Val Class Acc: {0: 0.33540372670807456, 1: 0.25, 2: 0.4583333333333333, 3: 0.1, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.335 0.168 0.273 0.081 0.037 0.106
+     1 0.154 0.250 0.538 0.038 0.000 0.019
+     2 0.250 0.167 0.458 0.083 0.042 0.000
+     3 0.250 0.200 0.400 0.100 0.050 0.000
+     4 0.125 0.000 0.500 0.125 0.000 0.250
+     5 0.364 0.364 0.182 0.091 0.000 0.000
+Epoch 12/20 | Train Loss: 0.7905, Train Acc: 0.6742 | Val Loss: 1.7787, Val Acc: 0.2333, Val AUC: nan, Val Balanced Acc: 0.1968 | Val Class Acc: {0: 0.15527950310559005, 1: 0.34615384615384615, 2: 0.4791666666666667, 3: 0.2, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.155 0.286 0.323 0.180 0.037 0.019
+     1 0.038 0.346 0.500 0.115 0.000 0.000
+     2 0.146 0.188 0.479 0.146 0.021 0.021
+     3 0.050 0.250 0.400 0.200 0.100 0.000
+     4 0.000 0.000 0.750 0.000 0.000 0.250
+     5 0.182 0.364 0.364 0.091 0.000 0.000
+Epoch 13/20 | Train Loss: 0.6862, Train Acc: 0.7133 | Val Loss: 1.6519, Val Acc: 0.3667, Val AUC: nan, Val Balanced Acc: 0.1881 | Val Class Acc: {0: 0.4906832298136646, 1: 0.4423076923076923, 2: 0.14583333333333334, 3: 0.05, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.491 0.292 0.087 0.106 0.012 0.012
+     1 0.288 0.442 0.173 0.096 0.000 0.000
+     2 0.292 0.521 0.146 0.042 0.000 0.000
+     3 0.500 0.350 0.050 0.050 0.050 0.000
+     4 0.250 0.125 0.500 0.000 0.000 0.125
+     5 0.455 0.364 0.000 0.182 0.000 0.000
+Epoch 14/20 | Train Loss: 0.6072, Train Acc: 0.7242 | Val Loss: 1.6711, Val Acc: 0.3267, Val AUC: nan, Val Balanced Acc: 0.1990 | Val Class Acc: {0: 0.35403726708074534, 1: 0.5192307692307693, 2: 0.2708333333333333, 3: 0.05, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.354 0.429 0.118 0.050 0.031 0.019
+     1 0.154 0.519 0.231 0.096 0.000 0.000
+     2 0.146 0.500 0.271 0.042 0.042 0.000
+     3 0.150 0.600 0.150 0.050 0.050 0.000
+     4 0.500 0.125 0.375 0.000 0.000 0.000
+     5 0.364 0.455 0.000 0.182 0.000 0.000
+Epoch 15/20 | Train Loss: 0.5645, Train Acc: 0.7575 | Val Loss: 1.7544, Val Acc: 0.3000, Val AUC: nan, Val Balanced Acc: 0.1693 | Val Class Acc: {0: 0.35403726708074534, 1: 0.3076923076923077, 2: 0.3541666666666667, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.354 0.286 0.280 0.037 0.031 0.012
+     1 0.154 0.308 0.462 0.077 0.000 0.000
+     2 0.208 0.354 0.354 0.021 0.062 0.000
+     3 0.250 0.500 0.200 0.000 0.050 0.000
+     4 0.250 0.000 0.625 0.000 0.000 0.125
+     5 0.455 0.182 0.273 0.091 0.000 0.000
+Epoch 16/20 | Train Loss: 0.4419, Train Acc: 0.8242 | Val Loss: 1.7034, Val Acc: 0.3900, Val AUC: nan, Val Balanced Acc: 0.1975 | Val Class Acc: {0: 0.5217391304347826, 1: 0.28846153846153844, 2: 0.375, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.522 0.174 0.224 0.025 0.031 0.025
+     1 0.288 0.288 0.327 0.058 0.000 0.038
+     2 0.271 0.312 0.375 0.000 0.042 0.000
+     3 0.350 0.250 0.350 0.000 0.050 0.000
+     4 0.250 0.125 0.500 0.000 0.000 0.125
+     5 0.545 0.182 0.182 0.091 0.000 0.000
+Epoch 17/20 | Train Loss: 0.4024, Train Acc: 0.8550 | Val Loss: 1.7495, Val Acc: 0.3467, Val AUC: nan, Val Balanced Acc: 0.1816 | Val Class Acc: {0: 0.4472049689440994, 1: 0.28846153846153844, 2: 0.3541666666666667, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.447 0.224 0.255 0.031 0.019 0.025
+     1 0.269 0.288 0.385 0.058 0.000 0.000
+     2 0.271 0.333 0.354 0.000 0.042 0.000
+     3 0.300 0.400 0.250 0.000 0.050 0.000
+     4 0.375 0.000 0.500 0.000 0.000 0.125
+     5 0.636 0.273 0.000 0.091 0.000 0.000
+Epoch 18/20 | Train Loss: 0.3509, Train Acc: 0.8883 | Val Loss: 1.7630, Val Acc: 0.4133, Val AUC: nan, Val Balanced Acc: 0.1885 | Val Class Acc: {0: 0.6086956521739131, 1: 0.23076923076923078, 2: 0.2916666666666667, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.609 0.118 0.193 0.043 0.019 0.019
+     1 0.404 0.231 0.288 0.077 0.000 0.000
+     2 0.417 0.229 0.292 0.000 0.042 0.021
+     3 0.350 0.400 0.200 0.000 0.050 0.000
+     4 0.250 0.125 0.500 0.000 0.000 0.125
+     5 0.727 0.182 0.000 0.091 0.000 0.000
+Epoch 19/20 | Train Loss: 0.3189, Train Acc: 0.9017 | Val Loss: 1.7885, Val Acc: 0.3767, Val AUC: nan, Val Balanced Acc: 0.1842 | Val Class Acc: {0: 0.5217391304347826, 1: 0.25, 2: 0.3333333333333333, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.522 0.155 0.267 0.025 0.019 0.012
+     1 0.346 0.250 0.346 0.058 0.000 0.000
+     2 0.354 0.271 0.333 0.000 0.042 0.000
+     3 0.350 0.350 0.250 0.000 0.050 0.000
+     4 0.375 0.000 0.500 0.000 0.000 0.125
+     5 0.636 0.182 0.091 0.091 0.000 0.000
+Epoch 20/20 | Train Loss: 0.2988, Train Acc: 0.9150 | Val Loss: 1.7763, Val Acc: 0.3900, Val AUC: nan, Val Balanced Acc: 0.1745 | Val Class Acc: {0: 0.5838509316770186, 1: 0.19230769230769232, 2: 0.2708333333333333, 3: 0.0, 4: 0.0, 5: 0.0}
+Validation Confusion Matrix (normalize=true):
+           0     1     2     3     4     5
+     0 0.584 0.118 0.236 0.025 0.019 0.019
+     1 0.519 0.192 0.250 0.038 0.000 0.000
+     2 0.438 0.229 0.271 0.000 0.042 0.021
+     3 0.400 0.300 0.250 0.000 0.050 0.000
+     4 0.500 0.000 0.375 0.000 0.000 0.125
+     5 0.727 0.182 0.000 0.091 0.000 0.000
+Best validation balanced accuracy: 0.2261
