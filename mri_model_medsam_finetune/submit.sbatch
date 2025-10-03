@@ -25,5 +25,7 @@ srun -u python -u /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_
   --checkpoint /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth \
   --images-dir /project/aip-medilab/ewillis/picai_baseline/picai_baseline/workdir/nnUNet_raw_data/Task2203_picai_baseline/imagesTr \
   --marksheet-csv /project/aip-medilab/ewillis/pca_contrastive/mri_data/marksheet_folds.csv \
-  --out_dir /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_sttention_200_epochs \
-  --use-weighted-sampler --confmat-normalize true 
+  --out_dir /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/results/token_attention_fold1 \
+  --use-weighted-sampler --confmat-normalize true \
+  --train-folds fold0, fold2, fold3, fold4 \
+  --val-folds fold1

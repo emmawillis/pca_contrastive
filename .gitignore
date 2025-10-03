@@ -1,6 +1,7 @@
 datasets/UNI2_panda_encodings_by_patch/
 mri_data/images/
 mri_data/nnUNet_raw_data/
+mri_data/picai_labels/
 mri_model/baseline_weights_gland_seg/
 mri_model/picai_baseline/
 _mri_results/
@@ -18,3 +19,4 @@ venv/
 *.pth
 *.out
 *.pyc
+*.pt
