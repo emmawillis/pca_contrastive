@@ -1,4 +1,3 @@
-# model_medsam_slice_spatial_attn_min.py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

@@ -1,0 +1,8 @@
+Host: kn032
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/train.py:287: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=(device == "cuda" and torch.cuda.is_available()))
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 1128232.0 ON kn032 CANCELLED AT 2025-09-30T03:07:09 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 1128232 ON kn032 CANCELLED AT 2025-09-30T03:07:09 DUE TO TIME LIMIT ***
