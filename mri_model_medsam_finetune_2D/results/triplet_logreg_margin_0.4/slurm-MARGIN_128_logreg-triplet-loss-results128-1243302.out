@@ -1,0 +1,877 @@
+Host: kn076
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Fri Oct 10 23:05:21 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   34C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[001] triplet: train loss 0.2456 | val loss 0.1600 || LR(val): acc 0.8879 BAL-acc 0.5469 f1 0.5083 | acc[c0]=0.923  acc[c1]=0.575  acc[c2]=0.143 | auc[c0]=0.894  auc[c1]=0.874  auc[c2]=0.895 | macroAUC=0.888
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4649     338      51
+   ISUP23     135     199      12
+   ISUP45      24      54      13
+  ↳ new best (val BAL-acc=0.5469) saved to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/triplet_logreg_margin_0.4/ckpt_best.pt
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[002] triplet: train loss 0.1761 | val loss 0.1905 || LR(val): acc 0.8700 BAL-acc 0.4668 f1 0.4372 | acc[c0]=0.914  acc[c1]=0.454  acc[c2]=0.033 | auc[c0]=0.868  auc[c1]=0.834  auc[c2]=0.780 | macroAUC=0.827
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4603     364      71
+   ISUP23     154     157      35
+   ISUP45      48      40       3
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[003] triplet: train loss 0.1283 | val loss 0.1626 || LR(val): acc 0.8904 BAL-acc 0.5309 f1 0.4989 | acc[c0]=0.934  acc[c1]=0.428  acc[c2]=0.231 | auc[c0]=0.892  auc[c1]=0.801  auc[c2]=0.824 | macroAUC=0.839
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4706     234      98
+   ISUP23     147     148      51
+   ISUP45      34      36      21
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[004] triplet: train loss 0.1082 | val loss 0.1551 || LR(val): acc 0.8952 BAL-acc 0.5111 f1 0.4930 | acc[c0]=0.943  acc[c1]=0.370  acc[c2]=0.220 | auc[c0]=0.868  auc[c1]=0.781  auc[c2]=0.763 | macroAUC=0.804
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4753     204      81
+   ISUP23     174     128      44
+   ISUP45      36      35      20
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[005] triplet: train loss 0.0947 | val loss 0.1523 || LR(val): acc 0.8977 BAL-acc 0.4796 f1 0.4739 | acc[c0]=0.950  acc[c1]=0.324  acc[c2]=0.165 | auc[c0]=0.849  auc[c1]=0.763  auc[c2]=0.666 | macroAUC=0.760
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4788     178      72
+   ISUP23     189     112      45
+   ISUP45      44      32      15
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[006] triplet: train loss 0.0854 | val loss 0.1567 || LR(val): acc 0.8994 BAL-acc 0.4937 f1 0.4873 | acc[c0]=0.950  acc[c1]=0.344  acc[c2]=0.187 | auc[c0]=0.867  auc[c1]=0.841  auc[c2]=0.791 | macroAUC=0.833
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4788     183      67
+   ISUP23     188     119      39
+   ISUP45      44      30      17
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[007] triplet: train loss 0.0773 | val loss 0.1564 || LR(val): acc 0.9016 BAL-acc 0.5160 f1 0.5046 | acc[c0]=0.949  acc[c1]=0.402  acc[c2]=0.198 | auc[c0]=0.876  auc[c1]=0.854  auc[c2]=0.798 | macroAUC=0.842
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4779     186      73
+   ISUP23     176     139      31
+   ISUP45      34      39      18
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[008] triplet: train loss 0.0755 | val loss 0.1593 || LR(val): acc 0.9028 BAL-acc 0.5327 f1 0.5163 | acc[c0]=0.946  acc[c1]=0.454  acc[c2]=0.198 | auc[c0]=0.891  auc[c1]=0.869  auc[c2]=0.856 | macroAUC=0.872
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4768     194      76
+   ISUP23     160     157      29
+   ISUP45      35      38      18
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[009] triplet: train loss 0.0701 | val loss 0.1473 || LR(val): acc 0.9081 BAL-acc 0.4915 f1 0.4960 | acc[c0]=0.958  acc[c1]=0.384  acc[c2]=0.132 | auc[c0]=0.853  auc[c1]=0.843  auc[c2]=0.654 | macroAUC=0.783
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4827     147      64
+   ISUP23     193     133      20
+   ISUP45      47      32      12
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[010] triplet: train loss 0.0690 | val loss 0.1424 || LR(val): acc 0.9198 BAL-acc 0.4607 f1 0.4903 | acc[c0]=0.980  acc[c1]=0.237  acc[c2]=0.165 | auc[c0]=0.812  auc[c1]=0.724  auc[c2]=0.574 | macroAUC=0.704
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4939      76      23
+   ISUP23     242      82      22
+   ISUP45      52      24      15
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[011] triplet: train loss 0.0685 | val loss 0.1620 || LR(val): acc 0.9025 BAL-acc 0.4931 f1 0.4892 | acc[c0]=0.957  acc[c1]=0.292  acc[c2]=0.231 | auc[c0]=0.866  auc[c1]=0.827  auc[c2]=0.848 | macroAUC=0.847
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4819     161      58
+   ISUP23     198     101      47
+   ISUP45      47      23      21
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[012] triplet: train loss 0.0600 | val loss 0.1621 || LR(val): acc 0.9136 BAL-acc 0.4549 f1 0.4725 | acc[c0]=0.973  acc[c1]=0.260  acc[c2]=0.132 | auc[c0]=0.850  auc[c1]=0.837  auc[c2]=0.677 | macroAUC=0.788
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4900     100      38
+   ISUP23     219      90      37
+   ISUP45      58      21      12
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[013] triplet: train loss 0.0616 | val loss 0.1559 || LR(val): acc 0.9034 BAL-acc 0.5005 f1 0.4919 | acc[c0]=0.952  acc[c1]=0.384  acc[c2]=0.165 | auc[c0]=0.884  auc[c1]=0.856  auc[c2]=0.803 | macroAUC=0.848
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4798     158      82
+   ISUP23     163     133      50
+   ISUP45      37      39      15
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[014] triplet: train loss 0.0603 | val loss 0.1630 || LR(val): acc 0.9079 BAL-acc 0.4914 f1 0.4935 | acc[c0]=0.959  acc[c1]=0.373  acc[c2]=0.143 | auc[c0]=0.853  auc[c1]=0.832  auc[c2]=0.815 | macroAUC=0.833
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4829     153      56
+   ISUP23     183     129      34
+   ISUP45      44      34      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[015] triplet: train loss 0.0560 | val loss 0.1578 || LR(val): acc 0.8983 BAL-acc 0.4601 f1 0.4609 | acc[c0]=0.953  acc[c1]=0.306  acc[c2]=0.121 | auc[c0]=0.840  auc[c1]=0.804  auc[c2]=0.827 | macroAUC=0.824
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4801     166      71
+   ISUP23     205     106      35
+   ISUP45      46      34      11
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[016] triplet: train loss 0.0579 | val loss 0.1515 || LR(val): acc 0.9153 BAL-acc 0.4600 f1 0.4788 | acc[c0]=0.974  acc[c1]=0.263  acc[c2]=0.143 | auc[c0]=0.827  auc[c1]=0.799  auc[c2]=0.781 | macroAUC=0.803
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4907      96      35
+   ISUP23     220      91      35
+   ISUP45      54      24      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[017] triplet: train loss 0.0599 | val loss 0.1612 || LR(val): acc 0.9092 BAL-acc 0.4703 f1 0.4774 | acc[c0]=0.962  acc[c1]=0.361  acc[c2]=0.088 | auc[c0]=0.836  auc[c1]=0.800  auc[c2]=0.799 | macroAUC=0.812
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4845     138      55
+   ISUP23     193     125      28
+   ISUP45      46      37       8
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[018] triplet: train loss 0.0563 | val loss 0.1600 || LR(val): acc 0.8999 BAL-acc 0.4723 f1 0.4729 | acc[c0]=0.953  acc[c1]=0.332  acc[c2]=0.132 | auc[c0]=0.827  auc[c1]=0.780  auc[c2]=0.756 | macroAUC=0.788
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4800     156      82
+   ISUP23     199     115      32
+   ISUP45      51      28      12
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[019] triplet: train loss 0.0577 | val loss 0.1573 || LR(val): acc 0.9121 BAL-acc 0.4687 f1 0.4850 | acc[c0]=0.969  acc[c1]=0.283  acc[c2]=0.154 | auc[c0]=0.814  auc[c1]=0.771  auc[c2]=0.805 | macroAUC=0.796
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4882     120      36
+   ISUP23     221      98      27
+   ISUP45      47      30      14
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[020] triplet: train loss 0.0558 | val loss 0.1577 || LR(val): acc 0.9151 BAL-acc 0.4716 f1 0.4902 | acc[c0]=0.972  acc[c1]=0.289  acc[c2]=0.154 | auc[c0]=0.827  auc[c1]=0.795  auc[c2]=0.771 | macroAUC=0.797
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4896      93      49
+   ISUP23     222     100      24
+   ISUP45      51      26      14
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[021] triplet: train loss 0.0553 | val loss 0.1579 || LR(val): acc 0.9096 BAL-acc 0.4489 f1 0.4614 | acc[c0]=0.967  acc[c1]=0.280  acc[c2]=0.099 | auc[c0]=0.836  auc[c1]=0.787  auc[c2]=0.810 | macroAUC=0.811
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4874     115      49
+   ISUP23     212      97      37
+   ISUP45      51      31       9
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[022] triplet: train loss 0.0536 | val loss 0.1584 || LR(val): acc 0.9016 BAL-acc 0.4909 f1 0.4856 | acc[c0]=0.951  acc[c1]=0.379  acc[c2]=0.143 | auc[c0]=0.853  auc[c1]=0.821  auc[c2]=0.850 | macroAUC=0.841
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4792     158      88
+   ISUP23     171     131      44
+   ISUP45      46      32      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[023] triplet: train loss 0.0542 | val loss 0.1548 || LR(val): acc 0.9185 BAL-acc 0.4629 f1 0.4858 | acc[c0]=0.977  acc[c1]=0.269  acc[c2]=0.143 | auc[c0]=0.792  auc[c1]=0.725  auc[c2]=0.812 | macroAUC=0.776
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4923      83      32
+   ISUP23     223      93      30
+   ISUP45      51      27      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[024] triplet: train loss 0.0528 | val loss 0.1601 || LR(val): acc 0.9041 BAL-acc 0.4334 f1 0.4455 | acc[c0]=0.963  acc[c1]=0.272  acc[c2]=0.066 | auc[c0]=0.760  auc[c1]=0.778  auc[c2]=0.571 | macroAUC=0.703
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4850     171      17
+   ISUP23     232      94      20
+   ISUP45      56      29       6
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[025] triplet: train loss 0.0521 | val loss 0.1736 || LR(val): acc 0.8897 BAL-acc 0.4597 f1 0.4533 | acc[c0]=0.945  acc[c1]=0.269  acc[c2]=0.165 | auc[c0]=0.836  auc[c1]=0.781  auc[c2]=0.827 | macroAUC=0.815
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4763     182      93
+   ISUP23     218      93      35
+   ISUP45      45      31      15
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[026] triplet: train loss 0.0507 | val loss 0.1549 || LR(val): acc 0.9083 BAL-acc 0.4539 f1 0.4618 | acc[c0]=0.968  acc[c1]=0.240  acc[c2]=0.154 | auc[c0]=0.778  auc[c1]=0.697  auc[c2]=0.777 | macroAUC=0.751
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4876     101      61
+   ISUP23     214      83      49
+   ISUP45      48      29      14
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[027] triplet: train loss 0.0512 | val loss 0.1584 || LR(val): acc 0.9058 BAL-acc 0.5014 f1 0.5088 | acc[c0]=0.957  acc[c1]=0.350  acc[c2]=0.198 | auc[c0]=0.819  auc[c1]=0.791  auc[c2]=0.805 | macroAUC=0.805
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4820     187      31
+   ISUP23     200     121      25
+   ISUP45      43      30      18
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[028] triplet: train loss 0.0521 | val loss 0.1590 || LR(val): acc 0.9131 BAL-acc 0.4780 f1 0.4920 | acc[c0]=0.969  acc[c1]=0.289  acc[c2]=0.176 | auc[c0]=0.840  auc[c1]=0.795  auc[c2]=0.827 | macroAUC=0.821
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4883     120      35
+   ISUP23     213     100      33
+   ISUP45      41      34      16
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[029] triplet: train loss 0.0509 | val loss 0.1552 || LR(val): acc 0.9184 BAL-acc 0.4665 f1 0.4949 | acc[c0]=0.977  acc[c1]=0.269  acc[c2]=0.154 | auc[c0]=0.834  auc[c1]=0.803  auc[c2]=0.779 | macroAUC=0.806
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4921     104      13
+   ISUP23     229      93      24
+   ISUP45      50      27      14
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[030] triplet: train loss 0.0553 | val loss 0.1553 || LR(val): acc 0.9180 BAL-acc 0.4519 f1 0.4757 | acc[c0]=0.977  acc[c1]=0.280  acc[c2]=0.099 | auc[c0]=0.796  auc[c1]=0.795  auc[c2]=0.597 | macroAUC=0.729
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4920     107      11
+   ISUP23     223      97      26
+   ISUP45      51      31       9
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[031] triplet: train loss 0.0473 | val loss 0.1578 || LR(val): acc 0.9047 BAL-acc 0.5010 f1 0.4969 | acc[c0]=0.957  acc[c1]=0.315  acc[c2]=0.231 | auc[c0]=0.839  auc[c1]=0.799  auc[c2]=0.825 | macroAUC=0.821
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4823     149      66
+   ISUP23     194     109      43
+   ISUP45      43      27      21
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[032] triplet: train loss 0.0522 | val loss 0.1526 || LR(val): acc 0.9258 BAL-acc 0.4521 f1 0.4871 | acc[c0]=0.985  acc[c1]=0.283  acc[c2]=0.088 | auc[c0]=0.765  auc[c1]=0.703  auc[c2]=0.515 | macroAUC=0.661
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4963      68       7
+   ISUP23     236      98      12
+   ISUP45      52      31       8
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[033] triplet: train loss 0.0501 | val loss 0.1554 || LR(val): acc 0.9156 BAL-acc 0.4574 f1 0.4761 | acc[c0]=0.975  acc[c1]=0.254  acc[c2]=0.143 | auc[c0]=0.803  auc[c1]=0.764  auc[c2]=0.843 | macroAUC=0.803
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4912     101      25
+   ISUP23     220      88      38
+   ISUP45      47      31      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[034] triplet: train loss 0.0492 | val loss 0.1575 || LR(val): acc 0.9059 BAL-acc 0.4557 f1 0.4641 | acc[c0]=0.964  acc[c1]=0.260  acc[c2]=0.143 | auc[c0]=0.841  auc[c1]=0.806  auc[c2]=0.786 | macroAUC=0.811
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4857     107      74
+   ISUP23     218      90      38
+   ISUP45      52      26      13
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[035] triplet: train loss 0.0515 | val loss 0.1604 || LR(val): acc 0.9145 BAL-acc 0.4381 f1 0.4582 | acc[c0]=0.974  acc[c1]=0.263  acc[c2]=0.077 | auc[c0]=0.739  auc[c1]=0.726  auc[c2]=0.661 | macroAUC=0.709
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4909     100      29
+   ISUP23     230      91      25
+   ISUP45      58      26       7
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[036] triplet: train loss 0.0479 | val loss 0.1565 || LR(val): acc 0.9193 BAL-acc 0.4075 f1 0.4299 | acc[c0]=0.984  acc[c1]=0.205  acc[c2]=0.033 | auc[c0]=0.755  auc[c1]=0.722  auc[c2]=0.574 | macroAUC=0.684
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4959      62      17
+   ISUP23     259      71      16
+   ISUP45      62      26       3
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[037] triplet: train loss 0.0508 | val loss 0.1463 || LR(val): acc 0.9182 BAL-acc 0.4394 f1 0.4606 | acc[c0]=0.977  acc[c1]=0.298  acc[c2]=0.044 | auc[c0]=0.785  auc[c1]=0.790  auc[c2]=0.644 | macroAUC=0.739
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4920     104      14
+   ISUP23     231     103      12
+   ISUP45      61      26       4
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[038] triplet: train loss 0.0521 | val loss 0.1523 || LR(val): acc 0.9174 BAL-acc 0.4508 f1 0.4699 | acc[c0]=0.974  acc[c1]=0.324  acc[c2]=0.055 | auc[c0]=0.822  auc[c1]=0.819  auc[c2]=0.778 | macroAUC=0.806
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4906     116      16
+   ISUP23     222     112      12
+   ISUP45      53      33       5
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[039] triplet: train loss 0.0508 | val loss 0.1508 || LR(val): acc 0.9098 BAL-acc 0.4696 f1 0.4826 | acc[c0]=0.965  acc[c1]=0.312  acc[c2]=0.132 | auc[c0]=0.816  auc[c1]=0.789  auc[c2]=0.764 | macroAUC=0.790
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4861     132      45
+   ISUP23     216     108      22
+   ISUP45      48      31      12
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[040] triplet: train loss 0.0492 | val loss 0.1506 || LR(val): acc 0.9184 BAL-acc 0.4467 f1 0.4698 | acc[c0]=0.979  acc[c1]=0.240  acc[c2]=0.121 | auc[c0]=0.835  auc[c1]=0.787  auc[c2]=0.814 | macroAUC=0.812
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4934      67      37
+   ISUP23     231      83      32
+   ISUP45      55      25      11
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[041] triplet: train loss 0.0475 | val loss 0.1562 || LR(val): acc 0.9162 BAL-acc 0.4235 f1 0.4443 | acc[c0]=0.983  acc[c1]=0.156  acc[c2]=0.132 | auc[c0]=0.751  auc[c1]=0.724  auc[c2]=0.725 | macroAUC=0.733
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4950      61      27
+   ISUP23     259      54      33
+   ISUP45      60      19      12
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[042] triplet: train loss 0.0463 | val loss 0.1508 || LR(val): acc 0.9196 BAL-acc 0.4184 f1 0.4443 | acc[c0]=0.984  acc[c1]=0.217  acc[c2]=0.055 | auc[c0]=0.731  auc[c1]=0.739  auc[c2]=0.607 | macroAUC=0.692
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4955      73      10
+   ISUP23     257      75      14
+   ISUP45      60      26       5
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[043] triplet: train loss 0.0503 | val loss 0.1574 || LR(val): acc 0.9151 BAL-acc 0.4518 f1 0.4721 | acc[c0]=0.976  acc[c1]=0.225  acc[c2]=0.154 | auc[c0]=0.815  auc[c1]=0.776  auc[c2]=0.797 | macroAUC=0.796
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4918      82      38
+   ISUP23     237      78      31
+   ISUP45      55      22      14
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[044] triplet: train loss 0.0488 | val loss 0.1576 || LR(val): acc 0.9176 BAL-acc 0.4294 f1 0.4556 | acc[c0]=0.982  acc[c1]=0.197  acc[c2]=0.110 | auc[c0]=0.695  auc[c1]=0.601  auc[c2]=0.742 | macroAUC=0.679
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4946      74      18
+   ISUP23     253      68      25
+   ISUP45      60      21      10
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[045] triplet: train loss 0.0500 | val loss 0.1504 || LR(val): acc 0.9153 BAL-acc 0.4267 f1 0.4537 | acc[c0]=0.980  acc[c1]=0.191  acc[c2]=0.110 | auc[c0]=0.727  auc[c1]=0.707  auc[c2]=0.660 | macroAUC=0.698
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4935      83      20
+   ISUP23     264      66      16
+   ISUP45      62      19      10
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[046] triplet: train loss 0.0461 | val loss 0.1614 || LR(val): acc 0.9025 BAL-acc 0.5029 f1 0.4975 | acc[c0]=0.952  acc[c1]=0.370  acc[c2]=0.187 | auc[c0]=0.844  auc[c1]=0.815  auc[c2]=0.837 | macroAUC=0.832
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4796     193      49
+   ISUP23     178     128      40
+   ISUP45      41      33      17
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[047] triplet: train loss 0.0455 | val loss 0.1644 || LR(val): acc 0.9016 BAL-acc 0.4918 f1 0.4888 | acc[c0]=0.954  acc[c1]=0.324  acc[c2]=0.198 | auc[c0]=0.822  auc[c1]=0.789  auc[c2]=0.831 | macroAUC=0.814
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4806     176      56
+   ISUP23     194     112      40
+   ISUP45      43      30      18
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[048] triplet: train loss 0.0489 | val loss 0.1552 || LR(val): acc 0.9202 BAL-acc 0.4564 f1 0.4833 | acc[c0]=0.982  acc[c1]=0.223  acc[c2]=0.165 | auc[c0]=0.817  auc[c1]=0.783  auc[c2]=0.826 | macroAUC=0.809
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4946      72      20
+   ISUP23     236      77      33
+   ISUP45      55      21      15
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[049] triplet: train loss 0.0450 | val loss 0.1513 || LR(val): acc 0.9200 BAL-acc 0.4805 f1 0.5049 | acc[c0]=0.977  acc[c1]=0.277  acc[c2]=0.187 | auc[c0]=0.724  auc[c1]=0.655  auc[c2]=0.759 | macroAUC=0.713
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4924      87      27
+   ISUP23     224      96      26
+   ISUP45      39      35      17
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+[050] triplet: train loss 0.0482 | val loss 0.1625 || LR(val): acc 0.9094 BAL-acc 0.4551 f1 0.4684 | acc[c0]=0.967  acc[c1]=0.277  acc[c2]=0.121 | auc[c0]=0.811  auc[c1]=0.771  auc[c2]=0.814 | macroAUC=0.799
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4872     125      41
+   ISUP23     223      96      27
+   ISUP45      44      36      11
+slurmstepd: error: *** STEP 1243302.0 ON kn076 CANCELLED AT 2025-10-12T23:05:34 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 1243302 ON kn076 CANCELLED AT 2025-10-12T23:05:34 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.

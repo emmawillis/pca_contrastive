@@ -1,0 +1,1523 @@
+# train.py
+
+#!/usr/bin/env python3
+# train_min.py
+import argparse
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from collections import Counter
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, WeightedRandomSampler
+
+from dataset_picai_slices import PicaiSliceDataset
+from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
+from segment_anything import sam_model_registry
+
+# --- optional: AUC ---
+try:
+    from sklearn.metrics import roc_auc_score
+    _HAS_SK = True
+except Exception:
+    _HAS_SK = False
+
+# ----------------- helpers -----------------
+
+def collate_resize_to_imgsize(batch):
+    imgs, labels = [], []
+    extras_keys = [k for k in batch[0].keys() if k not in ("image", "label")]
+    extras = {k: [] for k in extras_keys}
+    for s in batch:
+        x = s["image"].unsqueeze(0)  # [1,C,H,W]
+        x = F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False).squeeze(0)
+        imgs.append(x)
+        labels.append(torch.as_tensor(s["label"], dtype=torch.long))
+        for k in extras_keys:
+            extras[k].append(s[k])
+    return {"image": torch.stack(imgs, 0),
+            "label": torch.stack(labels, 0),
+            **extras}
+
+def map_isup3(y6: int) -> int:
+    if y6 in (0,1): return 0
+    if y6 in (2,3): return 1
+    if y6 in (4,5): return 2
+    raise ValueError(f"bad label6={y6}")
+
+def class_weights_from_train(df: pd.DataFrame, target: str):
+    """Return torch.FloatTensor of class weights (mean-normalized)."""
+    y = df["label6"].map(map_isup3) if target == "isup3" else df["label6"]
+    classes = sorted(int(c) for c in y.unique())
+    cnt = Counter(int(v) for v in y.tolist())
+    K, N = len(classes), len(y)
+    ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
+    m = sum(ws)/len(ws)
+    ws = [w/m for w in ws]
+    return torch.tensor(ws, dtype=torch.float32), classes
+
+# oversample the slices that actually intersect the lesions, since other slices are set to isup 0
+def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337):
+    is_pos = df["has_lesion"].astype(int).values
+    n_pos = int(is_pos.sum()); n_neg = len(is_pos) - n_pos
+    assert n_pos > 0, "No positive slices in train folds."
+    w_neg = 1.0
+    w_pos = (pos_ratio/(1-pos_ratio)) * (n_neg/max(1,n_pos))
+    w = np.where(is_pos==1, w_pos, w_neg).astype(np.float64)
+    return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
+
+def macro_f1(logits: torch.Tensor, y: torch.Tensor, K: int) -> float:
+    y_pred = logits.argmax(dim=1).cpu().numpy()
+    y_true = y.cpu().numpy()
+    f1s = []
+    for c in range(K):
+        tp = ((y_pred==c)&(y_true==c)).sum()
+        fp = ((y_pred==c)&(y_true!=c)).sum()
+        fn = ((y_pred!=c)&(y_true==c)).sum()
+        prec = tp/(tp+fp) if tp+fp>0 else 0.0
+        rec  = tp/(tp+fn) if tp+fn>0 else 0.0
+        f1s.append(2*prec*rec/(prec+rec) if (prec+rec)>0 else 0.0)
+    return float(np.mean(f1s))
+
+# ---- Confusion matrix (no sklearn needed) ----
+def confusion_matrix_from_probs(probs: torch.Tensor, y: torch.Tensor, K: int = 3) -> torch.Tensor:
+    """Return KxK matrix with counts; rows=true, cols=pred."""
+    preds = probs.argmax(dim=1).cpu()
+    y_cpu = y.cpu()
+    cm = torch.zeros((K, K), dtype=torch.long)
+    for t, p in zip(y_cpu, preds):
+        cm[t.long(), p.long()] += 1
+    return cm
+
+LABEL_NAMES = ["ISUP01", "ISUP23", "ISUP45"]  # c0,c1,c2
+
+def print_confusion_matrix(cm: torch.Tensor, labels=LABEL_NAMES):
+    K = cm.shape[0]
+    header = "true\\pred " + " ".join(f"{labels[j]:>7}" for j in range(K))
+    print("Confusion matrix (val): rows=true, cols=pred")
+    print(header)
+    for i in range(K):
+        row = " ".join(f"{int(cm[i, j]):7d}" for j in range(K))
+        print(f"{labels[i]:>9} {row}")
+
+# ----------------- train / val -----------------
+def run_epoch(loader, model, loss_fn, optimizer=None, device="cuda", return_outputs=False):
+    train_mode = optimizer is not None
+    model.train(train_mode)
+    total_loss, total_correct, total_n = 0.0, 0, 0
+    all_logits, all_y = [], []
+    for batch in loader:
+        x = batch["image"].to(device, non_blocking=True)
+        y = batch["label"].to(device, non_blocking=True)
+
+        logits, _ = model(x)
+        loss = loss_fn(logits, y)
+
+        if train_mode:
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+
+        total_loss += float(loss.item()) * x.size(0)
+        total_correct += (logits.argmax(1) == y).sum().item()
+        total_n += x.size(0)
+        all_logits.append(logits.detach())
+        all_y.append(y.detach())
+
+    avg_loss = total_loss / max(1,total_n)
+    acc = total_correct / max(1,total_n)
+    logits_cat = torch.cat(all_logits) if all_logits else torch.empty(0)
+    y_cat = torch.cat(all_y) if all_y else torch.empty(0, dtype=torch.long)
+    K = logits_cat.shape[1] if logits_cat.ndim==2 else 0
+    f1 = macro_f1(logits_cat, y_cat, K) if K else 0.0
+
+    if return_outputs:
+        return avg_loss, acc, f1, logits_cat, y_cat
+    return avg_loss, acc, f1
+
+def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
+    """
+    Returns:
+      - per-class accuracy dict {class_idx: acc}
+      - per-class AUC dict {class_idx: auc}  (if sklearn available)
+      - macro_auc (float or None if unavailable)
+    Assumes labels are contiguous 0..K-1.
+    """
+    K = logits.shape[1]
+    y_np = y.cpu().numpy()
+    y_pred = logits.argmax(dim=1).cpu().numpy()
+
+    # per-class accuracy
+    accs = {}
+    for c in range(K):
+        mask = (y_np == c)
+        if mask.sum() == 0:
+            accs[c] = float("nan")
+        else:
+            accs[c] = float((y_pred[mask] == c).mean())
+
+    # per-class AUC (OvR)
+    aucs = {}
+    macro_auc = None
+    if _HAS_SK:
+        probs = torch.softmax(logits, dim=1).cpu().numpy()
+        auc_vals = []
+        for c in range(K):
+            y_bin = (y_np == c).astype(np.int32)
+            # Need both pos and neg to compute AUC
+            if y_bin.sum() > 0 and (1 - y_bin).sum() > 0:
+                try:
+                    auc = roc_auc_score(y_bin, probs[:, c])
+                    aucs[c] = float(auc)
+                    auc_vals.append(auc)
+                except Exception:
+                    aucs[c] = float("nan")
+            else:
+                aucs[c] = float("nan")
+        if len(auc_vals) > 0:
+            macro_auc = float(np.nanmean(auc_vals))
+    else:
+        aucs = {c: None for c in range(K)}
+        macro_auc = None
+
+    return accs, aucs, macro_auc
+
+# ----------------- main -----------------
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--sam_checkpoint", required=True)
+    p.add_argument("--outdir", default="./runs/simple")
+    p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
+    p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
+    p.add_argument("--folds_val", default="0")
+    p.add_argument("--batch_size", type=int, default=16)
+    p.add_argument("--epochs", type=int, default=15)
+    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--wd", type=float, default=1e-4)
+    p.add_argument("--pos_ratio", type=float, default=0.33)
+    # --- NEW: number of epochs to keep the MedSAM encoder frozen before unfreezing ---
+    p.add_argument("--freeze_epochs", type=int, default=2,
+                   help="Freeze MedSAM encoder for this many epochs, then unfreeze.")
+    args = p.parse_args()
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
+
+    folds_train = [s.strip() for s in args.folds_train.split(",") if s.strip()!=""]
+    folds_val   = [s.strip() for s in args.folds_val.split(",") if s.strip()!=""]
+
+    # -------- dataset --------
+    train_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_train,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,   # per-slice 0.5–99.5% clip → [0,1]
+        cache_size=64,
+    )
+    val_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_val,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,
+        cache_size=32,
+    )
+
+    # class weights from TRAIN distribution
+    w_ce, classes_present = class_weights_from_train(train_ds.df, target=args.target)
+    n_classes = len(classes_present)
+    w_ce = w_ce.to(device)
+
+    # sampler to bump lesion slice rate
+    sampler = make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
+
+    train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+
+    val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+
+    # -------- model --------
+    sam = sam_model_registry["vit_b"]()
+    sam.load_state_dict(torch.load(args.sam_checkpoint, map_location="cpu"), strict=True)
+    model = MedSAMSliceSpatialAttn(
+        sam_model=sam,
+        num_classes=n_classes,
+        proj_dim=1024, attn_dim=256,
+        head_hidden=256, head_dropout=0.1,
+        use_pre_neck=True,              # pre-neck + spatial attention
+        pixel_mean_std=None,            # inputs already in [0,1]
+    ).to(device)
+
+    # --- Freeze encoder for warmup ---
+    for p_ in model.encoder.parameters():
+        p_.requires_grad = False
+    # Keep a handle to encoder params for later unfreezing
+    encoder_params = list(model.encoder.parameters())
+
+    # Optimizer for currently-trainable params (encoder excluded)
+    optimizer = torch.optim.AdamW(
+        (p_ for p_ in model.parameters() if p_.requires_grad),
+        lr=args.lr, weight_decay=args.wd
+    )
+    criterion = nn.CrossEntropyLoss(weight=w_ce)
+
+    best_f1 = -1.0
+    best_path = outdir / "ckpt_best.pt"
+
+    # -------- loop --------
+    for epoch in range(1, args.epochs+1):
+        # --- Unfreeze after warmup ---
+        if epoch == args.freeze_epochs + 1:
+            for p_ in encoder_params:
+                p_.requires_grad = True
+            # Add encoder params as a new param group (often with lower LR)
+            base_lr = args.lr
+            enc_lr = base_lr * 0.1
+            optimizer.add_param_group({
+                "params": encoder_params,
+                "lr": enc_lr,
+                "weight_decay": args.wd,
+            })
+            print(f"→ Unfroze encoder at epoch {epoch}; added to optimizer with lr={enc_lr:g}")
+
+        tr_loss, tr_acc, tr_f1 = run_epoch(train_loader, model, criterion, optimizer=optimizer, device=device)
+        va_loss, va_acc, va_f1, va_logits, va_y = run_epoch(val_loader, model, criterion, optimizer=None, device=device, return_outputs=True)
+
+        # Per-class metrics on validation
+        per_acc, per_auc, macro_auc = per_class_metrics(va_logits, va_y)
+        # pretty print
+        pcs = "  ".join([f"acc[c{c}]={per_acc[c]:.3f}" if not np.isnan(per_acc[c]) else f"acc[c{c}]=NA"
+                         for c in range(va_logits.shape[1])])
+        if _HAS_SK and macro_auc is not None:
+            aucs = "  ".join([f"auc[c{c}]={per_auc[c]:.3f}" if per_auc[c] is not None else f"auc[c{c}]=NA"
+                               for c in range(va_logits.shape[1])])
+            extra = f" | {pcs} | {aucs} | macroAUC={macro_auc:.3f}"
+        else:
+            extra = f" | {pcs} | (sklearn not available: AUC skipped)"
+
+        cm = confusion_matrix_from_probs(va_logits, va_y, K=n_classes)
+
+        print(f"[{epoch:03d}] "
+              f"train: loss {tr_loss:.4f} acc {tr_acc:.4f} f1 {tr_f1:.4f} | "
+              f"val: loss {va_loss:.4f} acc {va_acc:.4f} f1 {va_f1:.4f}{extra}")
+        print_confusion_matrix(cm, labels=LABEL_NAMES)
+
+        if va_f1 > best_f1:
+            best_f1 = va_f1
+            torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
+            print(f"  ↳ saved best to {best_path} (macro-F1={best_f1:.4f})")
+
+if __name__ == "__main__":
+    main()
+
+-----------------------------
+
+# train_triplet_logreg.py
+#!/usr/bin/env python3
+# train_min.py
+import argparse
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from collections import Counter
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, WeightedRandomSampler
+
+from dataset_picai_slices import PicaiSliceDataset
+from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
+from segment_anything import sam_model_registry
+
+from triplet_loss_utils import (
+    get_histo_by_isup,
+    triplet_loss_batch,
+)
+
+# --- sklearn bits (required for LR); AUC optional ---
+try:
+    from sklearn.metrics import (
+        roc_auc_score,
+        f1_score,
+        accuracy_score,
+        balanced_accuracy_score,
+        confusion_matrix,
+    )
+    from sklearn.linear_model import LogisticRegression
+    _HAS_SK = True
+except Exception:
+    _HAS_SK = False
+
+# ----------------- helpers -----------------
+def collate_resize_to_imgsize(batch):
+    imgs, labels = [], []
+    extras_keys = [k for k in batch[0].keys() if k not in ("image", "label")]
+    extras = {k: [] for k in extras_keys}
+    for s in batch:
+        x = s["image"].unsqueeze(0)  # [1,C,H,W]
+        x = F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False).squeeze(0)
+        imgs.append(x)
+        labels.append(torch.as_tensor(s["label"], dtype=torch.long))
+        for k in extras_keys:
+            extras[k].append(s[k])
+    return {"image": torch.stack(imgs, 0),
+            "label": torch.stack(labels, 0),
+            **extras}
+
+def map_isup3(y6: int) -> int:
+    if y6 in (0,1): return 0
+    if y6 in (2,3): return 1
+    if y6 in (4,5): return 2
+    raise ValueError(f"bad label6={y6}")
+
+def class_weights_from_train(df: pd.DataFrame, target: str):
+    """Return torch.FloatTensor of class weights (mean-normalized)."""
+    y = df["label6"].map(map_isup3) if target == "isup3" else df["label6"]
+    classes = sorted(int(c) for c in y.unique())
+    cnt = Counter(int(v) for v in y.tolist())
+    K, N = len(classes), len(y)
+    ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
+    m = sum(ws)/len(ws)
+    ws = [w/m for w in ws]
+    return torch.tensor(ws, dtype=torch.float32), classes
+
+# oversample the slices that actually intersect the lesions, since other slices are set to isup 0
+def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337):
+    is_pos = df["has_lesion"].astype(int).values
+    n_pos = int(is_pos.sum()); n_neg = len(is_pos) - n_pos
+    assert n_pos > 0, "No positive slices in train folds."
+    w_neg = 1.0
+    w_pos = (pos_ratio/(1-pos_ratio)) * (n_neg/max(1,n_pos))
+    w = np.where(is_pos==1, w_pos, w_neg).astype(np.float64)
+    return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
+
+# ---- Triplet train/val (encoder-only training) ----
+def run_epoch_triplet(loader, model, triplet_fn, optimizer=None, device="cuda"):
+    train_mode = optimizer is not None
+    if train_mode: model.train(True)
+    else:          model.train(False)
+
+    total_loss, total_n = 0.0, 0
+    with torch.set_grad_enabled(train_mode):
+        for batch in loader:
+            x = batch["image"].to(device, non_blocking=True)
+            y = batch["label"].to(device, non_blocking=True)
+
+            _, emb = model(x)                    # (logits unused), emb: [B,D]
+            loss = triplet_fn(emb, y)
+
+            if train_mode:
+                optimizer.zero_grad(set_to_none=True)
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                optimizer.step()
+
+            bs = x.size(0)
+            total_loss += float(loss.item()) * bs
+            total_n += bs
+
+    avg_loss = total_loss / max(1, total_n)
+    return avg_loss
+
+# ---- Embedding extraction ----
+@torch.no_grad()
+def extract_embeddings(loader, model, device="cuda"):
+    model.eval()
+    embs, ys = [], []
+    for batch in loader:
+        x = batch["image"].to(device, non_blocking=True)
+        y = batch["label"].to(device, non_blocking=True)
+        _, emb = model(x)
+        embs.append(emb.cpu())
+        ys.append(y.cpu())
+    X = torch.cat(embs, 0).numpy()
+    y = torch.cat(ys, 0).numpy()
+    return X, y
+
+# ---- LR eval on embeddings ----
+def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
+    if not _HAS_SK:
+        raise RuntimeError("scikit-learn is required for LogisticRegression evaluation but is not available.")
+
+    clf = LogisticRegression(
+        max_iter=max_iter,
+        multi_class="auto",        # 'multinomial' if supported by solver
+        solver="lbfgs",
+        n_jobs=None,
+        class_weight=None
+    )
+    clf.fit(X_train, y_train)
+
+    y_pred = clf.predict(X_val)
+    acc = float(accuracy_score(y_val, y_pred))
+    bacc = float(balanced_accuracy_score(y_val, y_pred))
+    f1_macro = float(f1_score(y_val, y_pred, average="macro"))
+
+    # Per-class accuracy
+    per_acc = {}
+    for c in range(n_classes):
+        mask = (y_val == c)
+        per_acc[c] = float((y_pred[mask] == c).mean()) if mask.any() else float("nan")
+
+    # AUC (OvR) if probabilities exist and both classes present
+    per_auc = {c: float("nan") for c in range(n_classes)}
+    macro_auc = float("nan")
+    try:
+        probs = clf.predict_proba(X_val)  # [N, K]
+        auc_vals = []
+        for c in range(n_classes):
+            y_bin = (y_val == c).astype(np.int32)
+            if y_bin.sum() > 0 and (1 - y_bin).sum() > 0:
+                auc = roc_auc_score(y_bin, probs[:, c])
+                per_auc[c] = float(auc)
+                auc_vals.append(auc)
+        if len(auc_vals) > 0:
+            macro_auc = float(np.nanmean(auc_vals))
+    except Exception:
+        pass
+
+    # Confusion matrix (rows=true, cols=pred)
+    cm = confusion_matrix(y_val, y_pred, labels=list(range(n_classes)))
+
+    return {
+        "acc": acc,
+        "bacc": bacc,
+        "f1_macro": f1_macro,
+        "per_acc": per_acc,
+        "per_auc": per_auc,
+        "macro_auc": macro_auc,
+        "cm": cm,
+        "clf": clf,
+    }
+
+def format_confusion_matrix(cm: np.ndarray, n_classes: int):
+    labels = ["ISUP01","ISUP23","ISUP45"] if n_classes == 3 else ["ISUP0","ISUP1","ISUP2","ISUP3","ISUP4","ISUP5"]
+    header = "true\\pred " + " ".join(f"{lbl:>7}" for lbl in labels)
+    lines = ["Confusion matrix (LR val): rows=true, cols=pred", header]
+    for i in range(n_classes):
+        row = " ".join(f"{int(cm[i, j]):7d}" for j in range(n_classes))
+        lines.append(f"{labels[i]:>9} {row}")
+    return "\n".join(lines)
+
+# ----------------- main -----------------
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--sam_checkpoint", required=True)
+    p.add_argument("--outdir", default="./runs/simple_triplet_lr")
+    p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
+    p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
+    p.add_argument("--folds_val", default="0")
+    p.add_argument("--batch_size", type=int, default=16)
+    p.add_argument("--epochs", type=int, default=15)      # number of triplet epochs (each followed by LR eval)
+    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--wd", type=float, default=1e-4)
+    p.add_argument("--pos_ratio", type=float, default=0.33)
+    p.add_argument("--histo_dir", required=True)        # folder of .npy histo encodings
+    p.add_argument("--histo_marksheet_dir", required=True)
+    p.add_argument("--lr_max_iter", type=int, default=5, help="LogReg max_iter per evaluation")
+    args = p.parse_args()
+
+    if not _HAS_SK:
+        raise RuntimeError("scikit-learn not available; install it to use LogisticRegression evaluation.")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
+
+    # -------- MRI dataset --------
+    folds_train = [s.strip() for s in args.folds_train.split(",") if s.strip()!=""]
+    folds_val   = [s.strip() for s in args.folds_val.split(",") if s.strip()!=""]
+
+    train_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_train,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,
+        cache_size=64,
+    )
+    val_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_val,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,
+        cache_size=32,
+    )
+
+    # class info
+    w_ce, classes_present = class_weights_from_train(train_ds.df, target=args.target)
+    n_classes = len(classes_present)
+
+    # sampler to bump lesion slice rate
+    sampler = make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
+
+    train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+
+    val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+    
+    # -------- histo dataset for triplet anchors/pos/negs --------
+    train_histo_buckets = get_histo_by_isup(
+        encodings_dir=str(Path(args.histo_dir) / "train"),
+        marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
+        num_classes=n_classes,
+    )
+    val_histo_buckets = get_histo_by_isup(
+        encodings_dir=str(Path(args.histo_dir) / "val"),
+        marksheet_csv=str(Path(args.histo_marksheet_dir) / "val.csv"),
+        num_classes=n_classes,
+    )
+
+    # -------- model --------
+    sam = sam_model_registry["vit_b"]()
+    sam.load_state_dict(torch.load(args.sam_checkpoint, map_location="cpu"), strict=True)
+    model = MedSAMSliceSpatialAttn(
+        sam_model=sam,
+        num_classes=n_classes,
+        proj_dim=128, attn_dim=256,
+        head_hidden=256, head_dropout=0.1,
+        use_pre_neck=True,
+        pixel_mean_std=None,
+    ).to(device)
+
+    # Train **encoder only** (head not used for triplet)
+    for p in model.parameters():            # freeze all
+        p.requires_grad = False
+    for p in model.encoder.parameters():    # unfreeze encoder
+        p.requires_grad = True
+
+    optimizer = torch.optim.AdamW(model.encoder.parameters(), lr=args.lr, weight_decay=args.wd)
+
+    # triplet criteria (train/val)
+    def train_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        return triplet_loss_batch(embeddings, labels, train_histo_buckets, margin=0.4)
+
+    def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        return triplet_loss_batch(embeddings, labels, val_histo_buckets, margin=0.4)
+
+    best_val_bacc = -1.0
+    best_path = outdir / "ckpt_best.pt"
+
+    # -------- loop --------
+    for epoch in range(1, args.epochs + 1):
+        # 1) Encoder training epoch (triplet)
+        tr_loss = run_epoch_triplet(train_loader, model, train_triplet, optimizer=optimizer, device=device)
+        va_loss = run_epoch_triplet(val_loader,   model, val_triplet,   optimizer=None,     device=device)
+
+        # 2) Embed train/val with current encoder
+        X_tr, y_tr = extract_embeddings(train_loader, model, device=device)
+        X_va, y_va = extract_embeddings(val_loader,   model, device=device)
+
+        # 3) Train a simple classifier on train embeddings, eval on val (max_iter ~ "5 epochs")
+        lr_metrics = eval_with_logreg(
+            X_tr, y_tr, X_va, y_va,
+            n_classes=n_classes,
+            max_iter=args.lr_max_iter
+        )
+
+        # 4) Log nicely (including confusion matrix)
+        per_acc_str = "  ".join([
+            f"acc[c{c}]={lr_metrics['per_acc'][c]:.3f}" if not np.isnan(lr_metrics['per_acc'][c]) else f"acc[c{c}]=NA"
+            for c in range(n_classes)
+        ])
+        if not np.isnan(lr_metrics["macro_auc"]):
+            per_auc_str = "  ".join([
+                f"auc[c{c}]={lr_metrics['per_auc'][c]:.3f}" if not np.isnan(lr_metrics['per_auc'][c]) else f"auc[c{c}]=NA"
+                for c in range(n_classes)
+            ])
+            auc_part = f" | {per_auc_str} | macroAUC={lr_metrics['macro_auc']:.3f}"
+        else:
+            auc_part = " | (AUC unavailable)"
+
+        print(f"[{epoch:03d}] triplet: train loss {tr_loss:.4f} | val loss {va_loss:.4f} || "
+              f"LR(val): acc {lr_metrics['acc']:.4f} BAL-acc {lr_metrics['bacc']:.4f} f1 {lr_metrics['f1_macro']:.4f} | "
+              f"{per_acc_str}{auc_part}")
+
+        cm_str = format_confusion_matrix(lr_metrics["cm"], n_classes=n_classes)
+        print(cm_str)
+
+        # 5) Save 'best' based on **Balanced Accuracy** on validation
+        if lr_metrics["bacc"] > best_val_bacc:
+            best_val_bacc = lr_metrics["bacc"]
+            torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
+            print(f"  ↳ new best (val BAL-acc={best_val_bacc:.4f}) saved to {best_path}")
+
+if __name__ == "__main__":
+    main()
+
+-----------------------------
+#train_head_from_encoder.py
+#!/usr/bin/env python3
+# train_head_from_encoder.py
+
+import argparse
+from pathlib import Path
+import numpy as np
+import pandas as pd
+from collections import Counter
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, WeightedRandomSampler
+
+from dataset_picai_slices import PicaiSliceDataset
+from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
+from segment_anything import sam_model_registry
+
+# sklearn metrics for evaluation
+try:
+    from sklearn.metrics import (
+        roc_auc_score,
+        f1_score,
+        accuracy_score,
+        balanced_accuracy_score,
+        confusion_matrix,
+    )
+    _HAS_SK = True
+except Exception:
+    _HAS_SK = False
+
+
+# ----------------- helpers -----------------
+def collate_resize_to_imgsize(batch):
+    imgs, labels = [], []
+    extras_keys = [k for k in batch[0].keys() if k not in ("image", "label")]
+    extras = {k: [] for k in extras_keys}
+    for s in batch:
+        x = s["image"].unsqueeze(0)  # [1,C,H,W]
+        x = F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False).squeeze(0)
+        imgs.append(x)
+        labels.append(torch.as_tensor(s["label"], dtype=torch.long))
+        for k in extras_keys:
+            extras[k].append(s[k])
+    return {"image": torch.stack(imgs, 0),
+            "label": torch.stack(labels, 0),
+            **extras}
+
+def map_isup3(y6: int) -> int:
+    if y6 in (0,1): return 0
+    if y6 in (2,3): return 1
+    if y6 in (4,5): return 2
+    raise ValueError(f"bad label6={y6}")
+
+def class_weights_from_train(df: pd.DataFrame, target: str):
+    """Return torch.FloatTensor of class weights (mean-normalized)."""
+    y = df["label6"].map(map_isup3) if target == "isup3" else df["label6"]
+    classes = sorted(int(c) for c in y.unique())
+    cnt = Counter(int(v) for v in y.tolist())
+    K, N = len(classes), len(y)
+    ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
+    m = sum(ws)/len(ws)
+    ws = [w/m for w in ws]
+    return torch.tensor(ws, dtype=torch.float32), classes
+
+def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337):
+    """Oversample lesion-intersecting slices."""
+    is_pos = df["has_lesion"].astype(int).values
+    n_pos = int(is_pos.sum()); n_neg = len(is_pos) - n_pos
+    assert n_pos > 0, "No positive slices in train folds."
+    w_neg = 1.0
+    w_pos = (pos_ratio/(1-pos_ratio)) * (n_neg/max(1,n_pos))
+    w = np.where(is_pos==1, w_pos, w_neg).astype(np.float64)
+    return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
+
+def per_class_acc(y_true: np.ndarray, y_pred: np.ndarray, n_classes: int):
+    accs = {}
+    for c in range(n_classes):
+        mask = (y_true == c)
+        accs[c] = float((y_pred[mask] == c).mean()) if mask.any() else float("nan")
+    return accs
+
+def confusion_matrix_str(cm: np.ndarray, n_classes: int):
+    labels = ["ISUP01","ISUP23","ISUP45"] if n_classes == 3 else ["ISUP0","ISUP1","ISUP2","ISUP3","ISUP4","ISUP5"]
+    header = "true\\pred " + " ".join(f"{lbl:>7}" for lbl in labels)
+    lines = ["Confusion matrix (val): rows=true, cols=pred", header]
+    for i in range(n_classes):
+        row = " ".join(f"{int(cm[i, j]):7d}" for j in range(n_classes))
+        lines.append(f"{labels[i]:>9} {row}")
+    return "\n".join(lines)
+
+@torch.no_grad()
+def evaluate(loader, model, device="cuda", n_classes=3):
+    model.eval()
+    ys, yps, prob_list = [], [], []
+    ce_loss = nn.CrossEntropyLoss(reduction="sum")  # sum to average later
+    total_loss, total_n = 0.0, 0
+
+    for batch in loader:
+        x = batch["image"].to(device, non_blocking=True)
+        y = batch["label"].to(device, non_blocking=True)
+        logits, _ = model(x)
+        loss = ce_loss(logits, y)
+        probs = torch.softmax(logits, dim=1)
+
+        total_loss += float(loss.item())
+        total_n += x.size(0)
+        ys.append(y.cpu())
+        yps.append(logits.argmax(1).cpu())
+        prob_list.append(probs.cpu())
+
+    y_true = torch.cat(ys).numpy()
+    y_pred = torch.cat(yps).numpy()
+    probs  = torch.cat(prob_list).numpy()  # [N, K]
+    avg_loss = total_loss / max(1, total_n)
+
+    acc = float(accuracy_score(y_true, y_pred))
+    bacc = float(balanced_accuracy_score(y_true, y_pred))
+    f1m = float(f1_score(y_true, y_pred, average="macro"))
+
+    # per-class acc
+    pacc = per_class_acc(y_true, y_pred, n_classes)
+
+    # AUCs (OvR)
+    per_auc = {c: float("nan") for c in range(n_classes)}
+    macro_auc = float("nan")
+    if _HAS_SK:
+        auc_vals = []
+        for c in range(n_classes):
+            y_bin = (y_true == c).astype(np.int32)
+            if y_bin.sum() > 0 and (1 - y_bin).sum() > 0:
+                try:
+                    auc = roc_auc_score(y_bin, probs[:, c])
+                    per_auc[c] = float(auc)
+                    auc_vals.append(auc)
+                except Exception:
+                    pass
+        if len(auc_vals) > 0:
+            macro_auc = float(np.nanmean(auc_vals))
+
+    cm = confusion_matrix(y_true, y_pred, labels=list(range(n_classes)))
+    return {
+        "loss": avg_loss,
+        "acc": acc,
+        "bacc": bacc,
+        "f1_macro": f1m,
+        "per_acc": pacc,
+        "per_auc": per_auc,
+        "macro_auc": macro_auc,
+        "cm": cm,
+    }
+
+def run_epoch_ce(loader, model, optimizer=None, device="cuda"):
+    train_mode = optimizer is not None
+    model.train(train_mode)
+    total_loss, total_n = 0.0, 0
+    ce = nn.CrossEntropyLoss()
+
+    for batch in loader:
+        x = batch["image"].to(device, non_blocking=True)
+        y = batch["label"].to(device, non_blocking=True)
+
+        logits, _ = model(x)
+        loss = ce(logits, y)
+
+        if train_mode:
+            optimizer.zero_grad(set_to_none=True)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer.step()
+
+        total_loss += float(loss.item()) * x.size(0)
+        total_n += x.size(0)
+
+    return total_loss / max(1, total_n)
+
+
+# ----------------- loading encoder-only weights -----------------
+def load_encoder_only(model: MedSAMSliceSpatialAttn, ckpt_path: Path):
+    """
+    Load only the encoder.* weights from a state_dict saved by the previous script.
+    """
+    sd = torch.load(ckpt_path, map_location="cpu")
+    sd = sd.get("model", sd)
+    enc_pref = "encoder."
+    enc_sd = {}
+    for k, v in sd.items():
+        if k.startswith(enc_pref):
+            enc_sd[k[len(enc_pref):]] = v  # strip "encoder." prefix for submodule load
+    missing, unexpected = model.encoder.load_state_dict(enc_sd, strict=False)
+    if missing:
+        print(f"[load_encoder_only] Missing keys in encoder: {missing}")
+    if unexpected:
+        print(f"[load_encoder_only] Unexpected keys in encoder: {unexpected}")
+    print(f"[load_encoder_only] Loaded encoder weights from {ckpt_path}")
+
+
+# ----------------- main -----------------
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--manifest", required=True)
+    p.add_argument("--sam_checkpoint", required=True, help="Base SAM/MedSAM checkpoint (full model).")
+    p.add_argument("--encoder_ckpt", required=True, help="Checkpoint from triplet+LR script (will load encoder.* only).")
+    p.add_argument("--outdir", default="./runs/head_finetune")
+    p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
+    p.add_argument("--folds_train", default="1,2,3")
+    p.add_argument("--folds_val", default="0")
+    p.add_argument("--batch_size", type=int, default=16)
+    p.add_argument("--epochs", type=int, default=10)
+    p.add_argument("--lr_head", type=float, default=1e-3)
+    p.add_argument("--wd", type=float, default=1e-4)
+    p.add_argument("--pos_ratio", type=float, default=0.33)
+    p.add_argument("--train_proj", action="store_true",
+                   help="Also train the projection MLP along with the classifier head.")
+    args = p.parse_args()
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
+
+    # -------- datasets --------
+    folds_train = [s.strip() for s in args.folds_train.split(",") if s.strip()!=""]
+    folds_val   = [s.strip() for s in args.folds_val.split(",") if s.strip()!=""]
+
+    train_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_train,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,
+        cache_size=64,
+    )
+    val_ds = PicaiSliceDataset(
+        manifest_csv=args.manifest,
+        folds=folds_val,
+        use_skip=True,
+        target=args.target,
+        channels=("path_T2","path_ADC","path_HBV"),
+        missing_channel_mode="zeros",
+        pct_lower=0.5, pct_upper=99.5,
+        cache_size=32,
+    )
+
+    # class info
+    w_ce, classes_present = class_weights_from_train(train_ds.df, target=args.target)
+    n_classes = len(classes_present)
+
+    # sampler to bump lesion slice rate (optional; mirrors encoder training)
+    sampler = make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
+
+    train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+
+    val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
+                              num_workers=4, pin_memory=True,
+                              collate_fn=collate_resize_to_imgsize)
+
+    # -------- model --------
+    sam = sam_model_registry["vit_b"]()
+    # Load base SAM/MedSAM weights (full)
+    sam.load_state_dict(torch.load(args.sam_checkpoint, map_location="cpu"), strict=True)
+
+    model = MedSAMSliceSpatialAttn(
+        sam_model=sam,
+        num_classes=n_classes,
+        proj_dim=1024, attn_dim=256,
+        head_hidden=256, head_dropout=0.1,
+        use_pre_neck=True,
+        pixel_mean_std=None,
+    ).to(device)
+
+    # Load encoder-only weights from encoder_ckpt
+    load_encoder_only(model, Path(args.encoder_ckpt))
+
+    # Freeze everything
+    for p in model.parameters():
+        p.requires_grad = False
+
+    # Unfreeze classifier head (+ optionally projection MLP)
+    head_params = list(model.head.parameters())
+    trainable_params = head_params
+    if args.train_proj:
+        trainable_params += list(model.proj.parameters())
+
+    for p in trainable_params:
+        p.requires_grad = True
+
+    optimizer = torch.optim.AdamW(trainable_params, lr=args.lr_head, weight_decay=args.wd)
+
+    best_bacc = -1.0
+    best_path = outdir / "ckpt_head_best.pt"
+
+    # -------- training loop (head only) --------
+    for epoch in range(1, args.epochs+1):
+        tr_loss = run_epoch_ce(train_loader, model, optimizer=optimizer, device=device)
+        val_metrics = evaluate(val_loader, model, device=device, n_classes=n_classes)
+
+        # pretty print
+        per_acc_str = "  ".join([
+            f"acc[c{c}]={val_metrics['per_acc'][c]:.3f}" if not np.isnan(val_metrics['per_acc'][c]) else f"acc[c{c}]=NA"
+            for c in range(n_classes)
+        ])
+        if not np.isnan(val_metrics["macro_auc"]):
+            per_auc_str = "  ".join([
+                f"auc[c{c}]={val_metrics['per_auc'][c]:.3f}" if not np.isnan(val_metrics['per_auc'][c]) else f"auc[c{c}]=NA"
+                for c in range(n_classes)
+            ])
+            auc_part = f" | {per_auc_str} | macroAUC={val_metrics['macro_auc']:.3f}"
+        else:
+            auc_part = " | (AUC unavailable)"
+
+        print(f"[{epoch:03d}] head-train: loss {tr_loss:.4f} || "
+              f"val: loss {val_metrics['loss']:.4f} acc {val_metrics['acc']:.4f} "
+              f"BAL-acc {val_metrics['bacc']:.4f} f1 {val_metrics['f1_macro']:.4f} | "
+              f"{per_acc_str}{auc_part}")
+        print(confusion_matrix_str(val_metrics["cm"], n_classes=n_classes))
+
+        # save best by balanced accuracy
+        if val_metrics["bacc"] > best_bacc:
+            best_bacc = val_metrics["bacc"]
+            torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
+            print(f"  ↳ new best (val BAL-acc={best_bacc:.4f}) saved to {best_path}")
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
+-----------------------------
+#ISUPMedSAM.py
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+# ==============================
+# Hard-coded training input size
+# (must be a multiple of the ViT patch size; ViT-B/L uses 16)
+# ==============================
+IMG_SIZE = 256  # e.g., 512, 768, 1024
+
+def resize_to_img_size(x: torch.Tensor) -> torch.Tensor:
+    """Resize a batch of images to [B, C, IMG_SIZE, IMG_SIZE]."""
+    if x.shape[-2] == IMG_SIZE and x.shape[-1] == IMG_SIZE:
+        return x
+    return F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False)
+
+class SpatialAttnPool2d(nn.Module):
+    """
+    Attention over a feature map (no flattening required).
+    Input:  feats [B, C, H, W]
+    Output: pooled [B, C], attn [B, 1, H, W] (softmax over H*W)
+    """
+    def __init__(self, C: int, attn_dim: int = 256, gated: bool = True, dropout: float = 0.0):
+        super().__init__()
+        self.norm = nn.GroupNorm(num_groups=1, num_channels=C)
+        self.gated = gated
+        self.theta = nn.Conv2d(C, attn_dim, kernel_size=1, bias=True)
+        self.gate  = nn.Conv2d(C, attn_dim, kernel_size=1, bias=True) if gated else None
+        self.score = nn.Conv2d(attn_dim, 1, kernel_size=1, bias=True)
+        self.drop  = nn.Dropout(dropout)
+
+    def forward(self, feats: torch.Tensor):
+        x = self.norm(feats)                               # [B,C,H,W]
+        h = torch.tanh(self.theta(x))                      # [B,A,H,W]
+        if self.gated:
+            h = h * torch.sigmoid(self.gate(x))           # gated tanh
+        h = self.drop(h)
+        logits = self.score(h)                             # [B,1,H,W]
+        attn = torch.softmax(logits.flatten(2), dim=-1)    # [B,1,H*W]
+        attn = attn.view(logits.shape)                     # [B,1,H,W]
+        pooled = (feats * attn).sum(dim=(2,3))             # [B,C]
+        return pooled, attn
+
+class MedSAMSliceSpatialAttn(nn.Module):
+    """
+    MedSAM/SAM encoder (optionally pre-neck) -> SpatialAttnPool2d -> Linear(proj_dim) -> Classifier.
+    Returns a single proj_dim vector per slice (and logits).
+
+    This implementation **forces a fixed input resolution** of IMG_SIZE×IMG_SIZE and
+    resizes the encoder's absolute 2D positional embeddings to the corresponding patch grid.
+    """
+    def __init__(self,
+                 sam_model,                 # loaded SAM/MedSAM model
+                 num_classes: int = 3,
+                 proj_dim: int = 128,
+                 attn_dim: int = 256,
+                 head_hidden: int = 256,
+                 head_dropout: float = 0.1,
+                 use_pre_neck: bool = True,
+                 pixel_mean_std=None):
+        super().__init__()
+        assert IMG_SIZE % 16 == 0, "IMG_SIZE must be a multiple of 16 for ViT-B/L patching."
+        self.encoder = sam_model.image_encoder
+        if use_pre_neck and hasattr(self.encoder, "neck"):
+            self.encoder.neck = nn.Identity()
+
+        # Cache native absolute positional embeddings ([1, Gh0, Gw0, C] for SAM ViT).
+        with torch.no_grad():
+            pe = getattr(self.encoder, "pos_embed", None)
+            if pe is None:
+                raise AttributeError("Expected self.encoder.pos_embed to exist for SAM/MedSAM ViT.")
+            if pe.dim() != 4:
+                raise RuntimeError(f"Expected pos_embed to be 4D [1,Gh,Gw,C], got {tuple(pe.shape)}")
+            self._pos_native = pe.detach().clone().float().cpu()   # [1,Gh0,Gw0,C]
+
+        # Set PE to match our fixed IMG_SIZE before probing channels
+        self._set_pos_embed_for_img_size()
+
+        # Probe channel dim C using a dummy at IMG_SIZE
+        with torch.no_grad():
+            feats = self.encoder(torch.zeros(1, 3, IMG_SIZE, IMG_SIZE))
+            if feats.dim() != 4:
+                raise RuntimeError(f"unexpected encoder output: {tuple(feats.shape)}")
+            # Handle both [B,C,H,W] and channels-last [B,H,W,C] just in case
+            C_guess = feats.shape[1] if feats.shape[1] < feats.shape[-1] else feats.shape[-1]
+        self.C = C_guess
+
+        self.pool = SpatialAttnPool2d(C=self.C, attn_dim=attn_dim, gated=True, dropout=head_dropout)
+
+        self.proj = nn.Sequential(
+            nn.LayerNorm(self.C),
+            nn.Linear(self.C, proj_dim),
+            nn.GELU(),
+        )
+        if head_hidden > 0:
+            self.head = nn.Sequential(
+                nn.LayerNorm(proj_dim),
+                nn.Linear(proj_dim, head_hidden),
+                nn.GELU(),
+                nn.Dropout(head_dropout),
+                nn.Linear(head_hidden, num_classes),
+            )
+        else:
+            self.head = nn.Linear(proj_dim, num_classes)
+
+        self.pixel_mean_std = pixel_mean_std
+
+    # ---- Positional embedding resize to fixed IMG_SIZE ----
+    def _set_pos_embed_for_img_size(self):
+        """
+        Resize absolute 2D positional embeddings to match the patch grid of IMG_SIZE.
+        Assumes ViT-B/L 16x16 patch size for SAM/MedSAM encoders.
+        """
+        enc = self.encoder
+        patch = 16
+        gh, gw = IMG_SIZE // patch, IMG_SIZE // patch  # target grid
+
+        pe = self._pos_native.to(device=enc.pos_embed.device, dtype=enc.pos_embed.dtype)  # [1,Gh0,Gw0,C]
+        gh0, gw0 = pe.shape[1], pe.shape[2]
+        if gh0 == gh and gw0 == gw:
+            # Exact match, set and return
+            enc.pos_embed = nn.Parameter(pe, requires_grad=False)
+            return
+
+        # [1, Gh0, Gw0, C] -> [1, C, Gh0, Gw0] -> interpolate -> [1, gh, gw, C]
+        pe_chlast = pe.permute(0, 3, 1, 2)  # [1,C,Gh0,Gw0]
+        pe_resized = F.interpolate(pe_chlast, size=(gh, gw), mode="bicubic", align_corners=False)
+        pe_resized = pe_resized.permute(0, 2, 3, 1).contiguous()  # [1,gh,gw,C]
+        enc.pos_embed = nn.Parameter(pe_resized, requires_grad=False)
+
+    def _apply_pixel_norm(self, x):
+        if self.pixel_mean_std is None:
+            return x
+        mean, std = self.pixel_mean_std
+        mean = x.new_tensor(mean)[None,:,None,None]
+        std  = x.new_tensor(std)[None,:,None,None]
+        return (x - mean) / std
+
+    def forward(self, x: torch.Tensor, return_attn: bool = False):
+        """
+        x: [B,3,H,W] normalized to [0,1]
+        -> logits [B,K], emb [B,proj_dim], (opt) attn [B,1,Hf,Wf]
+        """
+        # Force inputs to IMG_SIZE × IMG_SIZE and ensure matching PE
+        x = resize_to_img_size(x)
+        self._set_pos_embed_for_img_size()
+
+        x = self._apply_pixel_norm(x)
+
+        feats = self.encoder(x)                 # [B,C,Hf,Wf] (pre- or post-neck)
+        if feats.shape[1] > feats.shape[-1]:    # in case it's channels-last
+            feats = feats.permute(0,3,1,2).contiguous()
+
+        pooled, attn = self.pool(feats)         # [B,C], [B,1,Hf,Wf]
+        emb = self.proj(pooled)                 # [B,proj_dim]
+        logits = self.head(emb)                 # [B,num_classes]
+        return (logits, emb, attn) if return_attn else (logits, emb)
+
+
+
+
+
+-------------------------
+#dataset_picai_slices.py
+
+# dataset_picai_slices.py
+from __future__ import annotations
+from pathlib import Path
+from functools import lru_cache
+from typing import Iterable, List, Optional, Sequence, Tuple, Union, Dict, Any
+
+import numpy as np
+import pandas as pd
+import nibabel as nib
+import torch
+from torch.utils.data import Dataset
+
+# --------------------------
+# Helpers
+# --------------------------
+
+def _to_zhw(arr: np.ndarray) -> np.ndarray:
+    """Ensure (Z,H,W). nnU-Net-style volumes are often (H,W,Z)."""
+    if arr.ndim != 3:
+        raise ValueError(f"Expected 3D, got {arr.shape}")
+    # Assume last axis is Z (19-ish), move to front
+    return np.moveaxis(arr, -1, 0)
+
+def window_percentile(x: np.ndarray, p_low: float = 1.0, p_high: float = 99.0) -> np.ndarray:
+    lo = np.percentile(x, p_low)
+    hi = np.percentile(x, p_high)
+    x = np.clip(x, lo, hi)
+    if hi > lo:
+        x = (x - lo) / (hi - lo)
+    else:
+        x = np.zeros_like(x, dtype=np.float32)
+    return x.astype(np.float32)
+
+def map_isup3(y6: int) -> int:
+    if y6 in (0, 1): return 0
+    if y6 in (2, 3): return 1
+    if y6 in (4, 5): return 2
+    raise ValueError(f"bad label6={y6}")
+
+def _clean_path(p: Union[str, Path]) -> Path:
+    return Path(str(p).strip())
+
+# --------------------------
+# Dataset
+# --------------------------
+
+class PicaiSliceDataset(Dataset):
+    """
+    Loads PI-CAI slices from a manifest with columns:
+      - case_id, fold, z, label6, label3, has_lesion, area_frac
+      - path_T2, path_ADC, path_HBV
+      - path_mask_lesion, path_mask_prostate
+      - bbox_prostate_z0, bbox_prostate_z1, bbox_prostate_h0, bbox_prostate_h1, bbox_prostate_w0, bbox_prostate_w1
+      - (optional) skip
+
+    Features:
+      - filter by folds (patient-level split)
+      - crop slices to stored prostate bbox
+      - stack available channels (HBV optional)
+      - percentile windowing normalization per-channel
+      - target = 'isup3' or 'isup6'
+      - optional transform(image: Tensor CxHxW, target: int, meta: dict) -> same
+    """
+    def __init__(
+        self,
+        manifest_csv: Union[str, Path],
+        folds: Optional[Sequence[Union[int, str]]] = None,
+        use_skip: bool = True,
+        target: str = "isup3",               # 'isup3' or 'isup6'
+        channels: Sequence[str] = ("path_T2", "path_ADC", "path_HBV"),
+        missing_channel_mode: str = "zeros", # 'zeros' or 'repeat_t2'
+        pct_lower: float = 0.5,
+        pct_upper: float = 99.5,
+        transform = None,                    # callable or None
+        cache_size: int = 64,                # LRU cache for volumes (per-path)
+    ):
+        """
+        Parameters
+        ----------
+        manifest_csv : str|Path
+            Path to slices_manifest.csv.
+        folds : list[int|str] | None
+            Keep only rows whose 'fold' is in this set. If None, keep all folds.
+        use_skip : bool
+            If True and 'skip' column exists, drop rows with skip==1.
+        target : 'isup3'|'isup6'
+            Label scheme. For 'isup3', 0&1->0, 2&3->1, 4&5->2.
+        channels : tuple[str,...]
+            Which path columns to load, in order (e.g., ('path_T2','path_ADC','path_HBV')).
+        missing_channel_mode : 'zeros'|'repeat_t2'
+            If a channel path cell is empty, fill with zeros or repeat T2.
+        pct_lower, pct_upper : float
+            Percentile windowing per channel before [0,1] scaling.
+        transform : callable or None
+            Called as transform(torch.Tensor CxHxW, int label, dict meta) -> (image, label, meta) or similar.
+        cache_size : int
+            LRU cache size for loaded 3D volumes.
+        """
+        self.manifest_csv = _clean_path(manifest_csv)
+        self.df = pd.read_csv(self.manifest_csv)
+
+        # normalize fold
+        self.df["fold"] = self.df["fold"].astype(str).str.strip()
+        self.df.loc[self.df["fold"].isin(["", "nan", "NaN"]), "fold"] = "NA"
+
+        if use_skip and "skip" in self.df.columns:
+            self.df = self.df[self.df["skip"] == 0]
+
+        if folds is not None:
+            folds = [str(f) for f in folds]
+            self.df = self.df[self.df["fold"].isin(folds)]
+
+        # Keep only rows with at least T2/ADC paths (non-empty)
+        for col in ("path_T2", "path_ADC"):
+            if col not in self.df.columns:
+                raise ValueError(f"Manifest missing required column: {col}")
+        self.df["path_T2"] = self.df["path_T2"].astype(str)
+        self.df["path_ADC"] = self.df["path_ADC"].astype(str)
+        self.df = self.df[(self.df["path_T2"].str.len() > 0) & (self.df["path_ADC"].str.len() > 0)]
+
+        # store config
+        self.target = target
+        assert self.target in ("isup3", "isup6")
+        self.channels = tuple(channels)
+        self.missing_channel_mode = missing_channel_mode
+        assert self.missing_channel_mode in ("zeros", "repeat_t2")
+        self.pct_lower = pct_lower
+        self.pct_upper = pct_upper
+        self.transform = transform
+
+        # LRU cache setup (bind instance methods to cached functions)
+        self._load_vol_cached = lru_cache(maxsize=cache_size)(self._load_vol_impl)
+
+        # Keep only needed columns to save RAM in __getitem__
+        needed = {
+            "case_id","fold","z","label6","label3","has_lesion",
+            "bbox_prostate_z0","bbox_prostate_z1","bbox_prostate_h0","bbox_prostate_h1","bbox_prostate_w0","bbox_prostate_w1",
+            *self.channels
+        }
+        missing = needed - set(self.df.columns)
+        if missing:
+            raise ValueError(f"Manifest missing columns: {missing}")
+        self.df = self.df[list(needed)].reset_index(drop=True)
+
+    # --------- volume IO ---------
+    def _load_vol_impl(self, path: str) -> np.ndarray:
+        """Load a 3D volume from disk and return (Z,H,W) float32 array in [raw units].
+           NOTE: this is wrapped by an LRU cache in __init__.
+        """
+        if not path:
+            raise FileNotFoundError("Empty path string")
+        img = nib.load(path)  # use proxy/ lazy until get_fdata
+        arr = img.get_fdata(dtype=np.float32)
+        return _to_zhw(arr)
+
+    def _get_channel_slice(self, path: str, z: int, bbox: Tuple[int,int,int,int,int,int], fallback_2d: Optional[np.ndarray]) -> np.ndarray:
+        """
+        Load a single z-slice from a channel path, crop to bbox -> (H',W') float32.
+        If path is empty:
+           - 'zeros': return zeros_like(fallback_2d)
+           - 'repeat_t2': return fallback_2d (caller should pass T2 slice)
+        """
+        z0, z1, h0, h1, w0, w1 = bbox
+        if path:
+            vol = self._load_vol_cached(path)
+            sl = vol[z]  # (H,W)
+            return sl[h0:h1, w0:w1].astype(np.float32)
+        else:
+            if self.missing_channel_mode == "repeat_t2" and fallback_2d is not None:
+                return fallback_2d.copy().astype(np.float32)
+            if fallback_2d is None:
+                raise ValueError("fallback_2d is None but missing_channel_mode needs it")
+            return np.zeros_like(fallback_2d, dtype=np.float32)
+
+    # --------- Dataset API ---------
+    def __len__(self) -> int:
+        return len(self.df)
+
+    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        row = self.df.iloc[idx]
+
+        # coords & bbox
+        z = int(row["z"])
+        bbox = (
+            int(row["bbox_prostate_z0"]), int(row["bbox_prostate_z1"]),
+            int(row["bbox_prostate_h0"]), int(row["bbox_prostate_h1"]),
+            int(row["bbox_prostate_w0"]), int(row["bbox_prostate_w1"]),
+        )
+
+        # paths (strip!)
+        paths = {k: str(row[k]).strip() for k in self.channels}
+        p_t2 = paths.get("path_T2", "")
+
+        # Load T2 slice first (used for shape & optional fallback)
+        t2_full = self._load_vol_cached(p_t2)
+        z0, z1, h0, h1, w0, w1 = bbox
+        t2_slice = t2_full[z][h0:h1, w0:w1].astype(np.float32)
+
+        # Other channels
+        ch_slices: List[np.ndarray] = []
+        for ch in self.channels:
+            if ch == "path_T2":
+                ch_slices.append(t2_slice)
+            else:
+                ch_slices.append(self._get_channel_slice(paths.get(ch, ""), z, bbox, t2_slice))
+
+        # Normalize each channel (percentile windowing)
+        ch_slices = [window_percentile(s, self.pct_lower, self.pct_upper) for s in ch_slices]
+
+        # Stack to CxHxW torch tensor
+        img = np.stack(ch_slices, axis=0)  # (C,H,W)
+        img_t = torch.from_numpy(img)
+
+        # Labels
+        y6 = int(row["label6"])
+        if self.target == "isup3":
+            y = map_isup3(y6)
+        else:
+            y = y6
+
+        meta = {
+            "case_id": row["case_id"],
+            "fold": row["fold"],
+            "z": z,
+            "has_lesion": int(row["has_lesion"]),
+            "bbox": bbox,
+            "channels": {k: paths.get(k, "") for k in self.channels},
+        }
+
+        if self.transform is not None:
+            out = self.transform(img_t, y, meta)
+            # Support transforms that either return (img,label) or (img,label,meta)
+            if isinstance(out, tuple) and len(out) == 3:
+                img_t, y, meta = out
+            elif isinstance(out, tuple) and len(out) == 2:
+                img_t, y = out
+            else:
+                img_t = out  # transform returned just the image
+
+        return {
+            "image": img_t,           # Tensor [C,H,W], float32 in [0,1]
+            "label": int(y),          # int
+            "label6": int(y6),        # int (original)
+            "case_id": meta["case_id"],
+            "fold": meta["fold"],
+            "z": meta["z"],
+            "has_lesion": meta["has_lesion"],
+            "bbox": meta["bbox"],
+            "channels": meta["channels"],
+        }
+
+
+
+
+
+------------------
+#submit train
+SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train.py
+# SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_coral_loss.py
+MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv
+CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/baseline
+
+# --- run ---
+srun -u python -u "$SCRIPT" \
+  --manifest "$MANIFEST" \
+  --sam_checkpoint "$CKPT" \
+  --target isup3 \
+  --folds_train 1,2,3 \
+  --folds_val 0 \
+  --batch_size 16 \
+  --epochs 100 \
+  --lr 3e-4 \
+  --pos_ratio 0.33 \
+  --outdir "$OUTDIR"
+
+
+-------------
+#submit train_triplet
+#!/bin/bash
+#SBATCH -J MARGIN_128_logreg-triplet-loss-results128
+#SBATCH -A aip-medilab
+#SBATCH -t 2-00:00:00
+#SBATCH -c 8
+#SBATCH --mem=64G
+#SBATCH -D /project/aip-medilab/shared/picai 
+#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/triplet_logreg_margin_0.4/slurm-%x-%j.out
+#SBATCH --gres=gpu:l40s:1
+
+set -euo pipefail
+
+# --- env ---
+source /project/aip-medilab/ewillis/pca_contrastive/venv/bin/activate
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+
+echo "Host: $HOSTNAME"
+which python
+python --version
+nvidia-smi || true
+
+SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_triplet_logreg.py
+MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv
+CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/triplet_logreg_margin_0.4
+HISTO_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_128D/embeddings_128
+HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits
+
+# --- run ---
+srun -u python -u "$SCRIPT" \
+  --manifest "$MANIFEST" \
+  --sam_checkpoint "$CKPT" \
+  --target isup3 \
+  --folds_train 1,2,3 \
+  --folds_val 0 \
+  --batch_size 16 \
+  --epochs 100 \
+  --lr 3e-4 \
+  --pos_ratio 0.33 \
+  --outdir "$OUTDIR" \
+  --histo_dir "$HISTO_DIR" \
+  --histo_marksheet_dir "$HISTO_MARKSHEET_DIR"
+
+
+
+-------------
+#submit train_head_from_encoder
+
+# --- paths ---
+SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_head_from_encoder.py
+MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv
+BASE_SAM=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
+
+# encoder checkpoint saved by the triplet+LR script
+ENCODER_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/triplet_logreg/ckpt_best.pt
+
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/head_only
+
+# --- run ---
+srun -u python -u "$SCRIPT" \
+  --manifest "$MANIFEST" \
+  --sam_checkpoint "$BASE_SAM" \
+  --encoder_ckpt "$ENCODER_CKPT" \
+  --outdir "$OUTDIR" \
+  --target isup3 \
+  --folds_train 1,2,3 \
+  --folds_val 0 \
+  --batch_size 32 \
+  --epochs 20 \
+  --lr_head 1e-3 \
+  --wd 1e-4
+  # add --train_proj if you want to fine-tune the projection MLP too

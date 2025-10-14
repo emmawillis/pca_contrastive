@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# train_min.py
+# train.py
 import argparse
 from pathlib import Path
 import numpy as np
@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from dataset_picai_slices import PicaiSliceDataset
-from ISUPMedSAM import MedSAMSliceSpatialAttn
+from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
 from segment_anything import sam_model_registry
 
 # --- optional: AUC ---
@@ -23,15 +23,14 @@ except Exception:
     _HAS_SK = False
 
 # ----------------- helpers -----------------
-import torch.nn.functional as F
 
-def collate_resize_1024(batch):
+def collate_resize_to_imgsize(batch):
     imgs, labels = [], []
     extras_keys = [k for k in batch[0].keys() if k not in ("image", "label")]
     extras = {k: [] for k in extras_keys}
     for s in batch:
         x = s["image"].unsqueeze(0)  # [1,C,H,W]
-        x = F.interpolate(x, size=(1024, 1024), mode="bilinear", align_corners=False).squeeze(0)
+        x = F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False).squeeze(0)
         imgs.append(x)
         labels.append(torch.as_tensor(s["label"], dtype=torch.long))
         for k in extras_keys:
@@ -191,13 +190,16 @@ def main():
     p.add_argument("--sam_checkpoint", required=True)
     p.add_argument("--outdir", default="./runs/simple")
     p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
-    p.add_argument("--folds_train", default="1,2,3") #holding back 4 as test set
+    p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
     p.add_argument("--folds_val", default="0")
     p.add_argument("--batch_size", type=int, default=16)
     p.add_argument("--epochs", type=int, default=15)
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--wd", type=float, default=1e-4)
     p.add_argument("--pos_ratio", type=float, default=0.33)
+    # --- NEW: number of epochs to keep the MedSAM encoder frozen before unfreezing ---
+    p.add_argument("--freeze_epochs", type=int, default=2,
+                   help="Freeze MedSAM encoder for this many epochs, then unfreeze.")
     args = p.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -238,11 +240,11 @@ def main():
 
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
                               num_workers=4, pin_memory=True,
-                              collate_fn=collate_resize_1024)
+                              collate_fn=collate_resize_to_imgsize)
 
     val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
                               num_workers=4, pin_memory=True,
-                              collate_fn=collate_resize_1024)
+                              collate_fn=collate_resize_to_imgsize)
 
     # -------- model --------
     sam = sam_model_registry["vit_b"]()
@@ -250,19 +252,23 @@ def main():
     model = MedSAMSliceSpatialAttn(
         sam_model=sam,
         num_classes=n_classes,
-        proj_dim=128, attn_dim=256,
+        proj_dim=1024, attn_dim=256,
         head_hidden=256, head_dropout=0.1,
         use_pre_neck=True,              # pre-neck + spatial attention
-        allow_var_size=False,           # we resize/pad to 1024 inside the model
         pixel_mean_std=None,            # inputs already in [0,1]
     ).to(device)
 
-    # freeze encoder for a stable baseline
-    for p in model.encoder.parameters():
-        p.requires_grad = False
+    # --- Freeze encoder for warmup ---
+    for p_ in model.encoder.parameters():
+        p_.requires_grad = False
+    # Keep a handle to encoder params for later unfreezing
+    encoder_params = list(model.encoder.parameters())
 
-    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
-                                  lr=args.lr, weight_decay=args.wd)
+    # Optimizer for currently-trainable params (encoder excluded)
+    optimizer = torch.optim.AdamW(
+        (p_ for p_ in model.parameters() if p_.requires_grad),
+        lr=args.lr, weight_decay=args.wd
+    )
     criterion = nn.CrossEntropyLoss(weight=w_ce)
 
     best_f1 = -1.0
@@ -270,6 +276,20 @@ def main():
 
     # -------- loop --------
     for epoch in range(1, args.epochs+1):
+        # --- Unfreeze after warmup ---
+        if epoch == args.freeze_epochs + 1:
+            for p_ in encoder_params:
+                p_.requires_grad = True
+            # Add encoder params as a new param group (often with lower LR)
+            base_lr = args.lr
+            enc_lr = base_lr * 0.1
+            optimizer.add_param_group({
+                "params": encoder_params,
+                "lr": enc_lr,
+                "weight_decay": args.wd,
+            })
+            print(f"→ Unfroze encoder at epoch {epoch}; added to optimizer with lr={enc_lr:g}")
+
         tr_loss, tr_acc, tr_f1 = run_epoch(train_loader, model, criterion, optimizer=optimizer, device=device)
         va_loss, va_acc, va_f1, va_logits, va_y = run_epoch(val_loader, model, criterion, optimizer=None, device=device, return_outputs=True)
 

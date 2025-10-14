@@ -1,0 +1,619 @@
+Host: kn061
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Tue Oct  7 12:27:16 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:E3:00.0 Off |                    0 |
+| N/A   27C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[001] train: loss 0.9077 acc 0.2389 f1 0.2273 | val: loss 1.9769 acc 0.1101 f1 0.0977 | acc[c0]=0.078  acc[c1]=0.413  acc[c2]=0.736 | auc[c0]=0.731  auc[c1]=0.513  auc[c2]=0.710 | macroAUC=0.651
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01     393    2503    2142
+   ISUP23       6     143     197
+   ISUP45       1      23      67
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/baseline/ckpt_best.pt (macro-F1=0.0977)
+[002] train: loss 0.8725 acc 0.3079 f1 0.2879 | val: loss 1.5281 acc 0.2163 f1 0.1651 | acc[c0]=0.190  acc[c1]=0.509  acc[c2]=0.549 | auc[c0]=0.726  auc[c1]=0.599  auc[c2]=0.665 | macroAUC=0.663
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01     958    2090    1990
+   ISUP23      15     176     155
+   ISUP45       3      38      50
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/baseline/ckpt_best.pt (macro-F1=0.1651)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=3e-05
+[003] train: loss 0.3274 acc 0.7766 f1 0.7541 | val: loss 0.9675 acc 0.8990 f1 0.4720 | acc[c0]=0.943  acc[c1]=0.480  acc[c2]=0.044 | auc[c0]=0.863  auc[c1]=0.837  auc[c2]=0.723 | macroAUC=0.807
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4752     263      23
+   ISUP23     173     166       7
+   ISUP45      35      52       4
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/baseline/ckpt_best.pt (macro-F1=0.4720)
+[004] train: loss 0.0423 acc 0.9841 f1 0.9812 | val: loss 1.3329 acc 0.9114 f1 0.4633 | acc[c0]=0.964  acc[c1]=0.376  acc[c2]=0.033 | auc[c0]=0.833  auc[c1]=0.815  auc[c2]=0.728 | macroAUC=0.792
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4857     170      11
+   ISUP23     208     130       8
+   ISUP45      50      38       3
+[005] train: loss 0.0052 acc 0.9953 f1 0.9943 | val: loss 2.2517 acc 0.9216 f1 0.4403 | acc[c0]=0.989  acc[c1]=0.156  acc[c2]=0.088 | auc[c0]=0.803  auc[c1]=0.798  auc[c2]=0.760 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      41      13
+   ISUP23     276      54      16
+   ISUP45      62      21       8
+[006] train: loss 0.0066 acc 0.9953 f1 0.9946 | val: loss 1.9212 acc 0.9001 f1 0.5126 | acc[c0]=0.948  acc[c1]=0.382  acc[c2]=0.220 | auc[c0]=0.858  auc[c1]=0.842  auc[c2]=0.835 | macroAUC=0.845
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4776     221      41
+   ISUP23     190     132      24
+   ISUP45      35      36      20
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/baseline/ckpt_best.pt (macro-F1=0.5126)
+[007] train: loss 0.0098 acc 0.9972 f1 0.9967 | val: loss 2.0996 acc 0.9043 f1 0.4814 | acc[c0]=0.953  acc[c1]=0.419  acc[c2]=0.077 | auc[c0]=0.848  auc[c1]=0.823  auc[c2]=0.834 | macroAUC=0.835
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4799     218      21
+   ISUP23     187     145      14
+   ISUP45      40      44       7
+[008] train: loss 0.0188 acc 0.9953 f1 0.9939 | val: loss 2.1895 acc 0.8990 f1 0.4531 | acc[c0]=0.951  acc[c1]=0.373  acc[c2]=0.044 | auc[c0]=0.854  auc[c1]=0.838  auc[c2]=0.856 | macroAUC=0.849
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4789     235      14
+   ISUP23     203     129      14
+   ISUP45      46      41       4
+[009] train: loss 0.0091 acc 0.9970 f1 0.9961 | val: loss 2.6303 acc 0.9070 f1 0.4481 | acc[c0]=0.963  acc[c1]=0.327  acc[c2]=0.033 | auc[c0]=0.824  auc[c1]=0.811  auc[c2]=0.839 | macroAUC=0.824
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4850     175      13
+   ISUP23     225     113       8
+   ISUP45      53      35       3
+[010] train: loss 0.0236 acc 0.9964 f1 0.9949 | val: loss 2.8547 acc 0.9187 f1 0.4591 | acc[c0]=0.980  acc[c1]=0.243  acc[c2]=0.077 | auc[c0]=0.816  auc[c1]=0.785  auc[c2]=0.848 | macroAUC=0.816
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4939      89      10
+   ISUP23     243      84      19
+   ISUP45      53      31       7
+[011] train: loss 0.0198 acc 0.9961 f1 0.9945 | val: loss 3.1375 acc 0.9193 f1 0.4267 | acc[c0]=0.985  acc[c1]=0.191  acc[c2]=0.033 | auc[c0]=0.802  auc[c1]=0.771  auc[c2]=0.806 | macroAUC=0.793
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4964      59      15
+   ISUP23     271      66       9
+   ISUP45      69      19       3
+[012] train: loss 0.0145 acc 0.9976 f1 0.9968 | val: loss 2.5085 acc 0.9142 f1 0.4688 | acc[c0]=0.975  acc[c1]=0.237  acc[c2]=0.143 | auc[c0]=0.805  auc[c1]=0.744  auc[c2]=0.850 | macroAUC=0.799
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4910      87      41
+   ISUP23     226      82      38
+   ISUP45      54      24      13
+[013] train: loss 0.0178 acc 0.9970 f1 0.9959 | val: loss 2.4603 acc 0.9151 f1 0.4801 | acc[c0]=0.966  acc[c1]=0.393  acc[c2]=0.055 | auc[c0]=0.829  auc[c1]=0.799  auc[c2]=0.749 | macroAUC=0.792
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4869     151      18
+   ISUP23     196     136      14
+   ISUP45      43      43       5
+[014] train: loss 0.0085 acc 0.9979 f1 0.9973 | val: loss 3.4239 acc 0.9260 f1 0.4671 | acc[c0]=0.991  acc[c1]=0.191  acc[c2]=0.110 | auc[c0]=0.790  auc[c1]=0.756  auc[c2]=0.773 | macroAUC=0.773
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4994      32      12
+   ISUP23     260      66      20
+   ISUP45      64      17      10
+[015] train: loss 0.0116 acc 0.9971 f1 0.9965 | val: loss 2.6713 acc 0.9147 f1 0.4657 | acc[c0]=0.970  acc[c1]=0.329  acc[c2]=0.055 | auc[c0]=0.841  auc[c1]=0.809  auc[c2]=0.803 | macroAUC=0.818
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4889     125      24
+   ISUP23     216     114      16
+   ISUP45      44      42       5
+[016] train: loss 0.0105 acc 0.9974 f1 0.9967 | val: loss 2.7157 acc 0.9167 f1 0.4911 | acc[c0]=0.974  acc[c1]=0.298  acc[c2]=0.121 | auc[c0]=0.821  auc[c1]=0.787  auc[c2]=0.799 | macroAUC=0.802
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4905     113      20
+   ISUP23     234     103       9
+   ISUP45      46      34      11
+[017] train: loss 0.0120 acc 0.9981 f1 0.9975 | val: loss 2.7521 acc 0.9196 f1 0.4710 | acc[c0]=0.981  acc[c1]=0.246  acc[c2]=0.099 | auc[c0]=0.794  auc[c1]=0.763  auc[c2]=0.750 | macroAUC=0.769
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4941      79      18
+   ISUP23     247      85      14
+   ISUP45      53      29       9
+[018] train: loss 0.0162 acc 0.9981 f1 0.9970 | val: loss 2.5222 acc 0.9143 f1 0.4854 | acc[c0]=0.968  acc[c1]=0.338  acc[c2]=0.110 | auc[c0]=0.846  auc[c1]=0.822  auc[c2]=0.731 | macroAUC=0.799
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4879     118      41
+   ISUP23     203     117      26
+   ISUP45      41      40      10
+[019] train: loss 0.0129 acc 0.9978 f1 0.9973 | val: loss 3.2179 acc 0.9251 f1 0.4052 | acc[c0]=0.995  acc[c1]=0.147  acc[c2]=0.011 | auc[c0]=0.733  auc[c1]=0.707  auc[c2]=0.709 | macroAUC=0.716
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5013      24       1
+   ISUP23     294      51       1
+   ISUP45      71      19       1
+[020] train: loss 0.0055 acc 0.9982 f1 0.9974 | val: loss 3.3202 acc 0.9233 f1 0.4593 | acc[c0]=0.982  acc[c1]=0.312  acc[c2]=0.022 | auc[c0]=0.785  auc[c1]=0.781  auc[c2]=0.742 | macroAUC=0.769
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4945      87       6
+   ISUP23     234     108       4
+   ISUP45      56      33       2
+[021] train: loss 0.0090 acc 0.9987 f1 0.9984 | val: loss 3.3209 acc 0.9237 f1 0.4605 | acc[c0]=0.989  acc[c1]=0.179  acc[c2]=0.121 | auc[c0]=0.788  auc[c1]=0.794  auc[c2]=0.799 | macroAUC=0.794
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      33      21
+   ISUP23     259      62      25
+   ISUP45      60      20      11
+[022] train: loss 0.0090 acc 0.9987 f1 0.9973 | val: loss 4.5158 acc 0.9247 f1 0.3758 | acc[c0]=0.998  acc[c1]=0.095  acc[c2]=0.000 | auc[c0]=0.663  auc[c1]=0.706  auc[c2]=0.766 | macroAUC=0.712
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5030       8       0
+   ISUP23     311      33       2
+   ISUP45      79      12       0
+[023] train: loss 0.0129 acc 0.9978 f1 0.9967 | val: loss 3.3669 acc 0.9220 f1 0.4293 | acc[c0]=0.986  acc[c1]=0.225  acc[c2]=0.011 | auc[c0]=0.765  auc[c1]=0.784  auc[c2]=0.802 | macroAUC=0.783
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4969      67       2
+   ISUP23     266      78       2
+   ISUP45      72      18       1
+[024] train: loss 0.0095 acc 0.9982 f1 0.9978 | val: loss 2.7016 acc 0.9085 f1 0.4800 | acc[c0]=0.962  acc[c1]=0.335  acc[c2]=0.110 | auc[c0]=0.834  auc[c1]=0.821  auc[c2]=0.820 | macroAUC=0.825
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4848     160      30
+   ISUP23     205     116      25
+   ISUP45      51      30      10
+[025] train: loss 0.0045 acc 0.9986 f1 0.9978 | val: loss 4.1283 acc 0.9247 f1 0.4648 | acc[c0]=0.990  acc[c1]=0.188  acc[c2]=0.110 | auc[c0]=0.715  auc[c1]=0.760  auc[c2]=0.823 | macroAUC=0.766
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4988      41       9
+   ISUP23     261      65      20
+   ISUP45      63      18      10
+[026] train: loss 0.0092 acc 0.9982 f1 0.9976 | val: loss 2.4410 acc 0.8977 f1 0.4421 | acc[c0]=0.947  acc[c1]=0.408  acc[c2]=0.011 | auc[c0]=0.820  auc[c1]=0.801  auc[c2]=0.679 | macroAUC=0.767
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4773     256       9
+   ISUP23     196     141       9
+   ISUP45      47      43       1
+[027] train: loss 0.0103 acc 0.9988 f1 0.9980 | val: loss 3.0979 acc 0.9205 f1 0.4449 | acc[c0]=0.980  acc[c1]=0.295  acc[c2]=0.011 | auc[c0]=0.771  auc[c1]=0.749  auc[c2]=0.789 | macroAUC=0.770
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4937      98       3
+   ISUP23     240     102       4
+   ISUP45      59      31       1
+[028] train: loss 0.0077 acc 0.9992 f1 0.9988 | val: loss 2.7744 acc 0.9068 f1 0.4746 | acc[c0]=0.962  acc[c1]=0.298  acc[c2]=0.143 | auc[c0]=0.824  auc[c1]=0.773  auc[c2]=0.778 | macroAUC=0.792
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4849     129      60
+   ISUP23     202     103      41
+   ISUP45      51      27      13
+[029] train: loss 0.0147 acc 0.9979 f1 0.9970 | val: loss 3.0936 acc 0.9123 f1 0.4775 | acc[c0]=0.969  acc[c1]=0.292  acc[c2]=0.121 | auc[c0]=0.813  auc[c1]=0.794  auc[c2]=0.833 | macroAUC=0.814
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4883     127      28
+   ISUP23     218     101      27
+   ISUP45      49      31      11
+[030] train: loss 0.0061 acc 0.9989 f1 0.9984 | val: loss 3.3216 acc 0.9176 f1 0.4885 | acc[c0]=0.977  acc[c1]=0.246  acc[c2]=0.165 | auc[c0]=0.801  auc[c1]=0.769  auc[c2]=0.761 | macroAUC=0.777
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4924      85      29
+   ISUP23     240      85      21
+   ISUP45      48      28      15
+[031] train: loss 0.0044 acc 0.9985 f1 0.9982 | val: loss 3.6320 acc 0.9180 f1 0.4274 | acc[c0]=0.986  acc[c1]=0.150  acc[c2]=0.077 | auc[c0]=0.758  auc[c1]=0.742  auc[c2]=0.740 | macroAUC=0.747
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4967      53      18
+   ISUP23     272      52      22
+   ISUP45      62      22       7
+[032] train: loss 0.0120 acc 0.9983 f1 0.9979 | val: loss 2.5784 acc 0.9001 f1 0.4750 | acc[c0]=0.951  acc[c1]=0.367  acc[c2]=0.099 | auc[c0]=0.843  auc[c1]=0.823  auc[c2]=0.833 | macroAUC=0.833
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4792     221      25
+   ISUP23     201     127      18
+   ISUP45      46      36       9
+[033] train: loss 0.0064 acc 0.9988 f1 0.9984 | val: loss 3.4324 acc 0.9238 f1 0.4480 | acc[c0]=0.988  acc[c1]=0.223  acc[c2]=0.044 | auc[c0]=0.784  auc[c1]=0.813  auc[c2]=0.745 | macroAUC=0.781
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4977      48      13
+   ISUP23     259      77      10
+   ISUP45      67      20       4
+[034] train: loss 0.0022 acc 0.9999 f1 0.9999 | val: loss 2.7229 acc 0.9222 f1 0.4273 | acc[c0]=0.988  acc[c1]=0.199  acc[c2]=0.022 | auc[c0]=0.800  auc[c1]=0.782  auc[c2]=0.636 | macroAUC=0.739
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4978      51       9
+   ISUP23     271      69       6
+   ISUP45      68      21       2
+[035] train: loss 0.0077 acc 0.9982 f1 0.9976 | val: loss 2.5637 acc 0.9211 f1 0.4592 | acc[c0]=0.980  acc[c1]=0.298  acc[c2]=0.033 | auc[c0]=0.797  auc[c1]=0.777  auc[c2]=0.568 | macroAUC=0.714
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4937      92       9
+   ISUP23     235     103       8
+   ISUP45      60      28       3
+[036] train: loss 0.0060 acc 0.9990 f1 0.9985 | val: loss 2.8383 acc 0.9134 f1 0.4388 | acc[c0]=0.974  acc[c1]=0.260  acc[c2]=0.033 | auc[c0]=0.821  auc[c1]=0.787  auc[c2]=0.737 | macroAUC=0.782
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4908     116      14
+   ISUP23     234      90      22
+   ISUP45      63      25       3
+[037] train: loss 0.0077 acc 0.9987 f1 0.9981 | val: loss 2.4738 acc 0.9238 f1 0.4842 | acc[c0]=0.980  acc[c1]=0.341  acc[c2]=0.055 | auc[c0]=0.831  auc[c1]=0.814  auc[c2]=0.650 | macroAUC=0.765
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4935      97       6
+   ISUP23     220     118       8
+   ISUP45      55      31       5
+[038] train: loss 0.0038 acc 0.9991 f1 0.9988 | val: loss 2.7154 acc 0.9184 f1 0.4640 | acc[c0]=0.981  acc[c1]=0.217  acc[c2]=0.110 | auc[c0]=0.762  auc[c1]=0.727  auc[c2]=0.669 | macroAUC=0.719
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4943      66      29
+   ISUP23     254      75      17
+   ISUP45      61      20      10
+[039] train: loss 0.0014 acc 0.9998 f1 0.9995 | val: loss 2.8603 acc 0.9249 f1 0.4458 | acc[c0]=0.987  acc[c1]=0.269  acc[c2]=0.011 | auc[c0]=0.794  auc[c1]=0.779  auc[c2]=0.672 | macroAUC=0.748
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4970      60       8
+   ISUP23     246      93       7
+   ISUP45      66      24       1
+[040] train: loss 0.0113 acc 0.9984 f1 0.9979 | val: loss 2.1315 acc 0.9238 f1 0.4123 | acc[c0]=0.992  acc[c1]=0.168  acc[c2]=0.011 | auc[c0]=0.703  auc[c1]=0.688  auc[c2]=0.583 | macroAUC=0.658
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4999      33       6
+   ISUP23     286      58       2
+   ISUP45      72      18       1
+[041] train: loss 0.0116 acc 0.9984 f1 0.9977 | val: loss 1.9151 acc 0.9271 f1 0.4789 | acc[c0]=0.987  acc[c1]=0.292  acc[c2]=0.055 | auc[c0]=0.817  auc[c1]=0.801  auc[c2]=0.608 | macroAUC=0.742
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4970      67       1
+   ISUP23     239     101       6
+   ISUP45      62      24       5
+[042] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.3835 acc 0.9273 f1 0.4555 | acc[c0]=0.991  acc[c1]=0.231  acc[c2]=0.044 | auc[c0]=0.804  auc[c1]=0.787  auc[c2]=0.612 | macroAUC=0.734
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4993      42       3
+   ISUP23     256      80      10
+   ISUP45      67      20       4
+[043] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.4798 acc 0.9273 f1 0.4589 | acc[c0]=0.990  acc[c1]=0.243  acc[c2]=0.044 | auc[c0]=0.811  auc[c1]=0.794  auc[c2]=0.630 | macroAUC=0.745
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     252      84      10
+   ISUP45      66      21       4
+[044] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.5854 acc 0.9273 f1 0.4589 | acc[c0]=0.990  acc[c1]=0.243  acc[c2]=0.044 | auc[c0]=0.815  auc[c1]=0.798  auc[c2]=0.646 | macroAUC=0.753
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     252      84      10
+   ISUP45      66      21       4
+[045] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.6974 acc 0.9277 f1 0.4657 | acc[c0]=0.990  acc[c1]=0.246  acc[c2]=0.055 | auc[c0]=0.817  auc[c1]=0.803  auc[c2]=0.663 | macroAUC=0.761
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     251      85      10
+   ISUP45      64      22       5
+[046] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.7956 acc 0.9275 f1 0.4664 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.055 | auc[c0]=0.823  auc[c1]=0.808  auc[c2]=0.680 | macroAUC=0.770
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      48       3
+   ISUP23     250      86      10
+   ISUP45      64      22       5
+[047] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 2.9072 acc 0.9275 f1 0.4664 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.055 | auc[c0]=0.825  auc[c1]=0.812  auc[c2]=0.695 | macroAUC=0.777
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      48       3
+   ISUP23     250      86      10
+   ISUP45      64      22       5
+[048] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.0069 acc 0.9275 f1 0.4719 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.066 | auc[c0]=0.830  auc[c1]=0.816  auc[c2]=0.708 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      49       3
+   ISUP23     250      86      10
+   ISUP45      63      22       6
+[049] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.1158 acc 0.9277 f1 0.4730 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.066 | auc[c0]=0.810  auc[c1]=0.819  auc[c2]=0.720 | macroAUC=0.783
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      49       3
+   ISUP23     249      87      10
+   ISUP45      63      22       6
+[050] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.2200 acc 0.9279 f1 0.4733 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.066 | auc[c0]=0.803  auc[c1]=0.821  auc[c2]=0.730 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      48       3
+   ISUP23     249      87      10
+   ISUP45      63      22       6
+[051] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.3645 acc 0.9279 f1 0.4614 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.044 | auc[c0]=0.784  auc[c1]=0.821  auc[c2]=0.737 | macroAUC=0.781
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     250      86      10
+   ISUP45      66      21       4
+[052] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.4532 acc 0.9279 f1 0.4614 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.044 | auc[c0]=0.769  auc[c1]=0.823  auc[c2]=0.744 | macroAUC=0.779
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     250      86      10
+   ISUP45      66      21       4
+[053] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.5374 acc 0.9279 f1 0.4619 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.761  auc[c1]=0.825  auc[c2]=0.751 | macroAUC=0.779
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[054] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.6142 acc 0.9279 f1 0.4619 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.754  auc[c1]=0.826  auc[c2]=0.757 | macroAUC=0.779
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[055] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.7094 acc 0.9279 f1 0.4619 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.748  auc[c1]=0.828  auc[c2]=0.762 | macroAUC=0.779
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      46       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[056] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.8260 acc 0.9280 f1 0.4615 | acc[c0]=0.991  acc[c1]=0.249  acc[c2]=0.044 | auc[c0]=0.739  auc[c1]=0.828  auc[c2]=0.767 | macroAUC=0.778
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4991      44       3
+   ISUP23     250      86      10
+   ISUP45      65      22       4
+[057] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.8784 acc 0.9279 f1 0.4610 | acc[c0]=0.990  acc[c1]=0.249  acc[c2]=0.044 | auc[c0]=0.740  auc[c1]=0.829  auc[c2]=0.768 | macroAUC=0.779
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     250      86      10
+   ISUP45      64      23       4
+[058] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 3.9325 acc 0.9280 f1 0.4622 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.738  auc[c1]=0.830  auc[c2]=0.774 | macroAUC=0.781
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[059] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.0249 acc 0.9280 f1 0.4622 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.735  auc[c1]=0.831  auc[c2]=0.777 | macroAUC=0.781
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[060] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.1087 acc 0.9280 f1 0.4622 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.731  auc[c1]=0.832  auc[c2]=0.782 | macroAUC=0.782
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4990      45       3
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[061] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.1664 acc 0.9279 f1 0.4619 | acc[c0]=0.990  acc[c1]=0.251  acc[c2]=0.044 | auc[c0]=0.726  auc[c1]=0.833  auc[c2]=0.787 | macroAUC=0.782
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      45       4
+   ISUP23     249      87      10
+   ISUP45      64      23       4
+[062] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.2094 acc 0.9282 f1 0.4689 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.055 | auc[c0]=0.726  auc[c1]=0.833  auc[c2]=0.790 | macroAUC=0.783
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4989      45       4
+   ISUP23     248      88      10
+   ISUP45      63      23       5
+[063] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.2582 acc 0.9280 f1 0.4686 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.055 | auc[c0]=0.725  auc[c1]=0.834  auc[c2]=0.792 | macroAUC=0.784
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4988      46       4
+   ISUP23     248      88      10
+   ISUP45      63      23       5
+[064] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.3004 acc 0.9280 f1 0.4686 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.055 | auc[c0]=0.723  auc[c1]=0.835  auc[c2]=0.796 | macroAUC=0.784
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4988      46       4
+   ISUP23     248      88      10
+   ISUP45      63      23       5
+[065] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.3727 acc 0.9280 f1 0.4684 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.055 | auc[c0]=0.720  auc[c1]=0.836  auc[c2]=0.800 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4988      46       4
+   ISUP23     247      88      11
+   ISUP45      63      23       5
+[066] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.4039 acc 0.9280 f1 0.4738 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.066 | auc[c0]=0.719  auc[c1]=0.836  auc[c2]=0.802 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     247      88      11
+   ISUP45      62      23       6
+[067] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.4384 acc 0.9279 f1 0.4681 | acc[c0]=0.990  acc[c1]=0.254  acc[c2]=0.055 | auc[c0]=0.718  auc[c1]=0.836  auc[c2]=0.803 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     247      88      11
+   ISUP45      63      23       5
+[068] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.4545 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.718  auc[c1]=0.836  auc[c2]=0.804 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[069] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.4791 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.717  auc[c1]=0.836  auc[c2]=0.804 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[070] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.5056 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.718  auc[c1]=0.837  auc[c2]=0.805 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[071] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.5287 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.715  auc[c1]=0.837  auc[c2]=0.805 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[072] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.5562 acc 0.9280 f1 0.4692 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.055 | auc[c0]=0.715  auc[c1]=0.837  auc[c2]=0.806 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      63      23       5
+[073] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.5785 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.715  auc[c1]=0.837  auc[c2]=0.806 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[074] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6033 acc 0.9280 f1 0.4692 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.055 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.806 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      63      23       5
+[075] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6130 acc 0.9280 f1 0.4692 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.055 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.806 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      63      23       5
+[076] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6290 acc 0.9280 f1 0.4692 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.055 | auc[c0]=0.712  auc[c1]=0.837  auc[c2]=0.806 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      63      23       5
+[077] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6409 acc 0.9280 f1 0.4692 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.055 | auc[c0]=0.712  auc[c1]=0.837  auc[c2]=0.807 | macroAUC=0.785
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      63      23       5
+[078] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6437 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.807 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[079] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6494 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.807 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[080] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6698 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.808 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[081] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6728 acc 0.9282 f1 0.4750 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.808 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4987      47       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[082] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6746 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.837  auc[c2]=0.808 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[083] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6757 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.714  auc[c1]=0.837  auc[c2]=0.808 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[084] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6865 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.808 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[085] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6923 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.808 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[086] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.6960 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[087] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7101 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.712  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.786
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[088] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7132 acc 0.9280 f1 0.4747 | acc[c0]=0.990  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4986      48       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[089] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7138 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[090] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7172 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[091] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7200 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[092] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7244 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[093] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7242 acc 0.9279 f1 0.4744 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.066 | auc[c0]=0.713  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4985      49       4
+   ISUP23     246      89      11
+   ISUP45      62      23       6
+[094] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7230 acc 0.9279 f1 0.4798 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.077 | auc[c0]=0.716  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      50       4
+   ISUP23     246      89      11
+   ISUP45      61      23       7
+[095] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7251 acc 0.9279 f1 0.4798 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.077 | auc[c0]=0.716  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      50       4
+   ISUP23     246      89      11
+   ISUP45      61      23       7
+[096] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7273 acc 0.9279 f1 0.4798 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.077 | auc[c0]=0.716  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.788
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      50       4
+   ISUP23     246      89      11
+   ISUP45      61      23       7
+[097] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7370 acc 0.9279 f1 0.4798 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.077 | auc[c0]=0.714  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      50       4
+   ISUP23     246      89      11
+   ISUP45      61      23       7
+[098] train: loss 0.0000 acc 1.0000 f1 1.0000 | val: loss 4.7396 acc 0.9279 f1 0.4798 | acc[c0]=0.989  acc[c1]=0.257  acc[c2]=0.077 | auc[c0]=0.714  auc[c1]=0.838  auc[c2]=0.809 | macroAUC=0.787
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4984      50       4
+   ISUP23     246      89      11
+   ISUP45      61      23       7
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 1216738 ON kn061 CANCELLED AT 2025-10-09T12:27:16 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 1216738.0 ON kn061 CANCELLED AT 2025-10-09T12:27:16 DUE TO TIME LIMIT ***

@@ -1,0 +1,9 @@
+dataset,space,metric,silhouette
+Baseline MRI,full,cosine,0.06468044221401215
+Baseline MRI,full,euclidean,0.28403159976005554
+Baseline MRI,umap2d,cosine,0.30919840931892395
+Baseline MRI,umap2d,euclidean,0.19278201460838318
+MRI Histo-aligned,full,cosine,0.5572556257247925
+MRI Histo-aligned,full,euclidean,0.6254478096961975
+MRI Histo-aligned,umap2d,cosine,0.17451298236846924
+MRI Histo-aligned,umap2d,euclidean,0.3653605580329895

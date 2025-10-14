@@ -1,0 +1,146 @@
+Host: kn167
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Wed Oct  8 22:11:48 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:17:00.0 Off |                    0 |
+| N/A   46C    P8             38W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[load_encoder_only] Loaded encoder weights from /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/triplet_logreg/ckpt_best.pt
+[001] head-train: loss 0.1666 || val: loss 0.3756 acc 0.8922 BAL-acc 0.5558 f1 0.5236 | acc[c0]=0.932  acc[c1]=0.483  acc[c2]=0.253 | auc[c0]=0.886  auc[c1]=0.847  auc[c2]=0.839 | macroAUC=0.857
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4695     279      64
+   ISUP23     145     167      34
+   ISUP45      39      29      23
+  ↳ new best (val BAL-acc=0.5558) saved to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/after_contrastive/ckpt_head_best.pt
+[002] head-train: loss 0.1485 || val: loss 0.3526 acc 0.9019 BAL-acc 0.5413 f1 0.5294 | acc[c0]=0.945  acc[c1]=0.460  acc[c2]=0.220 | auc[c0]=0.886  auc[c1]=0.853  auc[c2]=0.805 | macroAUC=0.848
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4759     228      51
+   ISUP23     167     159      20
+   ISUP45      42      29      20
+[003] head-train: loss 0.1559 || val: loss 0.3705 acc 0.8964 BAL-acc 0.5501 f1 0.5248 | acc[c0]=0.938  acc[c1]=0.460  acc[c2]=0.253 | auc[c0]=0.886  auc[c1]=0.861  auc[c2]=0.777 | macroAUC=0.841
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4726     248      64
+   ISUP23     154     159      33
+   ISUP45      40      28      23
+[004] head-train: loss 0.1448 || val: loss 0.3720 acc 0.9047 BAL-acc 0.5396 f1 0.5245 | acc[c0]=0.951  acc[c1]=0.405  acc[c2]=0.264 | auc[c0]=0.888  auc[c1]=0.851  auc[c2]=0.828 | macroAUC=0.855
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4789     171      78
+   ISUP23     169     140      37
+   ISUP45      42      25      24
+[005] head-train: loss 0.1421 || val: loss 0.4111 acc 0.8889 BAL-acc 0.5564 f1 0.5223 | acc[c0]=0.929  acc[c1]=0.477  acc[c2]=0.264 | auc[c0]=0.886  auc[c1]=0.848  auc[c2]=0.803 | macroAUC=0.846
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4678     298      62
+   ISUP23     147     165      34
+   ISUP45      40      27      24
+  ↳ new best (val BAL-acc=0.5564) saved to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/after_contrastive/ckpt_head_best.pt
+[006] head-train: loss 0.1398 || val: loss 0.4165 acc 0.8922 BAL-acc 0.5540 f1 0.5272 | acc[c0]=0.932  acc[c1]=0.488  acc[c2]=0.242 | auc[c0]=0.889  auc[c1]=0.854  auc[c2]=0.837 | macroAUC=0.860
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4694     289      55
+   ISUP23     154     169      23
+   ISUP45      39      30      22
+[007] head-train: loss 0.1400 || val: loss 0.4454 acc 0.8994 BAL-acc 0.5512 f1 0.5315 | acc[c0]=0.941  acc[c1]=0.460  acc[c2]=0.253 | auc[c0]=0.887  auc[c1]=0.859  auc[c2]=0.837 | macroAUC=0.861
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4742     244      52
+   ISUP23     157     159      30
+   ISUP45      40      28      23
+[008] head-train: loss 0.1294 || val: loss 0.4032 acc 0.9063 BAL-acc 0.5321 f1 0.5236 | acc[c0]=0.952  acc[c1]=0.413  acc[c2]=0.231 | auc[c0]=0.883  auc[c1]=0.851  auc[c2]=0.808 | macroAUC=0.847
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4798     174      66
+   ISUP23     172     143      31
+   ISUP45      44      26      21
+[009] head-train: loss 0.1326 || val: loss 0.4275 acc 0.9010 BAL-acc 0.5473 f1 0.5256 | acc[c0]=0.944  acc[c1]=0.445  acc[c2]=0.253 | auc[c0]=0.886  auc[c1]=0.852  auc[c2]=0.843 | macroAUC=0.860
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4756     207      75
+   ISUP23     157     154      35
+   ISUP45      41      27      23
+[010] head-train: loss 0.1332 || val: loss 0.4620 acc 0.8871 BAL-acc 0.5503 f1 0.5159 | acc[c0]=0.927  acc[c1]=0.471  acc[c2]=0.253 | auc[c0]=0.884  auc[c1]=0.856  auc[c2]=0.837 | macroAUC=0.859
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4671     298      69
+   ISUP23     151     163      32
+   ISUP45      39      29      23
+[011] head-train: loss 0.1289 || val: loss 0.4505 acc 0.8974 BAL-acc 0.5388 f1 0.5161 | acc[c0]=0.942  acc[c1]=0.410  acc[c2]=0.264 | auc[c0]=0.878  auc[c1]=0.845  auc[c2]=0.827 | macroAUC=0.850
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4747     208      83
+   ISUP23     168     142      36
+   ISUP45      41      26      24
+[012] head-train: loss 0.1203 || val: loss 0.4539 acc 0.8964 BAL-acc 0.5465 f1 0.5223 | acc[c0]=0.938  acc[c1]=0.460  acc[c2]=0.242 | auc[c0]=0.881  auc[c1]=0.834  auc[c2]=0.844 | macroAUC=0.853
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4727     247      64
+   ISUP23     155     159      32
+   ISUP45      40      29      22
+[013] head-train: loss 0.1229 || val: loss 0.5160 acc 0.8921 BAL-acc 0.5485 f1 0.5174 | acc[c0]=0.933  acc[c1]=0.460  acc[c2]=0.253 | auc[c0]=0.883  auc[c1]=0.849  auc[c2]=0.833 | macroAUC=0.855
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4702     261      75
+   ISUP23     152     159      35
+   ISUP45      39      29      23
+[014] head-train: loss 0.1127 || val: loss 0.5082 acc 0.8964 BAL-acc 0.5465 f1 0.5220 | acc[c0]=0.938  acc[c1]=0.460  acc[c2]=0.242 | auc[c0]=0.879  auc[c1]=0.841  auc[c2]=0.813 | macroAUC=0.845
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4727     249      62
+   ISUP23     153     159      34
+   ISUP45      40      29      22
+[015] head-train: loss 0.1162 || val: loss 0.5185 acc 0.8970 BAL-acc 0.5485 f1 0.5225 | acc[c0]=0.940  acc[c1]=0.442  acc[c2]=0.264 | auc[c0]=0.881  auc[c1]=0.842  auc[c2]=0.841 | macroAUC=0.855
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4734     228      76
+   ISUP23     158     153      35
+   ISUP45      39      28      24
+[016] head-train: loss 0.1163 || val: loss 0.5240 acc 0.8999 BAL-acc 0.5334 f1 0.5225 | acc[c0]=0.944  acc[c1]=0.436  acc[c2]=0.220 | auc[c0]=0.876  auc[c1]=0.839  auc[c2]=0.815 | macroAUC=0.843
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4756     235      47
+   ISUP23     171     151      24
+   ISUP45      43      28      20
+[017] head-train: loss 0.1123 || val: loss 0.5366 acc 0.8959 BAL-acc 0.5544 f1 0.5218 | acc[c0]=0.938  acc[c1]=0.451  acc[c2]=0.275 | auc[c0]=0.878  auc[c1]=0.843  auc[c2]=0.826 | macroAUC=0.849
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4724     218      96
+   ISUP23     151     156      39
+   ISUP45      37      29      25
+[018] head-train: loss 0.1151 || val: loss 0.6287 acc 0.9039 BAL-acc 0.5376 f1 0.5283 | acc[c0]=0.948  acc[c1]=0.434  acc[c2]=0.231 | auc[c0]=0.877  auc[c1]=0.846  auc[c2]=0.842 | macroAUC=0.855
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4778     209      51
+   ISUP23     169     150      27
+   ISUP45      45      25      21
+[019] head-train: loss 0.1053 || val: loss 0.5719 acc 0.9037 BAL-acc 0.5420 f1 0.5273 | acc[c0]=0.947  acc[c1]=0.448  acc[c2]=0.231 | auc[c0]=0.877  auc[c1]=0.846  auc[c2]=0.835 | macroAUC=0.853
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4772     209      57
+   ISUP23     159     155      32
+   ISUP45      41      29      21
+[020] head-train: loss 0.1079 || val: loss 0.5965 acc 0.8994 BAL-acc 0.5458 f1 0.5274 | acc[c0]=0.942  acc[c1]=0.454  acc[c2]=0.242 | auc[c0]=0.878  auc[c1]=0.848  auc[c2]=0.850 | macroAUC=0.859
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4745     238      55
+   ISUP23     160     157      29
+   ISUP45      41      28      22

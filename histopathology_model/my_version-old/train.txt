@@ -1,0 +1,17 @@
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_model/train_abmil_isup.py \
+  --csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_data/panda_clean_noise10_folds.csv \
+  --root /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_data/UNI2_panda_encodings_by_patch \
+  --fold 0 \
+  --out /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_results/abmil_cleaned_run_1/abmil_uni2_panda_fold0.pth \
+  --batch-size 16 --epochs 20 --lr 1e-4 --weight-decay 1e-4 \
+  --wandb online --wandb-project panda-abmil --wandb-run-name fold0
+
+
+
+
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_model/export_slide_embeddings.py \
+  --csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_data/panda_clean_noise10_folds.csv \
+  --root /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_data/UNI2_panda_encodings_by_patch \
+  --ckpt /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_results/abmil_cleaned_run_1/abmil_uni2_panda_fold0.pth \
+  --fold 0 \
+  --out /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_results/abmil_cleaned_run_1/encodings
