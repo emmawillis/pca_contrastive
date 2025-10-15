@@ -1,0 +1,10 @@
+issues:
+- Didn’t weight CE on the head step
+- Selected train by best F1 but selected aligned by best Bacc
+- Different LR for classification head?
+- Projection module was frozen in triplet step, so it was only aligning medsam 
+- didn’t log specificity or sensitivity 
+
+see: https://docs.google.com/spreadsheets/d/1fMUEKctOSSB243jMeFIeHsjxSkj1BAtg9fwRILeRSCs/edit?gid=1573203903#gid=1573203903
+
+using karolinska only (less high grade samples)

@@ -13,12 +13,14 @@ def isup_to_3class(y: int) -> int:
 def get_histo_by_isup(
     encodings_dir,
     marksheet_csv,
-    num_classes = 3
+    num_classes = 3,
+    provider = 'karolinska'
 ):
     encodings_dir = Path(encodings_dir)
     df = pd.read_csv(marksheet_csv)
 
-    df = df[df['data_provider'] == 'karolinska'] # only use one provider to avoid disjoint embedding spaces
+    if provider != 'all':
+        df = df[df['data_provider'] == provider] # only use one provider to avoid disjoint embedding spaces
     fname2isup = dict(zip(df["FILENAME"].astype(str), df["isup_grade"].astype(int)))
 
     out = [[] for i in range(num_classes)]

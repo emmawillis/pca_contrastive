@@ -5,7 +5,7 @@
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai
-#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/head_only/slurm-%x-%j.out
+#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results1024/head_only/slurm-%x-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -27,10 +27,9 @@ MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.cs
 BASE_SAM=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
 # encoder checkpoint saved by the triplet+LR script
-ENCODER_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/triplet_logreg/ckpt_best.pt
+ENCODER_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results1024/triplet_logreg/ckpt_best.pt
 
-OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/head_only
-
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results1024/head_only
 # --- run ---
 srun -u python -u "$SCRIPT" \
   --manifest "$MANIFEST" \
@@ -41,7 +40,6 @@ srun -u python -u "$SCRIPT" \
   --folds_train 1,2,3 \
   --folds_val 0 \
   --batch_size 32 \
-  --epochs 20 \
-  --lr_head 1e-3 \
-  --wd 1e-4
+  --epochs 100 \
+  --proj_dim 1024
   # add --train_proj if you want to fine-tune the projection MLP too

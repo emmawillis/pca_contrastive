@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # train_triplet_logreg.py
 import argparse
+import itertools
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -202,6 +203,10 @@ def main():
     p.add_argument("--histo_dir", required=True)        # folder of .npy histo encodings
     p.add_argument("--histo_marksheet_dir", required=True)
     p.add_argument("--lr_max_iter", type=int, default=5, help="LogReg max_iter per evaluation")
+    p.add_argument("--provider", default="karolinska")
+    p.add_argument("--proj_dim", type=int, required=True)
+    p.add_argument("--triplet_margin", type=float, default=0.2)
+
     args = p.parse_args()
 
     if not _HAS_SK:
@@ -255,11 +260,13 @@ def main():
         encodings_dir=str(Path(args.histo_dir) / "train"),
         marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
         num_classes=n_classes,
+        provider = args.provider
     )
     val_histo_buckets = get_histo_by_isup(
         encodings_dir=str(Path(args.histo_dir) / "val"),
         marksheet_csv=str(Path(args.histo_marksheet_dir) / "val.csv"),
         num_classes=n_classes,
+        provider = args.provider
     )
 
     # -------- model --------
@@ -268,7 +275,7 @@ def main():
     model = MedSAMSliceSpatialAttn(
         sam_model=sam,
         num_classes=n_classes,
-        proj_dim=128, attn_dim=256,
+        proj_dim=args.proj_dim, attn_dim=256,
         head_hidden=256, head_dropout=0.1,
         use_pre_neck=True,
         pixel_mean_std=None,
@@ -279,15 +286,25 @@ def main():
         p.requires_grad = False
     for p in model.encoder.parameters():    # unfreeze encoder
         p.requires_grad = True
+    for p in model.proj.parameters():       # unfreeze the projection 
+        p.requires_grad = True
 
-    optimizer = torch.optim.AdamW(model.encoder.parameters(), lr=args.lr, weight_decay=args.wd)
+    proj_lr = args.lr
+    enc_lr = proj_lr * 0.1
 
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": model.proj.parameters(),    "lr": proj_lr, "weight_decay": args.wd},
+            {"params": model.encoder.parameters(), "lr": enc_lr,  "weight_decay": args.wd},
+        ]
+    )
+    print(f"[triplet] lr_proj={proj_lr:g} | lr_enc={enc_lr:g} | triplet_margin={args.triplet_margin:g}")
     # triplet criteria (train/val)
     def train_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return triplet_loss_batch(embeddings, labels, train_histo_buckets, margin=0.4)
+        return triplet_loss_batch(embeddings, labels, train_histo_buckets, margin=args.triplet_margin)
 
     def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return triplet_loss_batch(embeddings, labels, val_histo_buckets, margin=0.4)
+        return triplet_loss_batch(embeddings, labels, val_histo_buckets, margin=args.triplet_margin)
 
     best_val_bacc = -1.0
     best_path = outdir / "ckpt_best.pt"
@@ -332,6 +349,7 @@ def main():
 
         # 5) Save 'best' based on **Balanced Accuracy** on validation
         if lr_metrics["bacc"] > best_val_bacc:
+            best_path.parent.mkdir(parents=True, exist_ok=True)  # <— ensure dir exists right now
             best_val_bacc = lr_metrics["bacc"]
             torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
             print(f"  ↳ new best (val BAL-acc={best_val_bacc:.4f}) saved to {best_path}")

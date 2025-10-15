@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J picai-medsam-1024
+#SBATCH -J 1024-baseline
 #SBATCH -A aip-medilab
 #SBATCH -t 2-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/baseline/slurm-%x-%j.out
+#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results1024/baseline/slurm-%x-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -26,7 +26,7 @@ SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D
 # SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_coral_loss.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
-OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results1024/baseline
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results1024/baseline
 
 # --- run ---
 srun -u python -u "$SCRIPT" \
@@ -37,6 +37,6 @@ srun -u python -u "$SCRIPT" \
   --folds_val 0 \
   --batch_size 16 \
   --epochs 100 \
-  --lr 3e-4 \
   --pos_ratio 0.33 \
-  --outdir "$OUTDIR"
+  --outdir "$OUTDIR" \
+  --proj_dim 1024

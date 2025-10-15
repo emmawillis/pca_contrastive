@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from dataset_picai_slices import PicaiSliceDataset
+from dataset_picai_slices import PicaiSliceDataset, map_binary_low_high, map_isup3
 from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
 from segment_anything import sam_model_registry
 
@@ -39,15 +39,14 @@ def collate_resize_to_imgsize(batch):
             "label": torch.stack(labels, 0),
             **extras}
 
-def map_isup3(y6: int) -> int:
-    if y6 in (0,1): return 0
-    if y6 in (2,3): return 1
-    if y6 in (4,5): return 2
-    raise ValueError(f"bad label6={y6}")
-
 def class_weights_from_train(df: pd.DataFrame, target: str):
     """Return torch.FloatTensor of class weights (mean-normalized)."""
-    y = df["label6"].map(map_isup3) if target == "isup3" else df["label6"]
+    if target == "isup3":
+        y = df["label6"].map(map_isup3)
+    elif target == "binary_low_high":
+        y = df["label6"].map(map_binary_low_high)
+    else:
+        y = df["label6"]
     classes = sorted(int(c) for c in y.unique())
     cnt = Counter(int(v) for v in y.tolist())
     K, N = len(classes), len(y)
@@ -89,9 +88,15 @@ def confusion_matrix_from_probs(probs: torch.Tensor, y: torch.Tensor, K: int = 3
         cm[t.long(), p.long()] += 1
     return cm
 
-LABEL_NAMES = ["ISUP01", "ISUP23", "ISUP45"]  # c0,c1,c2
+def get_label_names(target):
+    if target == "isup3":
+        return ["ISUP01", "ISUP23", "ISUP45"]  # c0,c1,c2
+    elif target == "binary_low_high":
+        return ["LOW(ISUP01)", "HIGH(ISUP45)"]
+    else:
+        return ["ISUP0", "ISUP1", "ISUP2", "ISUP3", "ISUP4", "ISUP5"]
 
-def print_confusion_matrix(cm: torch.Tensor, labels=LABEL_NAMES):
+def print_confusion_matrix(cm: torch.Tensor, labels):
     K = cm.shape[0]
     header = "true\\pred " + " ".join(f"{labels[j]:>7}" for j in range(K))
     print("Confusion matrix (val): rows=true, cols=pred")
@@ -99,6 +104,51 @@ def print_confusion_matrix(cm: torch.Tensor, labels=LABEL_NAMES):
     for i in range(K):
         row = " ".join(f"{int(cm[i, j]):7d}" for j in range(K))
         print(f"{labels[i]:>9} {row}")
+
+# ---- Sensitivity & Specificity from confusion matrix ----
+def tpr_tnr_from_confusion(cm: torch.Tensor):
+    """
+    cm: KxK counts; rows=true, cols=pred.
+    Returns:
+      per_class_tpr (list), per_class_tnr (list), macro_tpr (float), macro_tnr (float)
+    """
+    K = cm.shape[0]
+    cm_np = cm.cpu().numpy().astype(np.int64)
+    per_tpr, per_tnr = [], []
+    for c in range(K):
+        TP = cm_np[c, c]
+        FN = cm_np[c, :].sum() - TP
+        FP = cm_np[:, c].sum() - TP
+        TN = cm_np.sum() - TP - FN - FP
+        tpr = TP / (TP + FN) if (TP + FN) > 0 else np.nan  # sensitivity
+        tnr = TN / (TN + FP) if (TN + FP) > 0 else np.nan  # specificity
+        per_tpr.append(tpr); per_tnr.append(tnr)
+    macro_tpr = float(np.nanmean(per_tpr)) if len(per_tpr) else float("nan")
+    macro_tnr = float(np.nanmean(per_tnr)) if len(per_tnr) else float("nan")
+    return per_tpr, per_tnr, macro_tpr, macro_tnr
+
+# ---- Sensitivity at fixed specificity (final model; needs sklearn) ----
+def sensitivity_at_specificity(y_true, y_score, spec_targets=(0.8, 0.9, 0.95, 0.975, 0.99)):
+    from sklearn.metrics import roc_curve, auc  # import here to respect _HAS_SK
+    fpr, tpr, thr = roc_curve(y_true, y_score)
+    spec = 1.0 - fpr
+    out = {"auc": auc(fpr, tpr)}
+    for s in spec_targets:
+        mask = spec >= s
+        sens = tpr[mask].max() if mask.any() else 0.0
+        out[f"sens_at_spec_{int(100*s)}"] = float(sens)
+    return out
+
+def per_class_operating_points(y_np, probs_np, spec_targets=(0.8, 0.9, 0.95, 0.975, 0.99)):
+    K = probs_np.shape[1]
+    per_cls = []
+    keys = ["auc"] + [f"sens_at_spec_{int(100*s)}" for s in spec_targets]
+    for c in range(K):
+        y_bin = (y_np == c).astype(np.int32)
+        res = sensitivity_at_specificity(y_bin, probs_np[:, c], spec_targets)
+        per_cls.append(res)
+    macro = {k: float(np.mean([d[k] for d in per_cls])) for k in keys}
+    return per_cls, macro
 
 # ----------------- train / val -----------------
 def run_epoch(loader, model, loss_fn, optimizer=None, device="cuda", return_outputs=False):
@@ -141,6 +191,7 @@ def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
     Returns:
       - per-class accuracy dict {class_idx: acc}
       - per-class AUC dict {class_idx: auc}  (if sklearn available)
+      - balanced_acc (macro over per-class acc)
       - macro_auc (float or None if unavailable)
     Assumes labels are contiguous 0..K-1.
     """
@@ -181,7 +232,9 @@ def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
         aucs = {c: None for c in range(K)}
         macro_auc = None
 
-    return accs, aucs, macro_auc
+    balanced_acc = float(np.nanmean(list(accs.values()))) if accs else float("nan")
+
+    return accs, aucs, balanced_acc, macro_auc
 
 # ----------------- main -----------------
 def main():
@@ -189,7 +242,7 @@ def main():
     p.add_argument("--manifest", required=True)
     p.add_argument("--sam_checkpoint", required=True)
     p.add_argument("--outdir", default="./runs/simple")
-    p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
+    p.add_argument("--target", choices=["isup3","isup6","binary_low_high"], default="isup3")
     p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
     p.add_argument("--folds_val", default="0")
     p.add_argument("--batch_size", type=int, default=16)
@@ -197,6 +250,8 @@ def main():
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--wd", type=float, default=1e-4)
     p.add_argument("--pos_ratio", type=float, default=0.33)
+    p.add_argument("--proj_dim", type=int, required=True)
+
     # --- NEW: number of epochs to keep the MedSAM encoder frozen before unfreezing ---
     p.add_argument("--freeze_epochs", type=int, default=2,
                    help="Freeze MedSAM encoder for this many epochs, then unfreeze.")
@@ -252,7 +307,7 @@ def main():
     model = MedSAMSliceSpatialAttn(
         sam_model=sam,
         num_classes=n_classes,
-        proj_dim=1024, attn_dim=256,
+        proj_dim=args.proj_dim, attn_dim=256,
         head_hidden=256, head_dropout=0.1,
         use_pre_neck=True,              # pre-neck + spatial attention
         pixel_mean_std=None,            # inputs already in [0,1]
@@ -271,8 +326,12 @@ def main():
     )
     criterion = nn.CrossEntropyLoss(weight=w_ce)
 
-    best_f1 = -1.0
+    best_bacc = -1.0
     best_path = outdir / "ckpt_best.pt"
+
+    # ---- Early stopping state ----
+    patience = 10
+    no_improve = 0
 
     # -------- loop --------
     for epoch in range(1, args.epochs+1):
@@ -294,7 +353,7 @@ def main():
         va_loss, va_acc, va_f1, va_logits, va_y = run_epoch(val_loader, model, criterion, optimizer=None, device=device, return_outputs=True)
 
         # Per-class metrics on validation
-        per_acc, per_auc, macro_auc = per_class_metrics(va_logits, va_y)
+        per_acc, per_auc, balanced_acc, macro_auc = per_class_metrics(va_logits, va_y)
         # pretty print
         pcs = "  ".join([f"acc[c{c}]={per_acc[c]:.3f}" if not np.isnan(per_acc[c]) else f"acc[c{c}]=NA"
                          for c in range(va_logits.shape[1])])
@@ -307,15 +366,67 @@ def main():
 
         cm = confusion_matrix_from_probs(va_logits, va_y, K=n_classes)
 
+        # ---- NEW: Sensitivity & Specificity per epoch (from confusion matrix) ----
+        per_tpr, per_tnr, macro_tpr, macro_tnr = tpr_tnr_from_confusion(cm)
+        sens_str = "  ".join([f"sens[c{c}]={per_tpr[c]:.3f}" if not np.isnan(per_tpr[c]) else f"sens[c{c}]=NA"
+                              for c in range(n_classes)])
+        spec_str = "  ".join([f"spec[c{c}]={per_tnr[c]:.3f}" if not np.isnan(per_tnr[c]) else f"spec[c{c}]=NA"
+                              for c in range(n_classes)])
+        extra2 = f" | macroSens={macro_tpr:.3f} macroSpec={macro_tnr:.3f} | {sens_str} | {spec_str}"
+
         print(f"[{epoch:03d}] "
               f"train: loss {tr_loss:.4f} acc {tr_acc:.4f} f1 {tr_f1:.4f} | "
-              f"val: loss {va_loss:.4f} acc {va_acc:.4f} f1 {va_f1:.4f}{extra}")
-        print_confusion_matrix(cm, labels=LABEL_NAMES)
+              f"val: loss {va_loss:.4f} acc {va_acc:.4f} f1 {va_f1:.4f}{extra}{extra2}")
+        print_confusion_matrix(cm, labels=get_label_names(args.target))
 
-        if va_f1 > best_f1:
-            best_f1 = va_f1
+        # ---- Model selection & early stopping tracking ----
+        if balanced_acc > best_bacc:
+            best_path.parent.mkdir(parents=True, exist_ok=True)  # ensure dir exists right now
+            best_bacc = balanced_acc
             torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
-            print(f"  ↳ saved best to {best_path} (macro-F1={best_f1:.4f})")
+            print(f"  ↳ saved best to {best_path} (BAL-acc={balanced_acc:.4f})")
+            no_improve = 0  # reset patience
+        else:
+            no_improve += 1
+            print(f"  ↳ no improvement ({no_improve}/{patience})")
+            if no_improve >= patience:
+                print(f"Early stopping triggered at epoch {epoch}: no BAL-acc improvement for {patience} epochs.")
+                break
+
+    # -------- Final model: Sensitivity at fixed specificity (on val) --------
+    if _HAS_SK:
+        # reload best
+        ckpt = torch.load(best_path, map_location="cpu")
+        state = ckpt.get("model", ckpt)
+        model.load_state_dict(state, strict=False)
+        model.to(device)
+        model.eval()
+
+        all_logits, all_y = [], []
+        with torch.no_grad():
+            for batch in val_loader:
+                x = batch["image"].to(device, non_blocking=True)
+                y = batch["label"].to(device, non_blocking=True)
+                logits, _ = model(x)
+                all_logits.append(logits.cpu())
+                all_y.append(y.cpu())
+        logits_val = torch.cat(all_logits, dim=0) if all_logits else torch.empty(0, n_classes)
+        y_val = torch.cat(all_y, dim=0).numpy() if all_y else np.empty((0,), dtype=np.int64)
+        probs_val = torch.softmax(logits_val, dim=1).numpy()
+
+        spec_targets = (0.8, 0.9, 0.95, 0.975, 0.99)
+        per_cls, macro = per_class_operating_points(y_val, probs_val, spec_targets)
+
+        print("\n=== Final model: Sensitivity at fixed specificity (validation) ===")
+        header = ["class", "AUC"] + [f"Sens@Spec{int(100*s)}" for s in spec_targets]
+        print(" | ".join(f"{h:>12}" for h in header))
+        for c, stats in enumerate(per_cls):
+            row = [f"c{c}", f"{stats['auc']:.3f}"] + [f"{stats[f'sens_at_spec_{int(100*s)}']:.3f}" for s in spec_targets]
+            print(" | ".join(f"{r:>12}" for r in row))
+        row = ["macro", f"{macro['auc']:.3f}"] + [f"{macro[f'sens_at_spec_{int(100*s)}']:.3f}" for s in spec_targets]
+        print(" | ".join(f"{r:>12}" for r in row))
+    else:
+        print("\n[warn] sklearn not available: skipped final Sens@Spec computation.")
 
 if __name__ == "__main__":
     main()

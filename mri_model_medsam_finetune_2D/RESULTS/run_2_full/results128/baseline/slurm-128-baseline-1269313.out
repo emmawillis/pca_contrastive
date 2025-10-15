@@ -1,0 +1,45 @@
+Host: kn045
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Wed Oct 15 14:52:40 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   27C    P8             33W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[001] train: loss 0.9103 acc 0.2258 f1 0.2080 | val: loss 1.7275 acc 0.1030 f1 0.0926 | acc[c0]=0.058  acc[c1]=0.682  acc[c2]=0.418 | auc[c0]=0.713  auc[c1]=0.610  auc[c2]=0.610 | macroAUC=0.644 | macroSens=0.386 macroSpec=0.682 | sens[c0]=0.058  sens[c1]=0.682  sens[c2]=0.418 | spec[c0]=0.984  spec[c1]=0.416  spec[c2]=0.646
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01     290    2944    1804
+   ISUP23       6     236     104
+   ISUP45       1      52      38
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results128/baseline/ckpt_best.pt (BAL-acc=0.3857)
+[002] train: loss 0.8807 acc 0.2581 f1 0.2422 | val: loss 1.8143 acc 0.1176 f1 0.0961 | acc[c0]=0.064  acc[c1]=0.882  acc[c2]=0.187 | auc[c0]=0.721  auc[c1]=0.588  auc[c2]=0.636 | macroAUC=0.648 | macroSens=0.377 macroSpec=0.686 | sens[c0]=0.064  sens[c1]=0.882  sens[c2]=0.187 | spec[c0]=0.991  spec[c1]=0.211  spec[c2]=0.855
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01     322    3974     742
+   ISUP23       3     305      38
+   ISUP45       1      73      17
+  ↳ no improvement (1/10)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=3e-05
+[003] train: loss 0.3106 acc 0.7823 f1 0.7612 | val: loss 0.8766 acc 0.8765 f1 0.4973 | acc[c0]=0.909  acc[c1]=0.595  acc[c2]=0.121 | auc[c0]=0.873  auc[c1]=0.843  auc[c2]=0.768 | macroAUC=0.828 | macroSens=0.542 macroSpec=0.848 | sens[c0]=0.909  sens[c1]=0.595  sens[c2]=0.121 | spec[c0]=0.645  spec[c1]=0.906  spec[c2]=0.993
+Confusion matrix (val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4582     430      26
+   ISUP23     127     206      13
+   ISUP45      28      52      11
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results128/baseline/ckpt_best.pt (BAL-acc=0.5419)
