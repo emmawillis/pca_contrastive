@@ -11,7 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from dataset_picai_slices import PicaiSliceDataset, map_binary_low_high, map_isup3
+from dataset_picai_slices import PicaiSliceDataset, map_binary_all, map_binary_low_high, map_isup3
 from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
 from segment_anything import sam_model_registry
 
@@ -45,6 +45,8 @@ def class_weights_from_train(df: pd.DataFrame, target: str):
         y = df["label6"].map(map_isup3)
     elif target == "binary_low_high":
         y = df["label6"].map(map_binary_low_high)
+    elif target == "binary_all":
+        y = df["label6"].map(map_binary_all)
     else:
         y = df["label6"]
     classes = sorted(int(c) for c in y.unique())
@@ -93,6 +95,8 @@ def get_label_names(target):
         return ["ISUP01", "ISUP23", "ISUP45"]  # c0,c1,c2
     elif target == "binary_low_high":
         return ["LOW(ISUP01)", "HIGH(ISUP45)"]
+    elif target == "binary_all":
+        return ["no csPCa", "yes csPCa"]
     else:
         return ["ISUP0", "ISUP1", "ISUP2", "ISUP3", "ISUP4", "ISUP5"]
 
@@ -151,12 +155,30 @@ def per_class_operating_points(y_np, probs_np, spec_targets=(0.8, 0.9, 0.95, 0.9
     return per_cls, macro
 
 # ----------------- train / val -----------------
-def run_epoch(loader, model, loss_fn, optimizer=None, device="cuda", return_outputs=False):
+def run_epoch(loader, model, loss_fn, optimizer=None, device="cuda",
+              return_outputs=False, epoch_idx=None, probe_first_k=0, label_names=None):
     train_mode = optimizer is not None
     model.train(train_mode)
     total_loss, total_correct, total_n = 0.0, 0, 0
     all_logits, all_y = [], []
-    for batch in loader:
+    for bi, batch in enumerate(loader):
+        # ---- tiny probe: print the first K batch distributions in epoch 1 ----
+        if train_mode and probe_first_k and (epoch_idx == 1) and (bi < probe_first_k):
+            y = batch["label"].cpu().numpy()
+            hl = np.asarray(batch.get("has_lesion", []))
+            if hl.size == 0:
+                hl = np.zeros_like(y, dtype=np.int64)
+            pos = int(hl.sum()); tot = int(hl.shape[0])
+            # per-label counts
+            uniq, cnts = np.unique(y, return_counts=True)
+            if label_names is None:
+                label_names = [f"c{i}" for i in range(int(y.max())+1)]
+            lab_str = " | ".join(
+                f"{(label_names[u] if 0 <= u < len(label_names) else f'c{u}')}={c} ({c/tot:.0%})"
+                for u, c in zip(uniq, cnts)
+            )
+            print(f"[probe][epoch1 batch {bi:02d}] has_lesion: {pos}/{tot} ({pos/tot:.0%}) || labels: {lab_str}")
+
         x = batch["image"].to(device, non_blocking=True)
         y = batch["label"].to(device, non_blocking=True)
 
@@ -242,20 +264,32 @@ def main():
     p.add_argument("--manifest", required=True)
     p.add_argument("--sam_checkpoint", required=True)
     p.add_argument("--outdir", default="./runs/simple")
-    p.add_argument("--target", choices=["isup3","isup6","binary_low_high"], default="isup3")
+    p.add_argument("--target", choices=["isup3","isup6","binary_low_high", "binary_all"], default="isup3")
     p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
     p.add_argument("--folds_val", default="0")
     p.add_argument("--batch_size", type=int, default=16)
     p.add_argument("--epochs", type=int, default=15)
-    p.add_argument("--lr", type=float, default=3e-4)
-    p.add_argument("--wd", type=float, default=1e-4)
+    p.add_argument("--lr", type=float, default=3e-4) # 1e-6 TODO try 1e-5 to have bigger rate on clssifier , 1e-7
+    p.add_argument("--wd", type=float, default=1e-4) # 0 TODO maybe try 1e-2
     p.add_argument("--pos_ratio", type=float, default=0.33)
     p.add_argument("--proj_dim", type=int, required=True)
+    p.add_argument("--use-skip", action=argparse.BooleanOptionalAction, default=True,
+                help="If true, drop rows with skip==1. Use --no-use-skip to include them.")
+
+    # TODO double check how cropping is working - centered???
+    # TODO if new lr doesnt work, try LIGHT augmentation 
+    # TODO log distribution of batches to check 33% have lesion
+        # [probe][epoch1 batch 00] has_lesion: 1/16 (6%) || labels: ISUP01=15 (94%) | ISUP23=1 (6%)
+        # [probe][epoch1 batch 01] has_lesion: 5/16 (31%) || labels: ISUP01=11 (69%) | ISUP23=5 (31%)
+
+    # TODO use 50% pos_ratio for binary 
 
     # --- NEW: number of epochs to keep the MedSAM encoder frozen before unfreezing ---
     p.add_argument("--freeze_epochs", type=int, default=2,
                    help="Freeze MedSAM encoder for this many epochs, then unfreeze.")
     args = p.parse_args()
+
+    print("ARGS: ", args)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
@@ -267,7 +301,7 @@ def main():
     train_ds = PicaiSliceDataset(
         manifest_csv=args.manifest,
         folds=folds_train,
-        use_skip=True,
+        use_skip=args.use_skip,
         target=args.target,
         channels=("path_T2","path_ADC","path_HBV"),
         missing_channel_mode="zeros",
@@ -277,7 +311,7 @@ def main():
     val_ds = PicaiSliceDataset(
         manifest_csv=args.manifest,
         folds=folds_val,
-        use_skip=True,
+        use_skip=args.use_skip,
         target=args.target,
         channels=("path_T2","path_ADC","path_HBV"),
         missing_channel_mode="zeros",
@@ -349,9 +383,13 @@ def main():
             })
             print(f"→ Unfroze encoder at epoch {epoch}; added to optimizer with lr={enc_lr:g}")
 
-        tr_loss, tr_acc, tr_f1 = run_epoch(train_loader, model, criterion, optimizer=optimizer, device=device)
-        va_loss, va_acc, va_f1, va_logits, va_y = run_epoch(val_loader, model, criterion, optimizer=None, device=device, return_outputs=True)
-
+        tr_loss, tr_acc, tr_f1 = run_epoch(
+            train_loader, model, criterion, optimizer=optimizer, device=device,
+            epoch_idx=epoch, probe_first_k=8, label_names=get_label_names(args.target)  # <= log 2 batches in epoch 1
+        )
+        va_loss, va_acc, va_f1, va_logits, va_y = run_epoch(
+            val_loader, model, criterion, optimizer=None, device=device, return_outputs=True
+        )
         # Per-class metrics on validation
         per_acc, per_auc, balanced_acc, macro_auc = per_class_metrics(va_logits, va_y)
         # pretty print

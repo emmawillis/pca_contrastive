@@ -1,0 +1,123 @@
+Host: kn076
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Sun Oct 19 23:34:51 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:E3:00.0 Off |                    0 |
+| N/A   47C    P8             38W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[probe][epoch1 batch 00] has_lesion: 7/16 (44%) || labels: no csPCa=9 (56%) | yes csPCa=7 (44%)
+[probe][epoch1 batch 01] has_lesion: 10/16 (62%) || labels: no csPCa=6 (38%) | yes csPCa=10 (62%)
+[001] train: loss 0.2981 acc 0.5007 f1 0.3378 | val: loss 1.8329 acc 0.0846 f1 0.0794 | acc[c0]=0.005  acc[c1]=1.000 | auc[c0]=0.687  auc[c1]=0.687 | macroAUC=0.687 | macroSens=0.503 macroSpec=0.503 | sens[c0]=0.005  sens[c1]=1.000 | spec[c0]=1.000  spec[c1]=0.005
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa      26    5012
+yes csPCa       0     437
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results128/baseline/ckpt_best.pt (BAL-acc=0.5026)
+[002] train: loss 0.2609 acc 0.5111 f1 0.3489 | val: loss 1.7796 acc 0.0952 f1 0.0914 | acc[c0]=0.017  acc[c1]=1.000 | auc[c0]=0.705  auc[c1]=0.705 | macroAUC=0.705 | macroSens=0.508 macroSpec=0.508 | sens[c0]=0.017  sens[c1]=1.000 | spec[c0]=1.000  spec[c1]=0.017
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa      84    4954
+yes csPCa       0     437
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results128/baseline/ckpt_best.pt (BAL-acc=0.5083)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=1e-06
+[003] train: loss 0.1947 acc 0.6352 f1 0.5806 | val: loss 0.9235 acc 0.5876 f1 0.4914 | acc[c0]=0.556  acc[c1]=0.957 | auc[c0]=0.890  auc[c1]=0.890 | macroAUC=0.890 | macroSens=0.756 macroSpec=0.756 | sens[c0]=0.556  sens[c1]=0.957 | spec[c0]=0.957  spec[c1]=0.556
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    2799    2239
+yes csPCa      19     418
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results128/baseline/ckpt_best.pt (BAL-acc=0.7560)
+[004] train: loss 0.1277 acc 0.8275 f1 0.8238 | val: loss 0.6463 acc 0.7704 f1 0.6209 | acc[c0]=0.760  acc[c1]=0.892 | auc[c0]=0.901  auc[c1]=0.901 | macroAUC=0.901 | macroSens=0.826 macroSpec=0.826 | sens[c0]=0.760  sens[c1]=0.892 | spec[c0]=0.892  spec[c1]=0.760
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    3828    1210
+yes csPCa      47     390
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results128/baseline/ckpt_best.pt (BAL-acc=0.8261)
+[005] train: loss 0.0724 acc 0.9162 f1 0.9158 | val: loss 0.5803 acc 0.8400 f1 0.6781 | acc[c0]=0.842  acc[c1]=0.819 | auc[c0]=0.900  auc[c1]=0.900 | macroAUC=0.900 | macroSens=0.831 macroSpec=0.831 | sens[c0]=0.842  sens[c1]=0.819 | spec[c0]=0.819  spec[c1]=0.842
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4241     797
+yes csPCa      79     358
+  ↳ saved best to /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results128/baseline/ckpt_best.pt (BAL-acc=0.8305)
+[006] train: loss 0.0413 acc 0.9507 f1 0.9506 | val: loss 0.5958 acc 0.8802 f1 0.7058 | acc[c0]=0.897  acc[c1]=0.691 | auc[c0]=0.892  auc[c1]=0.892 | macroAUC=0.892 | macroSens=0.794 macroSpec=0.794 | sens[c0]=0.897  sens[c1]=0.691 | spec[c0]=0.691  spec[c1]=0.897
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4517     521
+yes csPCa     135     302
+  ↳ no improvement (1/10)
+[007] train: loss 0.0223 acc 0.9717 f1 0.9717 | val: loss 0.7146 acc 0.9010 f1 0.7243 | acc[c0]=0.925  acc[c1]=0.629 | auc[c0]=0.886  auc[c1]=0.886 | macroAUC=0.886 | macroSens=0.777 macroSpec=0.777 | sens[c0]=0.925  sens[c1]=0.629 | spec[c0]=0.629  spec[c1]=0.925
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4658     380
+yes csPCa     162     275
+  ↳ no improvement (2/10)
+[008] train: loss 0.0146 acc 0.9824 f1 0.9824 | val: loss 0.8743 acc 0.9143 f1 0.7289 | acc[c0]=0.946  acc[c1]=0.547 | auc[c0]=0.875  auc[c1]=0.875 | macroAUC=0.875 | macroSens=0.747 macroSpec=0.747 | sens[c0]=0.946  sens[c1]=0.547 | spec[c0]=0.547  spec[c1]=0.946
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4767     271
+yes csPCa     198     239
+  ↳ no improvement (3/10)
+[009] train: loss 0.0099 acc 0.9896 f1 0.9896 | val: loss 1.0181 acc 0.9207 f1 0.7290 | acc[c0]=0.957  acc[c1]=0.499 | auc[c0]=0.870  auc[c1]=0.870 | macroAUC=0.870 | macroSens=0.728 macroSpec=0.728 | sens[c0]=0.957  sens[c1]=0.499 | spec[c0]=0.499  spec[c1]=0.957
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4823     215
+yes csPCa     219     218
+  ↳ no improvement (4/10)
+[010] train: loss 0.0058 acc 0.9934 f1 0.9934 | val: loss 1.1510 acc 0.9191 f1 0.7196 | acc[c0]=0.958  acc[c1]=0.474 | auc[c0]=0.867  auc[c1]=0.867 | macroAUC=0.867 | macroSens=0.716 macroSpec=0.716 | sens[c0]=0.958  sens[c1]=0.474 | spec[c0]=0.474  spec[c1]=0.958
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4825     213
+yes csPCa     230     207
+  ↳ no improvement (5/10)
+[011] train: loss 0.0045 acc 0.9950 f1 0.9950 | val: loss 1.3992 acc 0.9229 f1 0.6950 | acc[c0]=0.971  acc[c1]=0.366 | auc[c0]=0.847  auc[c1]=0.847 | macroAUC=0.847 | macroSens=0.669 macroSpec=0.669 | sens[c0]=0.971  sens[c1]=0.366 | spec[c0]=0.366  spec[c1]=0.971
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4893     145
+yes csPCa     277     160
+  ↳ no improvement (6/10)
+[012] train: loss 0.0020 acc 0.9978 f1 0.9978 | val: loss 1.3633 acc 0.9193 f1 0.7163 | acc[c0]=0.959  acc[c1]=0.460 | auc[c0]=0.863  auc[c1]=0.863 | macroAUC=0.863 | macroSens=0.710 macroSpec=0.710 | sens[c0]=0.959  sens[c1]=0.460 | spec[c0]=0.460  spec[c1]=0.959
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4832     206
+yes csPCa     236     201
+  ↳ no improvement (7/10)
+[013] train: loss 0.0021 acc 0.9977 f1 0.9977 | val: loss 1.5795 acc 0.9229 f1 0.7074 | acc[c0]=0.968  acc[c1]=0.405 | auc[c0]=0.847  auc[c1]=0.847 | macroAUC=0.847 | macroSens=0.686 macroSpec=0.686 | sens[c0]=0.968  sens[c1]=0.405 | spec[c0]=0.405  spec[c1]=0.968
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4876     162
+yes csPCa     260     177
+  ↳ no improvement (8/10)
+[014] train: loss 0.0011 acc 0.9989 f1 0.9989 | val: loss 1.5394 acc 0.9213 f1 0.7181 | acc[c0]=0.962  acc[c1]=0.453 | auc[c0]=0.859  auc[c1]=0.859 | macroAUC=0.859 | macroSens=0.707 macroSpec=0.707 | sens[c0]=0.962  sens[c1]=0.453 | spec[c0]=0.453  spec[c1]=0.962
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4846     192
+yes csPCa     239     198
+  ↳ no improvement (9/10)
+[015] train: loss 0.0006 acc 0.9993 f1 0.9993 | val: loss 1.6897 acc 0.9207 f1 0.7019 | acc[c0]=0.966  acc[c1]=0.400 | auc[c0]=0.852  auc[c1]=0.852 | macroAUC=0.852 | macroSens=0.683 macroSpec=0.683 | sens[c0]=0.966  sens[c1]=0.400 | spec[c0]=0.400  spec[c1]=0.966
+Confusion matrix (val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    4866     172
+yes csPCa     262     175
+  ↳ no improvement (10/10)
+Early stopping triggered at epoch 15: no BAL-acc improvement for 10 epochs.
+
+=== Final model: Sensitivity at fixed specificity (validation) ===
+       class |          AUC |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec97 |  Sens@Spec99
+          c0 |        0.900 |        0.855 |        0.759 |        0.622 |        0.359 |        0.212
+          c1 |        0.900 |        0.879 |        0.707 |        0.510 |        0.366 |        0.201
+       macro |        0.900 |        0.867 |        0.733 |        0.566 |        0.363 |        0.206

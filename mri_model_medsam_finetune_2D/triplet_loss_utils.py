@@ -10,6 +10,9 @@ import torch.nn.functional as F
 def isup_to_3class(y: int) -> int:
     return 0 if y <= 1 else (1 if y <= 3 else 2)
 
+def isup_to_binary(y: int) -> int:
+    return 0 if y <= 1 else 1
+
 def get_histo_by_isup(
     encodings_dir,
     marksheet_csv,
@@ -32,7 +35,13 @@ def get_histo_by_isup(
         except KeyError:
             continue
         vector = torch.as_tensor(np.load(path))
-        out[isup_to_3class(isup) if num_classes == 3 else isup].append(vector)
+        out_key = isup
+        if num_classes == 3:
+            out_key = isup_to_3class(isup)
+        elif num_classes == 2:
+            out_key = isup_to_binary(isup)
+            
+        out[out_key].append(vector)
 
     return out
 

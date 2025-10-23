@@ -42,6 +42,10 @@ def map_binary_low_high(y6: int) -> int:
     if y6 in (4, 5): return 1
     raise ValueError(f"bad label6={y6}")
  
+def map_binary_all(y6: int) -> int:
+    if y6 in (0, 1): return 0
+    return 1
+
 def _clean_path(p: Union[str, Path]) -> Path:
     return Path(str(p).strip())
 
@@ -108,6 +112,7 @@ class PicaiSliceDataset(Dataset):
         self.df["fold"] = self.df["fold"].astype(str).str.strip()
         self.df.loc[self.df["fold"].isin(["", "nan", "NaN"]), "fold"] = "NA"
 
+        self.use_skip = use_skip
         if use_skip and "skip" in self.df.columns:
             self.df = self.df[self.df["skip"] == 0]
 
@@ -125,7 +130,7 @@ class PicaiSliceDataset(Dataset):
 
         # store config
         self.target = target
-        assert self.target in ("isup3", "isup6", "binary_low_high")
+        assert self.target in ("isup3", "isup6", "binary_low_high", "binary_all")
         self.channels = tuple(channels)
         self.missing_channel_mode = missing_channel_mode
         assert self.missing_channel_mode in ("zeros", "repeat_t2")
@@ -138,7 +143,7 @@ class PicaiSliceDataset(Dataset):
 
         # Keep only needed columns to save RAM in __getitem__
         needed = {
-            "case_id","fold","z","label6","label3","has_lesion",
+            "case_id","fold","z","label6","label3","patient_ISUP", "has_lesion",
             "bbox_prostate_z0","bbox_prostate_z1","bbox_prostate_h0","bbox_prostate_h1","bbox_prostate_w0","bbox_prostate_w1",
             *self.channels
         }
@@ -224,10 +229,15 @@ class PicaiSliceDataset(Dataset):
 
         # Labels
         y6 = int(row["label6"])
+        if not self.use_skip: # if using the MRIs that don't have lesion masks, we don't have derived slice-level labels, so fall back to patient-level isup for all slices
+            y6 = int(row["patient_ISUP"])
+    
         if self.target == "isup3":
             y = map_isup3(y6)
         elif self.target == "binary_low_high":
             y = map_binary_low_high(y6)
+        elif self.target == "binary_all":
+            y = map_binary_all(y6)
         else:
             y = y6
 

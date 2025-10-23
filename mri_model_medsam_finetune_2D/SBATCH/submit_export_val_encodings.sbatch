@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J 128-export-umap-encs
+#SBATCH -J 768-export-umap-encs
 #SBATCH -A aip-medilab
 #SBATCH -t 0-12:00:00
 #SBATCH -c 8
 #SBATCH --mem=48G
 #SBATCH -D /project/aip-medilab/shared/picai
-#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/head_only/encodings/slurm-%x-%j.out
+#SBATCH -o /project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results768/head_only/encodings/slurm-%x-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -26,8 +26,8 @@ SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv
 
 # Choose checkpoint & outdir for this run (checkpoint contains encoder+head weights)
-CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/head_only/ckpt_head_best.pt
-OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results/head_only/encodings/encodings_val_f0
+CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results768/head_only/ckpt_head_best.pt
+OUTDIR=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/run_2_full/results768/head_only/encodings/encodings_val_f0
 
 # Validation folds (e.g., "0" or "0,2")
 VAL_FOLDS=0
@@ -44,9 +44,7 @@ MISSING_MODE=zeros   # zeros | repeat_t2
 
 # Model head dims (must match checkpoint)
 NUM_CLASSES=3
-PROJ_DIM=128
-ATTN_DIM=256
-HEAD_HIDDEN=256
+PROJ_DIM=768
 
 # Loader
 BATCH_SIZE=32
@@ -63,8 +61,6 @@ srun -u python -u "$SCRIPT" \
   --sam_type "$SAM_TYPE" \
   --num_classes "$NUM_CLASSES" \
   --proj_dim "$PROJ_DIM" \
-  --attn_dim "$ATTN_DIM" \
-  --head_hidden "$HEAD_HIDDEN" \
   --batch_size "$BATCH_SIZE" \
   --num_workers "$NUM_WORKERS" \
   --target "$TARGET" \

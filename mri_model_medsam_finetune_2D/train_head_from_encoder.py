@@ -211,7 +211,7 @@ def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda"):
     train_mode = optimizer is not None
     model.train(train_mode)
     total_loss, total_n = 0.0, 0
-    ce = nn.CrossEntropyLoss(weights=w_ce)  # (keep as-is)
+    ce = nn.CrossEntropyLoss(weight=w_ce)  # (keep as-is)
 
     for batch in loader:
         x = batch["image"].to(device, non_blocking=True)
@@ -271,6 +271,7 @@ def main():
     p.add_argument("--train_proj", action="store_true",
                    help="Also train the projection MLP along with the classifier head.")
     args = p.parse_args()
+    print("ARGS: ", args)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
@@ -303,6 +304,7 @@ def main():
     # class info
     w_ce, classes_present = class_weights_from_train(train_ds.df, target=args.target)
     n_classes = len(classes_present)
+    w_ce = w_ce.to(device)
 
     # sampler to bump lesion slice rate (optional; mirrors encoder training)
     sampler = make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)

@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from dataset_picai_slices import PicaiSliceDataset
+from dataset_picai_slices import PicaiSliceDataset, map_binary_all, map_binary_low_high
 from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
 from segment_anything import sam_model_registry
 
@@ -59,7 +59,14 @@ def map_isup3(y6: int) -> int:
 
 def class_weights_from_train(df: pd.DataFrame, target: str):
     """Return torch.FloatTensor of class weights (mean-normalized)."""
-    y = df["label6"].map(map_isup3) if target == "isup3" else df["label6"]
+    if target == "isup3":
+        y = df["label6"].map(map_isup3)
+    elif target == "binary_low_high":
+        y = df["label6"].map(map_binary_low_high)
+    elif target == "binary_all":
+        y = df["label6"].map(map_binary_all)
+    else:
+        y = df["label6"]
     classes = sorted(int(c) for c in y.unique())
     cnt = Counter(int(v) for v in y.tolist())
     K, N = len(classes), len(y)
@@ -192,7 +199,7 @@ def main():
     p.add_argument("--manifest", required=True)
     p.add_argument("--sam_checkpoint", required=True)
     p.add_argument("--outdir", default="./runs/simple_triplet_lr")
-    p.add_argument("--target", choices=["isup3","isup6"], default="isup3")
+    p.add_argument("--target", choices=["isup3","isup6", "binary_low_high", "binary_all"], default="isup3")
     p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
     p.add_argument("--folds_val", default="0")
     p.add_argument("--batch_size", type=int, default=16)
@@ -206,8 +213,11 @@ def main():
     p.add_argument("--provider", default="karolinska")
     p.add_argument("--proj_dim", type=int, required=True)
     p.add_argument("--triplet_margin", type=float, default=0.2)
+    p.add_argument("--use-skip", action=argparse.BooleanOptionalAction, default=True,
+                help="If true, drop rows with skip==1. Use --no-use-skip to include them.")
 
     args = p.parse_args()
+    print("ARGS: ", args)
 
     if not _HAS_SK:
         raise RuntimeError("scikit-learn not available; install it to use LogisticRegression evaluation.")
@@ -222,7 +232,7 @@ def main():
     train_ds = PicaiSliceDataset(
         manifest_csv=args.manifest,
         folds=folds_train,
-        use_skip=True,
+        use_skip=args.use_skip,
         target=args.target,
         channels=("path_T2","path_ADC","path_HBV"),
         missing_channel_mode="zeros",
@@ -232,7 +242,7 @@ def main():
     val_ds = PicaiSliceDataset(
         manifest_csv=args.manifest,
         folds=folds_val,
-        use_skip=True,
+        use_skip=args.use_skip,
         target=args.target,
         channels=("path_T2","path_ADC","path_HBV"),
         missing_channel_mode="zeros",
@@ -301,10 +311,10 @@ def main():
     print(f"[triplet] lr_proj={proj_lr:g} | lr_enc={enc_lr:g} | triplet_margin={args.triplet_margin:g}")
     # triplet criteria (train/val)
     def train_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return triplet_loss_batch(embeddings, labels, train_histo_buckets, margin=args.triplet_margin)
+        return triplet_loss_batch(embeddings, labels, train_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
     def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return triplet_loss_batch(embeddings, labels, val_histo_buckets, margin=args.triplet_margin)
+        return triplet_loss_batch(embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
     best_val_bacc = -1.0
     best_path = outdir / "ckpt_best.pt"

@@ -1,0 +1,35 @@
+Host: kn062
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Tue Oct 21 20:27:19 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   38C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+ARGS:  Namespace(manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', outdir='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/temp', target='isup3', folds_train='1,2,3', folds_val='0', batch_size=16, epochs=100, lr=1e-06, wd=0.0, pos_ratio=0.33, proj_dim=1024, freeze_epochs=2)
+[probe][epoch1 batch 00] has_lesion: 5/16 (31%) || labels: ISUP01=11 (69%) | ISUP23=4 (25%) | ISUP45=1 (6%)
+[probe][epoch1 batch 01] has_lesion: 9/16 (56%) || labels: ISUP01=7 (44%) | ISUP23=8 (50%) | ISUP45=1 (6%)
+[probe][epoch1 batch 02] has_lesion: 6/16 (38%) || labels: ISUP01=10 (62%) | ISUP23=4 (25%) | ISUP45=2 (12%)
+[probe][epoch1 batch 03] has_lesion: 3/16 (19%) || labels: ISUP01=13 (81%) | ISUP45=3 (19%)
+[probe][epoch1 batch 04] has_lesion: 8/16 (50%) || labels: ISUP01=8 (50%) | ISUP23=6 (38%) | ISUP45=2 (12%)
+[probe][epoch1 batch 05] has_lesion: 5/16 (31%) || labels: ISUP01=11 (69%) | ISUP23=1 (6%) | ISUP45=4 (25%)
+[probe][epoch1 batch 06] has_lesion: 7/16 (44%) || labels: ISUP01=9 (56%) | ISUP23=3 (19%) | ISUP45=4 (25%)
+[probe][epoch1 batch 07] has_lesion: 5/16 (31%) || labels: ISUP01=11 (69%) | ISUP23=3 (19%) | ISUP45=2 (12%)
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 1299641 ON kn062 CANCELLED AT 2025-10-21T20:41:21 ***
+slurmstepd: error: *** STEP 1299641.0 ON kn062 CANCELLED AT 2025-10-21T20:41:21 ***

@@ -1,0 +1,43 @@
+Host: kn026
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Mon Oct 20 21:46:50 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:65:00.0 Off |                    0 |
+| N/A   33C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+Device: cuda | IMG_SIZE=256
+Val rows: 5475 | folds=0 | channels=('path_T2', 'path_ADC', 'path_HBV')
+Traceback (most recent call last):
+  File "/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/export_val_encodings.py", line 243, in <module>
+    main()
+  File "/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/export_val_encodings.py", line 151, in main
+    missing, unexpected = model.load_state_dict(cleaned, strict=False)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 2593, in load_state_dict
+    raise RuntimeError(
+RuntimeError: Error(s) in loading state_dict for MedSAMSliceSpatialAttn:
+	size mismatch for pool.theta.weight: copying a param with shape torch.Size([256, 16, 1, 1]) from checkpoint, the shape in current model is torch.Size([128, 16, 1, 1]).
+	size mismatch for pool.theta.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for pool.gate.weight: copying a param with shape torch.Size([256, 16, 1, 1]) from checkpoint, the shape in current model is torch.Size([128, 16, 1, 1]).
+	size mismatch for pool.gate.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for pool.score.weight: copying a param with shape torch.Size([1, 256, 1, 1]) from checkpoint, the shape in current model is torch.Size([1, 128, 1, 1]).
+	size mismatch for head.1.weight: copying a param with shape torch.Size([256, 128]) from checkpoint, the shape in current model is torch.Size([128, 128]).
+	size mismatch for head.1.bias: copying a param with shape torch.Size([256]) from checkpoint, the shape in current model is torch.Size([128]).
+	size mismatch for head.4.weight: copying a param with shape torch.Size([3, 256]) from checkpoint, the shape in current model is torch.Size([3, 128]).
+srun: error: kn026: task 0: Exited with exit code 1

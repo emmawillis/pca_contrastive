@@ -1,0 +1,34 @@
+Host: kn144
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Thu Oct 23 11:19:17 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   27C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+usage: train_head_from_encoder.py [-h] --manifest MANIFEST --sam_checkpoint
+                                  SAM_CHECKPOINT --encoder_ckpt ENCODER_CKPT
+                                  [--outdir OUTDIR] [--target {isup3,isup6}]
+                                  [--folds_train FOLDS_TRAIN]
+                                  [--folds_val FOLDS_VAL]
+                                  [--batch_size BATCH_SIZE] [--epochs EPOCHS]
+                                  [--lr_head LR_HEAD] [--wd WD]
+                                  [--pos_ratio POS_RATIO] --proj_dim PROJ_DIM
+                                  [--train_proj]
+train_head_from_encoder.py: error: argument --target: invalid choice: 'binary_all' (choose from 'isup3', 'isup6')
+srun: error: kn144: task 0: Exited with exit code 2
