@@ -20,70 +20,15 @@ from triplet_loss_utils import (
     get_histo_by_isup,
     triplet_loss_batch,
 )
-
-# --- sklearn bits (required for LR); AUC optional ---
-try:
-    from sklearn.metrics import (
-        roc_auc_score,
-        f1_score,
-        accuracy_score,
-        balanced_accuracy_score,
-        confusion_matrix,
-    )
-    from sklearn.linear_model import LogisticRegression
-    _HAS_SK = True
-except Exception:
-    _HAS_SK = False
-
-# ----------------- helpers -----------------
-def collate_resize_to_imgsize(batch):
-    imgs, labels = [], []
-    extras_keys = [k for k in batch[0].keys() if k not in ("image", "label")]
-    extras = {k: [] for k in extras_keys}
-    for s in batch:
-        x = s["image"].unsqueeze(0)  # [1,C,H,W]
-        x = F.interpolate(x, size=(IMG_SIZE, IMG_SIZE), mode="bilinear", align_corners=False).squeeze(0)
-        imgs.append(x)
-        labels.append(torch.as_tensor(s["label"], dtype=torch.long))
-        for k in extras_keys:
-            extras[k].append(s[k])
-    return {"image": torch.stack(imgs, 0),
-            "label": torch.stack(labels, 0),
-            **extras}
-
-def map_isup3(y6: int) -> int:
-    if y6 in (0,1): return 0
-    if y6 in (2,3): return 1
-    if y6 in (4,5): return 2
-    raise ValueError(f"bad label6={y6}")
-
-def class_weights_from_train(df: pd.DataFrame, target: str):
-    """Return torch.FloatTensor of class weights (mean-normalized)."""
-    if target == "isup3":
-        y = df["label6"].map(map_isup3)
-    elif target == "binary_low_high":
-        y = df["label6"].map(map_binary_low_high)
-    elif target == "binary_all":
-        y = df["label6"].map(map_binary_all)
-    else:
-        y = df["label6"]
-    classes = sorted(int(c) for c in y.unique())
-    cnt = Counter(int(v) for v in y.tolist())
-    K, N = len(classes), len(y)
-    ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
-    m = sum(ws)/len(ws)
-    ws = [w/m for w in ws]
-    return torch.tensor(ws, dtype=torch.float32), classes
-
-# oversample the slices that actually intersect the lesions, since other slices are set to isup 0
-def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337):
-    is_pos = df["has_lesion"].astype(int).values
-    n_pos = int(is_pos.sum()); n_neg = len(is_pos) - n_pos
-    assert n_pos > 0, "No positive slices in train folds."
-    w_neg = 1.0
-    w_pos = (pos_ratio/(1-pos_ratio)) * (n_neg/max(1,n_pos))
-    w = np.where(is_pos==1, w_pos, w_neg).astype(np.float64)
-    return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
+import train_utils
+from sklearn.metrics import (
+    roc_auc_score,
+    f1_score,
+    accuracy_score,
+    balanced_accuracy_score,
+    confusion_matrix,
+)
+from sklearn.linear_model import LogisticRegression
 
 # ---- Triplet train/val (encoder-only training) ----
 def run_epoch_triplet(loader, model, triplet_fn, optimizer=None, device="cuda"):
@@ -130,9 +75,6 @@ def extract_embeddings(loader, model, device="cuda"):
 
 # ---- LR eval on embeddings ----
 def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
-    if not _HAS_SK:
-        raise RuntimeError("scikit-learn is required for LogisticRegression evaluation but is not available.")
-
     clf = LogisticRegression(
         max_iter=max_iter,
         multi_class="auto",        # 'multinomial' if supported by solver
@@ -184,15 +126,6 @@ def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
         "clf": clf,
     }
 
-def format_confusion_matrix(cm: np.ndarray, n_classes: int):
-    labels = ["ISUP01","ISUP23","ISUP45"] if n_classes == 3 else ["ISUP0","ISUP1","ISUP2","ISUP3","ISUP4","ISUP5"]
-    header = "true\\pred " + " ".join(f"{lbl:>7}" for lbl in labels)
-    lines = ["Confusion matrix (LR val): rows=true, cols=pred", header]
-    for i in range(n_classes):
-        row = " ".join(f"{int(cm[i, j]):7d}" for j in range(n_classes))
-        lines.append(f"{labels[i]:>9} {row}")
-    return "\n".join(lines)
-
 # ----------------- main -----------------
 def main():
     p = argparse.ArgumentParser()
@@ -218,9 +151,6 @@ def main():
 
     args = p.parse_args()
     print("ARGS: ", args)
-
-    if not _HAS_SK:
-        raise RuntimeError("scikit-learn not available; install it to use LogisticRegression evaluation.")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
@@ -251,19 +181,19 @@ def main():
     )
 
     # class info
-    w_ce, classes_present = class_weights_from_train(train_ds.df, target=args.target)
+    w_ce, classes_present = train_utils.class_weights_from_train(train_ds.df, target=args.target)
     n_classes = len(classes_present)
 
     # sampler to bump lesion slice rate
-    sampler = make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
+    sampler = train_utils.make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
 
     train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
                               num_workers=4, pin_memory=True,
-                              collate_fn=collate_resize_to_imgsize)
+                              collate_fn=train_utils.collate_resize_to_imgsize)
 
     val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
                               num_workers=4, pin_memory=True,
-                              collate_fn=collate_resize_to_imgsize)
+                              collate_fn=train_utils.collate_resize_to_imgsize)
     
     # -------- histo dataset for triplet anchors/pos/negs --------
     train_histo_buckets = get_histo_by_isup(
@@ -354,7 +284,7 @@ def main():
               f"LR(val): acc {lr_metrics['acc']:.4f} BAL-acc {lr_metrics['bacc']:.4f} f1 {lr_metrics['f1_macro']:.4f} | "
               f"{per_acc_str}{auc_part}")
 
-        cm_str = format_confusion_matrix(lr_metrics["cm"], n_classes=n_classes)
+        cm_str = train_utils.format_confusion_matrix(lr_metrics["cm"], n_classes=n_classes)
         print(cm_str)
 
         # 5) Save 'best' based on **Balanced Accuracy** on validation
