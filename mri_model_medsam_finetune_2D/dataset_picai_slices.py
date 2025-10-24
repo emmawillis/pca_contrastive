@@ -75,6 +75,7 @@ class PicaiSliceDataset(Dataset):
         manifest_csv: Union[str, Path],
         folds: Optional[Sequence[Union[int, str]]] = None,
         use_skip: bool = True,
+        label6_column: str = 'label6',
         target: str = "isup3",               # 'isup3' or 'isup6'
         channels: Sequence[str] = ("path_T2", "path_ADC", "path_HBV"),
         missing_channel_mode: str = "zeros", # 'zeros' or 'repeat_t2'
@@ -143,10 +144,11 @@ class PicaiSliceDataset(Dataset):
 
         # Keep only needed columns to save RAM in __getitem__
         needed = {
-            "case_id","fold","z","label6","label3","patient_ISUP", "has_lesion",
+            "case_id","fold","z","label6","label3","patient_ISUP", "merged_ISUP", "has_lesion",
             "bbox_prostate_z0","bbox_prostate_z1","bbox_prostate_h0","bbox_prostate_h1","bbox_prostate_w0","bbox_prostate_w1",
             *self.channels
         }
+        self.label6_column = label6_column
         missing = needed - set(self.df.columns)
         if missing:
             raise ValueError(f"Manifest missing columns: {missing}")
@@ -228,9 +230,12 @@ class PicaiSliceDataset(Dataset):
         img_t = torch.from_numpy(img)
 
         # Labels
-        y6 = int(row["label6"])
-        if not self.use_skip: # if using the MRIs that don't have lesion masks, we don't have derived slice-level labels, so fall back to patient-level isup for all slices
-            y6 = int(row["patient_ISUP"])
+        y6 = int(row[self.label6_column])
+        # if not self.use_skip: 
+        #     # if using the MRIs that don't have lesion masks, we don't have derived slice-level labels
+        #     # using 'patient_ISUP' column falls back to patient-level isup for all slices
+        #     # merged_ISUP falls back to patient-level isup only for slices where the MRI has no lesion mask
+        #     y6 = int(row["patient_ISUP"])
     
         if self.target == "isup3":
             y = map_isup3(y6)

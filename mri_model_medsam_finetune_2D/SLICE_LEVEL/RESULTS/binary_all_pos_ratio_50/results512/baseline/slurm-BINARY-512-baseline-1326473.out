@@ -1,0 +1,124 @@
+Host: kn067
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Thu Oct 23 16:01:11 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   40C    P0            110W /  350W |       0MiB /  46068MiB |     42%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+ARGS: Namespace(manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest_filtered.csv', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results512/baseline', target='binary_all', folds_train='1,2,3', folds_val='0', batch_size=16, epochs=100, lr=1e-05, wd=0.0, pos_ratio=0.5, proj_dim=512, use_skip=True, freeze_epochs=2)
+[probe][epoch1 batch 00] has_lesion: 9/16 (56%) || labels: no csPCa=7 (44%) | yes csPCa=9 (56%)
+[probe][epoch1 batch 01] has_lesion: 5/16 (31%) || labels: no csPCa=11 (69%) | yes csPCa=5 (31%)
+[probe][epoch1 batch 02] has_lesion: 8/16 (50%) || labels: no csPCa=8 (50%) | yes csPCa=8 (50%)
+[probe][epoch1 batch 03] has_lesion: 9/16 (56%) || labels: no csPCa=7 (44%) | yes csPCa=9 (56%)
+[probe][epoch1 batch 04] has_lesion: 9/16 (56%) || labels: no csPCa=7 (44%) | yes csPCa=9 (56%)
+[probe][epoch1 batch 05] has_lesion: 5/16 (31%) || labels: no csPCa=11 (69%) | yes csPCa=5 (31%)
+[probe][epoch1 batch 06] has_lesion: 7/16 (44%) || labels: no csPCa=9 (56%) | yes csPCa=7 (44%)
+[probe][epoch1 batch 07] has_lesion: 3/16 (19%) || labels: no csPCa=13 (81%) | yes csPCa=3 (19%)
+[001] train: loss 0.2724 acc 0.5052 f1 0.3386 | val: loss 0.3220 acc 0.0840 f1 0.0788 | acc[c0]=0.005  acc[c1]=0.998 | auc[c0]=0.710  auc[c1]=0.710 | macroAUC=0.710 | macroSens=0.501 macroSpec=0.501 | sens[c0]=0.005  sens[c1]=0.998 | spec[c0]=0.998  spec[c1]=0.005
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0      24    5014
+    ISUP1       1     436
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results512/baseline/ckpt_best.pt (BAL-acc=0.5012)
+[002] train: loss 0.2602 acc 0.5070 f1 0.3503 | val: loss 0.3050 acc 0.0977 f1 0.0943 | acc[c0]=0.020  acc[c1]=0.995 | auc[c0]=0.718  auc[c1]=0.718 | macroAUC=0.718 | macroSens=0.508 macroSpec=0.508 | sens[c0]=0.020  sens[c1]=0.995 | spec[c0]=0.995  spec[c1]=0.020
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     100    4938
+    ISUP1       2     435
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results512/baseline/ckpt_best.pt (BAL-acc=0.5076)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=1e-06
+[003] train: loss 0.2001 acc 0.6465 f1 0.6044 | val: loss 0.1874 acc 0.5706 f1 0.4801 | acc[c0]=0.537  acc[c1]=0.961 | auc[c0]=0.888  auc[c1]=0.888 | macroAUC=0.888 | macroSens=0.749 macroSpec=0.749 | sens[c0]=0.537  sens[c1]=0.961 | spec[c0]=0.961  spec[c1]=0.537
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    2704    2334
+    ISUP1      17     420
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results512/baseline/ckpt_best.pt (BAL-acc=0.7489)
+[004] train: loss 0.1177 acc 0.8435 f1 0.8404 | val: loss 0.1510 acc 0.7989 f1 0.6409 | acc[c0]=0.795  acc[c1]=0.849 | auc[c0]=0.897  auc[c1]=0.897 | macroAUC=0.897 | macroSens=0.822 macroSpec=0.822 | sens[c0]=0.795  sens[c1]=0.849 | spec[c0]=0.849  spec[c1]=0.795
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4003    1035
+    ISUP1      66     371
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/RESULTS/binary_all_pos_ratio_50/results512/baseline/ckpt_best.pt (BAL-acc=0.8218)
+[005] train: loss 0.0739 acc 0.9195 f1 0.9189 | val: loss 0.1813 acc 0.8416 f1 0.6740 | acc[c0]=0.847  acc[c1]=0.780 | auc[c0]=0.892  auc[c1]=0.892 | macroAUC=0.892 | macroSens=0.814 macroSpec=0.814 | sens[c0]=0.847  sens[c1]=0.780 | spec[c0]=0.780  spec[c1]=0.847
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4267     771
+    ISUP1      96     341
+  ↳ no improvement (1/10)
+[006] train: loss 0.0420 acc 0.9537 f1 0.9537 | val: loss 0.3157 acc 0.9012 f1 0.7228 | acc[c0]=0.926  acc[c1]=0.620 | auc[c0]=0.876  auc[c1]=0.876 | macroAUC=0.876 | macroSens=0.773 macroSpec=0.773 | sens[c0]=0.926  sens[c1]=0.620 | spec[c0]=0.620  spec[c1]=0.926
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4663     375
+    ISUP1     166     271
+  ↳ no improvement (2/10)
+[007] train: loss 0.0232 acc 0.9734 f1 0.9734 | val: loss 0.4218 acc 0.9078 f1 0.7253 | acc[c0]=0.936  acc[c1]=0.581 | auc[c0]=0.869  auc[c1]=0.869 | macroAUC=0.869 | macroSens=0.759 macroSpec=0.759 | sens[c0]=0.936  sens[c1]=0.581 | spec[c0]=0.581  spec[c1]=0.936
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4716     322
+    ISUP1     183     254
+  ↳ no improvement (3/10)
+[008] train: loss 0.0147 acc 0.9824 f1 0.9823 | val: loss 0.5793 acc 0.9184 f1 0.7230 | acc[c0]=0.955  acc[c1]=0.492 | auc[c0]=0.859  auc[c1]=0.859 | macroAUC=0.859 | macroSens=0.724 macroSpec=0.724 | sens[c0]=0.955  sens[c1]=0.492 | spec[c0]=0.492  spec[c1]=0.955
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4813     225
+    ISUP1     222     215
+  ↳ no improvement (4/10)
+[009] train: loss 0.0086 acc 0.9902 f1 0.9902 | val: loss 0.6539 acc 0.9182 f1 0.7244 | acc[c0]=0.955  acc[c1]=0.499 | auc[c0]=0.860  auc[c1]=0.860 | macroAUC=0.860 | macroSens=0.727 macroSpec=0.727 | sens[c0]=0.955  sens[c1]=0.499 | spec[c0]=0.499  spec[c1]=0.955
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4809     229
+    ISUP1     219     218
+  ↳ no improvement (5/10)
+[010] train: loss 0.0050 acc 0.9945 f1 0.9945 | val: loss 0.8212 acc 0.9240 f1 0.7233 | acc[c0]=0.965  acc[c1]=0.453 | auc[c0]=0.845  auc[c1]=0.847 | macroAUC=0.846 | macroSens=0.709 macroSpec=0.709 | sens[c0]=0.965  sens[c1]=0.453 | spec[c0]=0.453  spec[c1]=0.965
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4861     177
+    ISUP1     239     198
+  ↳ no improvement (6/10)
+[011] train: loss 0.0038 acc 0.9957 f1 0.9957 | val: loss 0.9934 acc 0.9237 f1 0.7045 | acc[c0]=0.970  acc[c1]=0.391 | auc[c0]=0.835  auc[c1]=0.836 | macroAUC=0.836 | macroSens=0.681 macroSpec=0.681 | sens[c0]=0.970  sens[c1]=0.391 | spec[c0]=0.391  spec[c1]=0.970
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4886     152
+    ISUP1     266     171
+  ↳ no improvement (7/10)
+[012] train: loss 0.0029 acc 0.9970 f1 0.9970 | val: loss 1.0267 acc 0.9247 f1 0.7176 | acc[c0]=0.968  acc[c1]=0.428 | auc[c0]=0.837  auc[c1]=0.840 | macroAUC=0.838 | macroSens=0.698 macroSpec=0.698 | sens[c0]=0.968  sens[c1]=0.428 | spec[c0]=0.428  spec[c1]=0.968
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4876     162
+    ISUP1     250     187
+  ↳ no improvement (8/10)
+[013] train: loss 0.0016 acc 0.9987 f1 0.9987 | val: loss 0.9954 acc 0.9187 f1 0.7109 | acc[c0]=0.960  acc[c1]=0.444 | auc[c0]=0.841  auc[c1]=0.850 | macroAUC=0.846 | macroSens=0.702 macroSpec=0.702 | sens[c0]=0.960  sens[c1]=0.444 | spec[c0]=0.444  spec[c1]=0.960
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4836     202
+    ISUP1     243     194
+  ↳ no improvement (9/10)
+[014] train: loss 0.0014 acc 0.9989 f1 0.9989 | val: loss 0.9940 acc 0.9163 f1 0.7141 | acc[c0]=0.955  acc[c1]=0.471 | auc[c0]=0.846  auc[c1]=0.857 | macroAUC=0.852 | macroSens=0.713 macroSpec=0.713 | sens[c0]=0.955  sens[c1]=0.471 | spec[c0]=0.471  spec[c1]=0.955
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4811     227
+    ISUP1     231     206
+  ↳ no improvement (10/10)
+Early stopping at epoch 14.
+
+=== Final model: Sensitivity at fixed specificity (validation) ===
+       class |          AUC |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec97 |  Sens@Spec99
+          c0 |        0.897 |        0.845 |        0.739 |        0.611 |        0.418 |        0.181
+          c1 |        0.897 |        0.840 |        0.689 |        0.499 |        0.368 |        0.192
+       macro |        0.897 |        0.842 |        0.714 |        0.555 |        0.393 |        0.187

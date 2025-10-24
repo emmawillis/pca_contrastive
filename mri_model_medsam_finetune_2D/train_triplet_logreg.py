@@ -12,7 +12,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from dataset_picai_slices import PicaiSliceDataset, map_binary_all, map_binary_low_high
 from ISUPMedSAM import IMG_SIZE, MedSAMSliceSpatialAttn
 from segment_anything import sam_model_registry
 
@@ -21,6 +20,11 @@ from triplet_loss_utils import (
     triplet_loss_batch,
 )
 import train_utils
+from train_utils import (
+    build_datasets_and_loaders,
+    EarlyStopper,
+)
+
 from sklearn.metrics import (
     roc_auc_score,
     f1_score,
@@ -33,8 +37,10 @@ from sklearn.linear_model import LogisticRegression
 # ---- Triplet train/val (encoder-only training) ----
 def run_epoch_triplet(loader, model, triplet_fn, optimizer=None, device="cuda"):
     train_mode = optimizer is not None
-    if train_mode: model.train(True)
-    else:          model.train(False)
+    if train_mode:
+        model.train(True)
+    else:
+        model.train(False)
 
     total_loss, total_n = 0.0, 0
     with torch.set_grad_enabled(train_mode):
@@ -69,8 +75,8 @@ def extract_embeddings(loader, model, device="cuda"):
         _, emb = model(x)
         embs.append(emb.cpu())
         ys.append(y.cpu())
-    X = torch.cat(embs, 0).numpy()
-    y = torch.cat(ys, 0).numpy()
+    X = torch.cat(embs, 0).numpy() if embs else np.empty((0, 0), dtype=np.float32)
+    y = torch.cat(ys, 0).numpy() if ys else np.empty((0,), dtype=np.int64)
     return X, y
 
 # ---- LR eval on embeddings ----
@@ -155,58 +161,31 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
 
-    # -------- MRI dataset --------
-    folds_train = [s.strip() for s in args.folds_train.split(",") if s.strip()!=""]
-    folds_val   = [s.strip() for s in args.folds_val.split(",") if s.strip()!=""]
-
-    train_ds = PicaiSliceDataset(
-        manifest_csv=args.manifest,
-        folds=folds_train,
-        use_skip=args.use_skip,
+    # -------- MRI dataset / loaders (shared helper) --------
+    folds_train = [s.strip() for s in args.folds_train.split(",") if s.strip()]
+    folds_val   = [s.strip() for s in args.folds_val.split(",") if s.strip()]
+    (train_ds, val_ds,train_loader, val_loader, _w_ce_unused, classes_present, n_classes) = build_datasets_and_loaders(
+        manifest=args.manifest,
+        folds_train=folds_train,
+        folds_val=folds_val,
         target=args.target,
-        channels=("path_T2","path_ADC","path_HBV"),
-        missing_channel_mode="zeros",
-        pct_lower=0.5, pct_upper=99.5,
-        cache_size=64,
-    )
-    val_ds = PicaiSliceDataset(
-        manifest_csv=args.manifest,
-        folds=folds_val,
         use_skip=args.use_skip,
-        target=args.target,
-        channels=("path_T2","path_ADC","path_HBV"),
-        missing_channel_mode="zeros",
-        pct_lower=0.5, pct_upper=99.5,
-        cache_size=32,
+        batch_size=args.batch_size,
+        pos_ratio=args.pos_ratio,
     )
 
-    # class info
-    w_ce, classes_present = train_utils.class_weights_from_train(train_ds.df, target=args.target)
-    n_classes = len(classes_present)
-
-    # sampler to bump lesion slice rate
-    sampler = train_utils.make_pos_sampler(train_ds.df, pos_ratio=args.pos_ratio)
-
-    train_loader = DataLoader(train_ds, batch_size=args.batch_size, sampler=sampler,
-                              num_workers=4, pin_memory=True,
-                              collate_fn=train_utils.collate_resize_to_imgsize)
-
-    val_loader   = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
-                              num_workers=4, pin_memory=True,
-                              collate_fn=train_utils.collate_resize_to_imgsize)
-    
     # -------- histo dataset for triplet anchors/pos/negs --------
     train_histo_buckets = get_histo_by_isup(
         encodings_dir=str(Path(args.histo_dir) / "train"),
         marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
         num_classes=n_classes,
-        provider = args.provider
+        provider=args.provider
     )
     val_histo_buckets = get_histo_by_isup(
         encodings_dir=str(Path(args.histo_dir) / "val"),
         marksheet_csv=str(Path(args.histo_marksheet_dir) / "val.csv"),
         num_classes=n_classes,
-        provider = args.provider
+        provider=args.provider
     )
 
     # -------- model --------
@@ -226,7 +205,7 @@ def main():
         p.requires_grad = False
     for p in model.encoder.parameters():    # unfreeze encoder
         p.requires_grad = True
-    for p in model.proj.parameters():       # unfreeze the projection 
+    for p in model.proj.parameters():       # unfreeze the projection
         p.requires_grad = True
 
     proj_lr = args.lr
@@ -239,6 +218,7 @@ def main():
         ]
     )
     print(f"[triplet] lr_proj={proj_lr:g} | lr_enc={enc_lr:g} | triplet_margin={args.triplet_margin:g}")
+
     # triplet criteria (train/val)
     def train_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         return triplet_loss_batch(embeddings, labels, train_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
@@ -246,7 +226,7 @@ def main():
     def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         return triplet_loss_batch(embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
-    best_val_bacc = -1.0
+    early = EarlyStopper(patience=10)
     best_path = outdir / "ckpt_best.pt"
 
     # -------- loop --------
@@ -287,12 +267,14 @@ def main():
         cm_str = train_utils.format_confusion_matrix(lr_metrics["cm"], n_classes=n_classes)
         print(cm_str)
 
-        # 5) Save 'best' based on **Balanced Accuracy** on validation
-        if lr_metrics["bacc"] > best_val_bacc:
-            best_path.parent.mkdir(parents=True, exist_ok=True)  # <— ensure dir exists right now
-            best_val_bacc = lr_metrics["bacc"]
-            torch.save({"epoch": epoch, "model": model.state_dict()}, best_path)
-            print(f"  ↳ new best (val BAL-acc={best_val_bacc:.4f}) saved to {best_path}")
+        # 5) Save/early-stop on **Balanced Accuracy** (validation)
+        if early.update(lr_metrics["bacc"], model, best_path):
+            print(f"  ↳ new best (val BAL-acc={early.best:.4f}) saved to {best_path}")
+        else:
+            print(f"  ↳ no improvement ({early.num_bad}/{early.patience})")
+            if early.num_bad >= early.patience:
+                print(f"Early stopping at epoch {epoch}.")
+                break
 
 if __name__ == "__main__":
     main()
