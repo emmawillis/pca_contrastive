@@ -39,7 +39,7 @@ srun -u python -u "$SCRIPT" \
   --target binary_all \
   --folds_train 1,2,3 \
   --folds_val 0 \
-  --batch_size 32 \
+  --batch_size 16 \
   --epochs 100 \
   --proj_dim 512 \
   --lr 1e-5 \

@@ -1,0 +1,4 @@
+TRIPLET TRAINING WASNT FINISHED WHEN THIS RAN 
+it was only epoch 16 and still learning
+
+these are temporary results

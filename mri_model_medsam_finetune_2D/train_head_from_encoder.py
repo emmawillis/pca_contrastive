@@ -75,6 +75,7 @@ def main():
                    help="Also train the projection MLP along with the classifier head.")
     p.add_argument("--use-skip", action=argparse.BooleanOptionalAction, default=True,
                    help="If true, drop rows with skip==1. Use --no-use-skip to include them.")
+    p.add_argument("--label6_column", default="label6")
 
     args = p.parse_args()
     print("ARGS:", args)
@@ -93,6 +94,7 @@ def main():
         folds_val=folds_val,
         target=args.target,
         use_skip=args.use_skip,
+        label6_column=args.label6_column,
         batch_size=args.batch_size,
         pos_ratio=args.pos_ratio,
     )

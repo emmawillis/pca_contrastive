@@ -1,0 +1,23 @@
+{
+  "target": "binary_all",
+  "folds_train": [
+    "1",
+    "2",
+    "3"
+  ],
+  "folds_test": [
+    "4"
+  ],
+  "n_classes": 2,
+  "classes_present": [
+    0,
+    1
+  ],
+  "metrics": {
+    "loss": 2.378338331665503,
+    "acc": 0.9247264123040521,
+    "bacc": 0.5,
+    "f1_macro": 0.4804456396465617,
+    "macro_auc": 0.7378668062512705
+  }
+}

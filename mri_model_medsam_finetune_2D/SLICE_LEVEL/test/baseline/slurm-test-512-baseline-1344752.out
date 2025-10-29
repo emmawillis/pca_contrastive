@@ -1,0 +1,78 @@
+Host: kn083
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Sun Oct 26 22:17:12 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:17:00.0 Off |                    0 |
+| N/A   44C    P8             35W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+ARGS: Namespace(manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/SLICE_LEVEL/test/baseline', target='isup3', folds_train='1,2,3', folds_val='0', batch_size=16, epochs=100, lr=0.0003, wd=0.0001, pos_ratio=0.33, proj_dim=512, use_skip=True, label6_column='label6', freeze_epochs=2)
+[probe][epoch1 batch 00] has_lesion: 6/16 (38%) || labels: ISUP01=10 (62%) | ISUP23=2 (12%) | ISUP45=4 (25%)
+[probe][epoch1 batch 01] has_lesion: 4/16 (25%) || labels: ISUP01=12 (75%) | ISUP23=4 (25%)
+[probe][epoch1 batch 02] has_lesion: 8/16 (50%) || labels: ISUP01=8 (50%) | ISUP23=7 (44%) | ISUP45=1 (6%)
+[probe][epoch1 batch 03] has_lesion: 8/16 (50%) || labels: ISUP01=8 (50%) | ISUP23=6 (38%) | ISUP45=2 (12%)
+[probe][epoch1 batch 04] has_lesion: 4/16 (25%) || labels: ISUP01=12 (75%) | ISUP23=2 (12%) | ISUP45=2 (12%)
+[probe][epoch1 batch 05] has_lesion: 4/16 (25%) || labels: ISUP01=12 (75%) | ISUP23=4 (25%)
+[probe][epoch1 batch 06] has_lesion: 8/16 (50%) || labels: ISUP01=8 (50%) | ISUP23=6 (38%) | ISUP45=2 (12%)
+[probe][epoch1 batch 07] has_lesion: 5/16 (31%) || labels: ISUP01=11 (69%) | ISUP23=4 (25%) | ISUP45=1 (6%)
+[001] train: loss 0.9069 acc 0.2522 f1 0.2344 | val: loss 0.1621 acc 0.1030 f1 0.0936 | acc[c0]=0.061  acc[c1]=0.607  acc[c2]=0.505 | auc[c0]=0.689  auc[c1]=0.552  auc[c2]=0.615 | macroAUC=0.618 | macroSens=0.391 macroSpec=0.684 | sens[c0]=0.061  sens[c1]=0.607  sens[c2]=0.505 | spec[c0]=0.989  spec[c1]=0.449  spec[c2]=0.613
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     308    2781    1949
+    ISUP1       4     210     132
+    ISUP2       1      44      46
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/SLICE_LEVEL/test/baseline/ckpt_best.pt (BAL-acc=0.3912)
+[002] train: loss 0.8729 acc 0.3037 f1 0.2842 | val: loss 0.1780 acc 0.1174 f1 0.1005 | acc[c0]=0.078  acc[c1]=0.604  acc[c2]=0.440 | auc[c0]=0.689  auc[c1]=0.504  auc[c2]=0.631 | macroAUC=0.608 | macroSens=0.374 macroSpec=0.684 | sens[c0]=0.078  sens[c1]=0.604  sens[c2]=0.440 | spec[c0]=0.979  spec[c1]=0.360  spec[c2]=0.714
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     394    3232    1412
+    ISUP1       7     209     130
+    ISUP2       2      49      40
+  ↳ no improvement (1/10)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=3e-05
+[003] train: loss 0.3472 acc 0.7732 f1 0.7450 | val: loss 0.4292 acc 0.9116 f1 0.4715 | acc[c0]=0.969  acc[c1]=0.298  acc[c2]=0.088 | auc[c0]=0.846  auc[c1]=0.822  auc[c2]=0.738 | macroAUC=0.802 | macroSens=0.451 macroSpec=0.772 | sens[c0]=0.969  sens[c1]=0.298  sens[c2]=0.088 | spec[c0]=0.355  spec[c1]=0.966  spec[c2]=0.995
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4880     148      10
+    ISUP1     227     103      16
+    ISUP2      55      28       8
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/SLICE_LEVEL/test/baseline/ckpt_best.pt (BAL-acc=0.4514)
+[004] train: loss 0.0391 acc 0.9839 f1 0.9806 | val: loss 0.6848 acc 0.9193 f1 0.4292 | acc[c0]=0.985  acc[c1]=0.191  acc[c2]=0.044 | auc[c0]=0.815  auc[c1]=0.792  auc[c2]=0.814 | macroAUC=0.807 | macroSens=0.407 macroSpec=0.748 | sens[c0]=0.985  sens[c1]=0.191  sens[c2]=0.044 | spec[c0]=0.268  spec[c1]=0.982  spec[c2]=0.994
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4963      63      12
+    ISUP1     261      66      19
+    ISUP2      59      28       4
+  ↳ no improvement (1/10)
+[005] train: loss 0.0197 acc 0.9943 f1 0.9927 | val: loss 0.8970 acc 0.9238 f1 0.4368 | acc[c0]=0.992  acc[c1]=0.156  acc[c2]=0.077 | auc[c0]=0.797  auc[c1]=0.786  auc[c2]=0.818 | macroAUC=0.800 | macroSens=0.408 macroSpec=0.740 | sens[c0]=0.992  sens[c1]=0.156  sens[c2]=0.077 | spec[c0]=0.236  spec[c1]=0.990  spec[c2]=0.994
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4997      28      13
+    ISUP1     271      54      21
+    ISUP2      63      21       7
+  ↳ no improvement (2/10)
+[006] train: loss 0.0181 acc 0.9937 f1 0.9917 | val: loss 0.7683 acc 0.9145 f1 0.4919 | acc[c0]=0.966  acc[c1]=0.387  acc[c2]=0.077 | auc[c0]=0.828  auc[c1]=0.816  auc[c2]=0.722 | macroAUC=0.788 | macroSens=0.477 macroSpec=0.792 | sens[c0]=0.966  sens[c1]=0.387  sens[c2]=0.077 | spec[c0]=0.419  spec[c1]=0.962  spec[c2]=0.997
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    4866     162      10
+    ISUP1     205     134       7
+    ISUP2      49      35       7
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/SLICE_LEVEL/test/baseline/ckpt_best.pt (BAL-acc=0.4767)
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 1344752.0 ON kn083 CANCELLED AT 2025-10-27T01:40:08 ***
+slurmstepd: error: *** JOB 1344752 ON kn083 CANCELLED AT 2025-10-27T01:40:08 ***

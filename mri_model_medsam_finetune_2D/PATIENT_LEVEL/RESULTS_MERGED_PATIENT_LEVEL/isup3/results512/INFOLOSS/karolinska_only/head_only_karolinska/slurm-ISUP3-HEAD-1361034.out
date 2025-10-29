@@ -1,0 +1,67 @@
+Host: kn145
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Wed Oct 29 14:13:14 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:17:00.0 Off |                    0 |
+| N/A   29C    P8             34W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+ARGS: Namespace(manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', encoder_ckpt='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/infoloss_logreg_karolinska/ckpt_best.pt', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska', target='isup3', folds_train='1,2,3', folds_val='0', batch_size=16, epochs=100, lr_head=1e-05, wd=0.0, pos_ratio=0.33, proj_dim=512, train_proj=False, use_skip=False, label6_column='merged_ISUP')
+[load_encoder_only] Loaded encoder weights from /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/infoloss_logreg_karolinska/ckpt_best.pt
+[001] head-train: loss 0.9078 || val: loss 0.1500 acc 0.0488 BAL-acc 0.3646 f1 0.0644 | acc[c0]=0.000  acc[c1]=0.876  acc[c2]=0.218 | auc[c0]=0.715  auc[c1]=0.336  auc[c2]=0.730 | macroAUC=0.594 | macroSens=0.365 macroSpec=0.666 | sens[c0]=0.000  sens[c1]=0.876  sens[c2]=0.218 | spec[c0]=1.000  spec[c1]=0.050  spec[c2]=0.949
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0    5949     291
+    ISUP1       0     303      43
+    ISUP2       0      86      24
+  ↳ new best (val BAL-acc=0.3646) saved to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska/ckpt_head_best.pt
+[002] head-train: loss 0.8876 || val: loss 0.1427 acc 0.0518 BAL-acc 0.3387 f1 0.0443 | acc[c0]=0.000  acc[c1]=0.988  acc[c2]=0.027 | auc[c0]=0.714  auc[c1]=0.400  auc[c2]=0.729 | macroAUC=0.614 | macroSens=0.339 macroSpec=0.667 | sens[c0]=0.000  sens[c1]=0.988  sens[c2]=0.027 | spec[c0]=1.000  spec[c1]=0.010  spec[c2]=0.991
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       2    6180      58
+    ISUP1       0     342       4
+    ISUP2       0     107       3
+  ↳ no improvement (1/10)
+[003] head-train: loss 0.8708 || val: loss 0.1381 acc 0.0578 BAL-acc 0.3792 f1 0.0640 | acc[c0]=0.016  acc[c1]=0.685  acc[c2]=0.436 | auc[c0]=0.713  auc[c1]=0.432  auc[c2]=0.727 | macroAUC=0.624 | macroSens=0.379 macroSpec=0.669 | sens[c0]=0.016  sens[c1]=0.685  sens[c2]=0.436 | spec[c0]=0.996  spec[c1]=0.174  spec[c2]=0.838
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     102    5181     957
+    ISUP1       2     237     107
+    ISUP2       0      62      48
+  ↳ new best (val BAL-acc=0.3792) saved to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska/ckpt_head_best.pt
+[004] head-train: loss 0.8608 || val: loss 0.1426 acc 0.0645 BAL-acc 0.3844 f1 0.0686 | acc[c0]=0.025  acc[c1]=0.656  acc[c2]=0.473 | auc[c0]=0.714  auc[c1]=0.435  auc[c2]=0.725 | macroAUC=0.625 | macroSens=0.384 macroSpec=0.672 | sens[c0]=0.025  sens[c1]=0.656  sens[c2]=0.473 | spec[c0]=0.996  spec[c1]=0.199  spec[c2]=0.822
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     153    5029    1058
+    ISUP1       2     227     117
+    ISUP2       0      58      52
+  ↳ new best (val BAL-acc=0.3844) saved to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska/ckpt_head_best.pt
+[005] head-train: loss 0.8490 || val: loss 0.1410 acc 0.0823 BAL-acc 0.3534 f1 0.0775 | acc[c0]=0.035  acc[c1]=0.925  acc[c2]=0.100 | auc[c0]=0.716  auc[c1]=0.508  auc[c2]=0.722 | macroAUC=0.649 | macroSens=0.353 macroSpec=0.676 | sens[c0]=0.035  sens[c1]=0.925  sens[c2]=0.100 | spec[c0]=0.996  spec[c1]=0.065  spec[c2]=0.969
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     220    5839     181
+    ISUP1       2     320      24
+    ISUP2       0      99      11
+  ↳ no improvement (1/10)
+[006] head-train: loss 0.8569 || val: loss 0.1395 acc 0.0962 BAL-acc 0.3903 f1 0.0920 | acc[c0]=0.055  acc[c1]=0.743  acc[c2]=0.373 | auc[c0]=0.716  auc[c1]=0.490  auc[c2]=0.723 | macroAUC=0.643 | macroSens=0.390 macroSpec=0.680 | sens[c0]=0.055  sens[c1]=0.743  sens[c2]=0.373 | spec[c0]=0.987  spec[c1]=0.181  spec[c2]=0.872
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     346    5134     760
+    ISUP1       6     257      83
+    ISUP2       0      69      41
+  ↳ new best (val BAL-acc=0.3903) saved to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska/ckpt_head_best.pt

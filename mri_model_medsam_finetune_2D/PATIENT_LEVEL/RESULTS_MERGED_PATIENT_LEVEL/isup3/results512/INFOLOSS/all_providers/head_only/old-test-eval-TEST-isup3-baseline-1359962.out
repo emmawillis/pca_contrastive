@@ -1,0 +1,37 @@
+Host: kn071
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Wed Oct 29 12:31:41 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:65:00.0 Off |                    0 |
+| N/A   54C    P0             67W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+ARGS: Namespace(manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', model_ckpt='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/all_providers/head_only/ckpt_head_best.pt', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/all_providers/head_only', target='isup3', folds_train='1,2,3', fold_test='4', batch_size=16, pos_ratio=0.33, proj_dim=512, use_skip=False, label6_column='merged_ISUP', spec_targets='0.8,0.9,0.95,0.975,0.99')
+[TEST] loss 0.1292 acc 0.2127 f1 0.1547 | acc[c0]=0.186  acc[c1]=0.591  acc[c2]=0.354 | auc[c0]=0.700  auc[c1]=0.583  auc[c2]=0.612 | macroAUC=0.631 | macroSens=0.377 macroSpec=0.711 | sens[c0]=0.186  sens[c1]=0.591  sens[c2]=0.354 | spec[c0]=0.955  spec[c1]=0.437  spec[c2]=0.741
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0    1160    3519    1574
+    ISUP1      14     244     155
+    ISUP2       9      53      34
+
+=== Final model: Sensitivity at fixed specificity (validation) ===
+       class |          AUC |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec97 |  Sens@Spec99
+          c0 |        0.700 |        0.505 |        0.347 |        0.214 |        0.148 |        0.099
+          c1 |        0.583 |        0.271 |        0.138 |        0.068 |        0.027 |        0.012
+          c2 |        0.612 |        0.344 |        0.198 |        0.135 |        0.083 |        0.021
+       macro |        0.631 |        0.373 |        0.228 |        0.139 |        0.086 |        0.044

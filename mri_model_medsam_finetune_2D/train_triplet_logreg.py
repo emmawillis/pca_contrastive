@@ -154,6 +154,8 @@ def main():
     p.add_argument("--triplet_margin", type=float, default=0.2)
     p.add_argument("--use-skip", action=argparse.BooleanOptionalAction, default=True,
                 help="If true, drop rows with skip==1. Use --no-use-skip to include them.")
+    p.add_argument("--label6_column", default="label6")
+
 
     args = p.parse_args()
     print("ARGS: ", args)
@@ -170,6 +172,7 @@ def main():
         folds_val=folds_val,
         target=args.target,
         use_skip=args.use_skip,
+        label6_column=args.label6_column,
         batch_size=args.batch_size,
         pos_ratio=args.pos_ratio,
     )
@@ -226,7 +229,7 @@ def main():
     def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
         return triplet_loss_batch(embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
-    early = EarlyStopper(patience=10)
+    early = EarlyStopper(patience=100)
     best_path = outdir / "ckpt_best.pt"
 
     # -------- loop --------
