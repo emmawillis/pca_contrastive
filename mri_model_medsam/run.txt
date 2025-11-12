@@ -1,9 +1,0 @@
-baseline:
-python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/train_medsam_classifier.py --save_dir /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/frozen_medsam_results/baseline128 --embedding_dir /Users/emma/Desktop/QUEENS/THESIS/picai/input/balanced_slice_encodings --marksheet_csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet_folds.csv --device mps --wandb_name 128_local_finetune_uni2
-
-align:
-python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/train_medsam_triplet_histo_proj.py --save_dir /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/frozen_medsam_results/alignement128 --embedding_dir /Users/emma/Desktop/QUEENS/THESIS/picai/input/balanced_slice_encodings --marksheet_csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet_folds.csv --device mps --wandb_name local_triplet_uni2 --histo_root /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology_results/abmil_cleaned_run_1/encodings
-
-
-finetune:
-python /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/train_medsam_triplet_classifier.py --save_dir /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/frozen_medsam_results/finetune_aligned128 --embedding_dir /Users/emma/Desktop/QUEENS/THESIS/picai/input/balanced_slice_encodings --marksheet_csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_data/picai_labels/clinical_information/marksheet_folds.csv --device mps --wandb_name 128_local_finetune_uni2 --checkpoint_path /Users/emma/Desktop/QUEENS/THESIS/contrastive/mri_model_medsam/frozen_medsam_results/alignement128/best_triplet_model.pth

@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J all-isup3-triplet
+#SBATCH -J merged-isup3-baseline
 #SBATCH -A aip-medilab
 #SBATCH -t 2-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/triplet/triplet-encoder-all-%j.out
+#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/baseline/baseline-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -21,12 +21,12 @@ which python
 python --version
 nvidia-smi || true
 
-SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_triplet_logreg.py
+# --- paths (EDIT ME) ---
+SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train.py
+# SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_coral_loss.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/triplet
-HISTO_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/embeddings_512
-HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits
+OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/baseline
 
 # --- run ---
 srun -u python -u "$SCRIPT" \
@@ -41,12 +41,9 @@ srun -u python -u "$SCRIPT" \
   --patience 10 \
   --pos_ratio 0.33 \
   --outdir "$OUTDIR" \
-  --histo_dir "$HISTO_DIR" \
-  --histo_marksheet_dir "$HISTO_MARKSHEET_DIR" \
   --proj_dim 512 \
-  --provider "all" \
   --lr 1e-5 \
   --wd 0 \
   --no-use-skip \
-  --label6_column merged_ISUP
-
+  --label6_column merged_ISUP \
+  --wandb_run_name baseline-isup3

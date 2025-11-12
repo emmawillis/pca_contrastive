@@ -1,0 +1,5 @@
+changes:
+1. train and evaluate on val after every epoch as normal. pick best model by bAcc on val set. do early stopping on 10 epochs. then take the best val model and evaluate on test set directly (no save and load, keep model in memory)
+2. log to wandb 
+3. combine triplet logreg step and head training step into one file. still trains with triplet first then freezes and trains only head, but now checkpoint is in memory with no save
+4. automatically saves val and test encodings to outdir for UMAP later 

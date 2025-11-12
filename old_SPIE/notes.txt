@@ -1,0 +1,5 @@
+this should be basically identical to what i did in spie
+medsam is fully frozen (changes: using pre-neck encodings - maybe try including neck) its just running each time instead of saving encodings
+the same CNN model 
+using the triplet implementation from IPCAI version, but should be the same logic
+using the same evaluation as IPCAI 

@@ -39,11 +39,10 @@ srun -u python -u "$SCRIPT" \
   --target isup3 \
   --folds_train 1,2,3 \
   --folds_val 0 \
-  --folds_test 4 \
   --batch_size 16 \
   --pos_ratio 0.33 \
-  --epochs 40 \
-  --patience 10 \
+  --epochs 15 \
+  --patience 20 \
   --proj_dim 512 \
   --lr 1e-5 \
   --wd 0 \

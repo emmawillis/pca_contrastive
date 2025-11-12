@@ -1,0 +1,3 @@
+testing my IPCAI code with medsam frozen 
+this is basically the same concept as SPIE, except SPIE didn't have attention
+this version does have attention

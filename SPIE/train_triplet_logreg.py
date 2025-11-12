@@ -17,13 +17,13 @@ from segment_anything import sam_model_registry
 
 from triplet_loss_utils import (
     get_histo_by_isup,
-    get_random_sample,   # for sampling positives per class
+    triplet_loss_batch,
 )
-from info_loss_utils import SymmetricInfoNCELoss
 import train_utils
 from train_utils import (
     build_datasets_and_loaders,
     EarlyStopper,
+    unfreeze_and_add_param_group,
 )
 
 from sklearn.metrics import (
@@ -35,44 +35,13 @@ from sklearn.metrics import (
 )
 from sklearn.linear_model import LogisticRegression
 
-
-# ---- InfoNCE batch wrapper (replaces triplet_loss_batch) ----
-def infonce_loss_batch(embeddings: torch.Tensor,
-                       labels: torch.Tensor,
-                       histo_buckets,
-                       loss_obj: SymmetricInfoNCELoss) -> torch.Tensor:
-    """
-    Build a batch of positives from histo_buckets (one positive per label)
-    and compute symmetric InfoNCE with the new API:
-
-        loss = loss_obj(mri_feats=embeddings, positive_hist=pos_hist)
-    """
-    device = embeddings.device
-    dtype = embeddings.dtype
-
-    pos_list = []
-    for i in range(labels.size(0)):
-        lbl = int(labels[i].item())
-        pos = get_random_sample(lbl, histo_buckets)  # 1D tensor [D]
-        pos_list.append(pos)
-
-    pos_hist = torch.stack(pos_list, dim=0).to(device=device, dtype=dtype, non_blocking=True)
-
-    # Dim check (should match projection dim)
-    if embeddings.size(1) != pos_hist.size(1):
-        raise ValueError(f"Embedding dim mismatch: MRI feats {embeddings.size(1)} vs hist {pos_hist.size(1)}")
-
-    return loss_obj(embeddings, pos_hist)
-
-
-# ---- InfoNCE train/val (encoder-only training) ----
-def run_epoch_triplet(loader, model, loss_fn_builder, optimizer=None, device="cuda"):
-    """
-    Keeps the original structure/signature, but 'loss_fn_builder' is a callable
-    that returns a loss tensor from (embeddings, labels).
-    """
+# ---- Triplet train/val (encoder-only training) ----
+def run_epoch_triplet(loader, model, triplet_fn, optimizer=None, device="cuda"):
     train_mode = optimizer is not None
-    model.train(train_mode)
+    if train_mode:
+        model.train(True)
+    else:
+        model.train(False)
 
     total_loss, total_n = 0.0, 0
     with torch.set_grad_enabled(train_mode):
@@ -81,7 +50,7 @@ def run_epoch_triplet(loader, model, loss_fn_builder, optimizer=None, device="cu
             y = batch["label"].to(device, non_blocking=True)
 
             _, emb = model(x)                    # (logits unused), emb: [B,D]
-            loss = loss_fn_builder(emb, y)
+            loss = triplet_fn(emb, y)
 
             if train_mode:
                 optimizer.zero_grad(set_to_none=True)
@@ -95,7 +64,6 @@ def run_epoch_triplet(loader, model, loss_fn_builder, optimizer=None, device="cu
 
     avg_loss = total_loss / max(1, total_n)
     return avg_loss
-
 
 # ---- Embedding extraction ----
 @torch.no_grad()
@@ -112,12 +80,11 @@ def extract_embeddings(loader, model, device="cuda"):
     y = torch.cat(ys, 0).numpy() if ys else np.empty((0,), dtype=np.int64)
     return X, y
 
-
 # ---- LR eval on embeddings ----
 def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
     clf = LogisticRegression(
         max_iter=max_iter,
-        multi_class="auto",
+        multi_class="auto",        # 'multinomial' if supported by solver
         solver="lbfgs",
         n_jobs=None,
         class_weight=None
@@ -152,13 +119,19 @@ def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
     except Exception:
         pass
 
+    # Confusion matrix (rows=true, cols=pred)
     cm = confusion_matrix(y_val, y_pred, labels=list(range(n_classes)))
-    return {
-        "acc": acc, "bacc": bacc, "f1_macro": f1_macro,
-        "per_acc": per_acc, "per_auc": per_auc, "macro_auc": macro_auc,
-        "cm": cm, "clf": clf,
-    }
 
+    return {
+        "acc": acc,
+        "bacc": bacc,
+        "f1_macro": f1_macro,
+        "per_acc": per_acc,
+        "per_auc": per_auc,
+        "macro_auc": macro_auc,
+        "cm": cm,
+        "clf": clf,
+    }
 
 # ----------------- main -----------------
 def main():
@@ -170,7 +143,8 @@ def main():
     p.add_argument("--folds_train", default="1,2,3") # holding back 4 as test set
     p.add_argument("--folds_val", default="0")
     p.add_argument("--batch_size", type=int, default=16)
-    p.add_argument("--epochs", type=int, default=15)      # number of encoder epochs (each followed by LR eval)
+    p.add_argument("--epochs", type=int, default=15)      # number of triplet epochs (each followed by LR eval)
+    p.add_argument("--patience", type=int, default=10)      # number of triplet epochs (each followed by LR eval)
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--wd", type=float, default=1e-4)
     p.add_argument("--pos_ratio", type=float, default=0.33)
@@ -179,15 +153,16 @@ def main():
     p.add_argument("--lr_max_iter", type=int, default=5, help="LogReg max_iter per evaluation")
     p.add_argument("--provider", default="karolinska")
     p.add_argument("--proj_dim", type=int, required=True)
-    # InfoNCE temperature
-    p.add_argument("--infonce_tau", type=float, default=0.07)
-
+    p.add_argument("--triplet_margin", type=float, default=0.2)
     p.add_argument("--use-skip", action=argparse.BooleanOptionalAction, default=True,
                 help="If true, drop rows with skip==1. Use --no-use-skip to include them.")
     p.add_argument("--label6_column", default="label6")
+    p.add_argument("--freeze_epochs", type=int, default=0,
+                   help="Freeze MedSAM encoder for this many epochs, then unfreeze.")
+
 
     args = p.parse_args()
-    print("SCRIPT: train_clip_logreg.py (info loss)")
+    print("SCRIPT: train_triplet_logreg.py")
     print("ARGS: ", args)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -207,7 +182,7 @@ def main():
         pos_ratio=args.pos_ratio,
     )
 
-    # -------- histo dataset for positives (class buckets) --------
+    # -------- histo dataset for triplet anchors/pos/negs --------
     train_histo_buckets = get_histo_by_isup(
         encodings_dir=str(Path(args.histo_dir) / "train"),
         marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
@@ -233,13 +208,15 @@ def main():
         pixel_mean_std=None,
     ).to(device)
 
-    # Train **encoder only** (head not used for InfoNCE training)
+    # Train **encoder only** (head not used for triplet)
     for p in model.parameters():            # freeze all
         p.requires_grad = False
     for p in model.encoder.parameters():    # unfreeze encoder
-        p.requires_grad = True
+        p.requires_grad = False
     for p in model.proj.parameters():       # unfreeze the projection
         p.requires_grad = True
+
+    encoder_params = list(model.encoder.parameters())
 
     proj_lr = args.lr
     enc_lr = proj_lr * 0.1
@@ -250,26 +227,28 @@ def main():
             {"params": model.encoder.parameters(), "lr": enc_lr,  "weight_decay": args.wd},
         ]
     )
-    print(f"[InfoNCE] lr_proj={proj_lr:g} | lr_enc={enc_lr:g} | tau={args.infonce_tau:g}")
+    print(f"[triplet] lr_proj={proj_lr:g} | lr_enc={enc_lr:g} | triplet_margin={args.triplet_margin:g}")
 
-    # Instantiate the Symmetric InfoNCE loss
-    infonce = SymmetricInfoNCELoss(temperature=args.infonce_tau)
+    # triplet criteria (train/val)
+    def train_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        return triplet_loss_batch(embeddings, labels, train_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
-    # loss builders (train/val) that match the old signature used by run_epoch_triplet
-    def train_infonce(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return infonce_loss_batch(embeddings, labels, train_histo_buckets, loss_obj=infonce)
+    def val_triplet(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        return triplet_loss_batch(embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin)
 
-    def val_infonce(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        return infonce_loss_batch(embeddings, labels, val_histo_buckets, loss_obj=infonce)
-
-    early = EarlyStopper(patience=100)
+    early = EarlyStopper(patience=args.patience)
     best_path = outdir / "ckpt_best.pt"
 
     # -------- loop --------
     for epoch in range(1, args.epochs + 1):
-        # 1) Encoder training epoch (InfoNCE)
-        tr_loss = run_epoch_triplet(train_loader, model, train_infonce, optimizer=optimizer, device=device)
-        va_loss = run_epoch_triplet(val_loader,   model, val_infonce,   optimizer=None,     device=device)
+        # --- Unfreeze after warmup ---
+        if epoch == args.freeze_epochs + 1:
+            unfreeze_and_add_param_group(encoder_params, optimizer, base_lr=args.lr, wd=args.wd, lr_mult=0.1)
+            print(f"→ Unfroze encoder at epoch {epoch}; added to optimizer with lr={args.lr*0.1:g}")
+
+        # 1) Encoder training epoch (triplet)
+        tr_loss = run_epoch_triplet(train_loader, model, train_triplet, optimizer=optimizer, device=device)
+        va_loss = run_epoch_triplet(val_loader,   model, val_triplet,   optimizer=None,     device=device)
 
         # 2) Embed train/val with current encoder
         X_tr, y_tr = extract_embeddings(train_loader, model, device=device)
@@ -296,7 +275,7 @@ def main():
         else:
             auc_part = " | (AUC unavailable)"
 
-        print(f"[{epoch:03d}] infonce: train loss {tr_loss:.4f} | val loss {va_loss:.4f} || "
+        print(f"[{epoch:03d}] triplet: train loss {tr_loss:.4f} | val loss {va_loss:.4f} || "
               f"LR(val): acc {lr_metrics['acc']:.4f} BAL-acc {lr_metrics['bacc']:.4f} f1 {lr_metrics['f1_macro']:.4f} | "
               f"{per_acc_str}{auc_part}")
 
@@ -310,7 +289,7 @@ def main():
             print(f"  ↳ no improvement ({early.num_bad}/{early.patience})")
             if early.num_bad >= early.patience:
                 print(f"Early stopping at epoch {epoch}.")
-
+                break
 
 if __name__ == "__main__":
     main()

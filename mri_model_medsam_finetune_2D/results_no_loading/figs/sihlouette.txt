@@ -1,0 +1,6 @@
+
+UMAP test:
+Silhouette {baseline}: 0.1116 |​ Silhouette (aligned): 0.2196 
+
+UMAP val:
+Silhouette (baseline): 0.0849 | Silhouette (aligned): 0.2188

@@ -1,0 +1,23 @@
+from sklearn.decomposition import PCA
+Xb_pca = PCA(n_components=50, random_state=SEED).fit_transform(Xb)
+Xa_pca = PCA(n_components=50, random_state=SEED).fit_transform(Xa)
+
+reducer = umap.UMAP(
+    n_neighbors=30,
+    min_dist=0.02,
+    metric="correlation",
+    target_metric="categorical",
+    target_weight=0.4,
+    random_state=SEED,
+)
+Zb = reducer.fit_transform(Xb_pca, y_base)
+Za = reducer.fit_transform(Xa_pca, y_align)
+
+print("Reduced shapes:", Zb.shape, Za.shape)
+
+
+^ used this to calculate
+
+
+sih on text
+Silhouette (baseline): 0.4597 | Silhouette (aligned): 0.7092

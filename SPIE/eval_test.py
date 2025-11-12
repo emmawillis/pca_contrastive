@@ -37,7 +37,7 @@ def load_model(n_classes, proj_dim, model_ckpt_path, device="cuda"):
     # --- Load classifier weights (supports either raw SD or {"model": SD}) ---
     ckpt = torch.load(model_ckpt_path, map_location="cpu")
     state = ckpt.get("model", ckpt)
-    missing, unexpected = model.load_state_dict(state, strict=True)
+    missing, unexpected = model.load_state_dict(state, strict=False)
     assert not missing,    f"Missing keys: {missing}"
     assert not unexpected, f"Unexpected keys: {unexpected}"
 
@@ -87,12 +87,11 @@ def main():
 
     # -------- datasets / loaders (reuse the shared helper exactly as in training) --------
     # We will *ignore* the returned train loader and use the "val" loader as our TEST loader.
-    train_ds, val_ds, test_ds, train_loader, val_loader, test_loader, w_ce, classes_present, n_classes = \
+    train_ds, test_ds, train_loader, test_loader, w_ce, classes_present, n_classes = \
         build_datasets_and_loaders(
             manifest=args.manifest,
             folds_train=folds_train,
-            folds_val=[0],
-            folds_test=folds_test,
+            folds_val=folds_test,
             target=args.target,
             use_skip=args.use_skip,
             label6_column=args.label6_column,

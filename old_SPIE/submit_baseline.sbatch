@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J merged-isup3-baseline
+#SBATCH -J old-spie-baseline
 #SBATCH -A aip-medilab
 #SBATCH -t 2-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/baseline/slurm-%x-%j.out
+#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/old_SPIE/results/baseline/baseline-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -22,11 +22,10 @@ python --version
 nvidia-smi || true
 
 # --- paths (EDIT ME) ---
-SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train.py
-# SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_coral_loss.py
+SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/old_SPIE/baseline.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/baseline
+OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/old_SPIE/results/baseline
 
 # --- run ---
 srun -u python -u "$SCRIPT" \
@@ -36,7 +35,7 @@ srun -u python -u "$SCRIPT" \
   --folds_train 1,2,3 \
   --folds_val 0 \
   --batch_size 16 \
-  --epochs 100 \
+  --epochs 50 \
   --pos_ratio 0.33 \
   --outdir "$OUTDIR" \
   --proj_dim 512 \

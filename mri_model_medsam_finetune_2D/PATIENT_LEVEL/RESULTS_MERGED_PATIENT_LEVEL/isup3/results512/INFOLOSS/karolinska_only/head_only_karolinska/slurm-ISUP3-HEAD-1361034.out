@@ -65,3 +65,20 @@ true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
     ISUP1       6     257      83
     ISUP2       0      69      41
   ↳ new best (val BAL-acc=0.3903) saved to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/INFOLOSS/karolinska_only/head_only_karolinska/ckpt_head_best.pt
+[007] head-train: loss 0.8484 || val: loss 0.1428 acc 0.0918 BAL-acc 0.3883 f1 0.0866 | acc[c0]=0.054  acc[c1]=0.656  acc[c2]=0.455 | auc[c0]=0.717  auc[c1]=0.472  auc[c2]=0.722 | macroAUC=0.637 | macroSens=0.388 macroSpec=0.679 | sens[c0]=0.054  sens[c1]=0.656  sens[c2]=0.455 | spec[c0]=0.987  spec[c1]=0.231  spec[c2]=0.819
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     338    4823    1079
+    ISUP1       6     227     113
+    ISUP2       0      60      50
+  ↳ no improvement (1/10)
+[008] head-train: loss 0.8464 || val: loss 0.1429 acc 0.0938 BAL-acc 0.3880 f1 0.0863 | acc[c0]=0.059  acc[c1]=0.587  acc[c2]=0.518 | auc[c0]=0.717  auc[c1]=0.464  auc[c2]=0.723 | macroAUC=0.635 | macroSens=0.388 macroSpec=0.680 | sens[c0]=0.059  sens[c1]=0.587  sens[c2]=0.518 | spec[c0]=0.987  spec[c1]=0.282  spec[c2]=0.772
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     368    4506    1366
+    ISUP1       6     203     137
+    ISUP2       0      53      57
+  ↳ no improvement (2/10)
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 1361034 ON kn145 CANCELLED AT 2025-10-29T19:04:08 ***
+slurmstepd: error: *** STEP 1361034.0 ON kn145 CANCELLED AT 2025-10-29T19:04:08 ***
