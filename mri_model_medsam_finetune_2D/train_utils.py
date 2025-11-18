@@ -60,7 +60,6 @@ def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337
     return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
 
 def class_weights_from_train(df: pd.DataFrame, target: str):
-    """Return torch.FloatTensor of class weights (mean-normalized)."""
     if target == "isup3":
         y = df["label6"].map(map_isup3)
     elif target == "binary_low_high":
@@ -69,9 +68,16 @@ def class_weights_from_train(df: pd.DataFrame, target: str):
         y = df["label6"].map(map_binary_all)
     else:
         y = df["label6"]
-    classes = sorted(int(c) for c in y.unique())
+
+    # FIXED: Always 6 classes for ISUP6
+    if target == "isup6":
+        classes = list(range(6))
+    else:
+        classes = sorted(int(c) for c in y.unique())
+
     cnt = Counter(int(v) for v in y.tolist())
     K, N = len(classes), len(y)
+
     ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
     m = sum(ws)/len(ws)
     ws = [w/m for w in ws]
@@ -217,7 +223,10 @@ def build_datasets_and_loaders(
 
     # weights / classes (from train only)
     w_ce, classes_present = class_weights_from_train(train_ds.df, target=target)
+    print("!!!!!! classes_present", classes_present)
     n_classes = len(classes_present)
+    if target == "isup6":
+        n_classes = 6
 
     # samplers / loaders
     sampler = make_pos_sampler(train_ds.df, pos_ratio=pos_ratio)

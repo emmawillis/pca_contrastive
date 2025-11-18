@@ -249,7 +249,7 @@ def main():
     logits_val = val_final["logits"]; y_val_t = val_final["labels"]; val_embs = val_final["embeddings"]
     y_val = y_val_t.numpy() if y_val_t.numel() else np.empty((0,), dtype=np.int64)
     probs_val = torch.softmax(logits_val, dim=1).numpy() if logits_val.numel() else np.empty((0, n_classes), dtype=np.float32)
-    spec_targets = (0.8, 0.9, 0.95, 0.975, 0.99)
+    spec_targets = (0.4, 0.6, 0.8, 0.9, 0.95, 0.99)
     per_cls_val, macro_val = train_utils.per_class_operating_points(y_val, probs_val, spec_targets)
     print_operating_points_table(per_cls_val, macro_val, spec_targets, dataset_label="validation")
 

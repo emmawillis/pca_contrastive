@@ -5,7 +5,7 @@
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/final/test/triplet_all_TEST-%j.out
+#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/final/test/BASELINE_WITH_SAM_CKPT-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -24,13 +24,15 @@ nvidia-smi || true
 # --- paths (EDIT ME) ---
 SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/eval_test.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/final/test
-MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/final/ckpt_head_best.pt
+OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/TRIPLET/all_providers/head_only
+MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/baseline/ckpt_best.pt
+SAM_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
 # --- run ---
 srun -u python -u "$SCRIPT" \
   --manifest "$MANIFEST" \
   --model_ckpt "$MODEL_CKPT" \
+  --sam_checkpoint "$SAM_CKPT" \
   --target isup3 \
   --folds_train 1,2,3 \
   --fold_test 4 \

@@ -1,0 +1,181 @@
+Host: kn070
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Sun Nov 16 16:14:05 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:65:00.0 Off |                    0 |
+| N/A   28C    P8             33W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+SCRIPT: train.py
+ARGS: Namespace(seed=42, manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/binary_results_no_loading/baseline', target='binary_all', folds_train='1,2,3', folds_val='0', folds_test='4', batch_size=16, epochs=40, patience=10, lr=1e-05, wd=0.0, pos_ratio=0.5, proj_dim=512, use_skip=False, label6_column='merged_ISUP', freeze_epochs=2, wandb=True, wandb_project='mri-training', wandb_run_name='baseline-binary')
+wandb: Currently logged in as: jesande7 (jesande7-queens) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /project/6106383/shared/picai/wandb/run-20251116_161411-3ic4x2jn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run baseline-binary
+wandb: ⭐️ View project at https://wandb.ai/jesande7-queens/mri-training
+wandb: 🚀 View run at https://wandb.ai/jesande7-queens/mri-training/runs/3ic4x2jn
+[probe][epoch1 batch 00] has_lesion: 6/16 (38%) || labels: no csPCa=8 (50%) | yes csPCa=8 (50%)
+[probe][epoch1 batch 01] has_lesion: 8/16 (50%) || labels: no csPCa=8 (50%) | yes csPCa=8 (50%)
+[probe][epoch1 batch 02] has_lesion: 7/16 (44%) || labels: no csPCa=9 (56%) | yes csPCa=7 (44%)
+[probe][epoch1 batch 03] has_lesion: 10/16 (62%) || labels: no csPCa=6 (38%) | yes csPCa=10 (62%)
+[probe][epoch1 batch 04] has_lesion: 7/16 (44%) || labels: no csPCa=9 (56%) | yes csPCa=7 (44%)
+[probe][epoch1 batch 05] has_lesion: 9/16 (56%) || labels: no csPCa=7 (44%) | yes csPCa=9 (56%)
+[probe][epoch1 batch 06] has_lesion: 9/16 (56%) || labels: no csPCa=7 (44%) | yes csPCa=9 (56%)
+[probe][epoch1 batch 07] has_lesion: 6/16 (38%) || labels: no csPCa=10 (62%) | yes csPCa=6 (38%)
+[001] train: loss 0.1938 bacc 0.5959 acc 0.6001 f1 0.5247 | val: loss 0.1671 acc 0.4870 BAL-acc 0.7126 f1 0.4133 | acc[c0]=0.451  acc[c1]=0.974 | auc[c0]=0.888  auc[c1]=0.888 | macroAUC=0.888 | macroSens=0.713 macroSpec=0.713 | sens[c0]=0.451  sens[c1]=0.974 | spec[c0]=0.974  spec[c1]=0.451
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    2817    3423
+yes csPCa      12     444
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/binary_results_no_loading/baseline/ckpt_best.pt (BAL-acc=0.7126)
+[002] train: loss 0.1532 bacc 0.7127 acc 0.7155 f1 0.6913 | val: loss 0.1611 acc 0.5357 BAL-acc 0.7397 f1 0.4458 | acc[c0]=0.504  acc[c1]=0.976 | auc[c0]=0.900  auc[c1]=0.900 | macroAUC=0.900 | macroSens=0.740 macroSpec=0.740 | sens[c0]=0.504  sens[c1]=0.976 | spec[c0]=0.976  spec[c1]=0.504
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    3142    3098
+yes csPCa      11     445
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/binary_results_no_loading/baseline/ckpt_best.pt (BAL-acc=0.7397)
+→ Unfroze encoder at epoch 3; added to optimizer with lr=1e-06
+[003] train: loss 0.1295 bacc 0.7860 acc 0.7901 f1 0.7800 | val: loss 0.1467 acc 0.6543 BAL-acc 0.7891 f1 0.5223 | acc[c0]=0.633  acc[c1]=0.945 | auc[c0]=0.909  auc[c1]=0.909 | macroAUC=0.909 | macroSens=0.789 macroSpec=0.789 | sens[c0]=0.633  sens[c1]=0.945 | spec[c0]=0.945  spec[c1]=0.633
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    3950    2290
+yes csPCa      25     431
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/binary_results_no_loading/baseline/ckpt_best.pt (BAL-acc=0.7891)
+[004] train: loss 0.1038 bacc 0.8684 acc 0.8695 f1 0.8675 | val: loss 0.1378 acc 0.8563 BAL-acc 0.8294 f1 0.6743 | acc[c0]=0.861  acc[c1]=0.798 | auc[c0]=0.898  auc[c1]=0.898 | macroAUC=0.898 | macroSens=0.829 macroSpec=0.829 | sens[c0]=0.861  sens[c1]=0.798 | spec[c0]=0.798  spec[c1]=0.861
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5370     870
+yes csPCa      92     364
+  ↳ saved best to /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/binary_results_no_loading/baseline/ckpt_best.pt (BAL-acc=0.8294)
+[005] train: loss 0.0839 bacc 0.9249 acc 0.9253 f1 0.9250 | val: loss 0.1629 acc 0.8342 BAL-acc 0.8226 f1 0.6516 | acc[c0]=0.836  acc[c1]=0.809 | auc[c0]=0.889  auc[c1]=0.889 | macroAUC=0.889 | macroSens=0.823 macroSpec=0.823 | sens[c0]=0.836  sens[c1]=0.809 | spec[c0]=0.809  spec[c1]=0.836
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5217    1023
+yes csPCa      87     369
+  ↳ no improvement (1/10)
+[006] train: loss 0.0701 bacc 0.9556 acc 0.9558 f1 0.9557 | val: loss 0.2345 acc 0.8853 BAL-acc 0.7840 f1 0.6890 | acc[c0]=0.901  acc[c1]=0.667 | auc[c0]=0.871  auc[c1]=0.871 | macroAUC=0.871 | macroSens=0.784 macroSpec=0.784 | sens[c0]=0.901  sens[c1]=0.667 | spec[c0]=0.667  spec[c1]=0.901
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5624     616
+yes csPCa     152     304
+  ↳ no improvement (2/10)
+[007] train: loss 0.0582 bacc 0.9705 acc 0.9707 f1 0.9706 | val: loss 0.2690 acc 0.8990 BAL-acc 0.7680 f1 0.6992 | acc[c0]=0.920  acc[c1]=0.616 | auc[c0]=0.863  auc[c1]=0.863 | macroAUC=0.863 | macroSens=0.768 macroSpec=0.768 | sens[c0]=0.920  sens[c1]=0.616 | spec[c0]=0.616  spec[c1]=0.920
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5739     501
+yes csPCa     175     281
+  ↳ no improvement (3/10)
+[008] train: loss 0.0492 bacc 0.9786 acc 0.9788 f1 0.9788 | val: loss 0.3125 acc 0.9073 BAL-acc 0.7480 f1 0.7011 | acc[c0]=0.932  acc[c1]=0.564 | auc[c0]=0.838  auc[c1]=0.838 | macroAUC=0.838 | macroSens=0.748 macroSpec=0.748 | sens[c0]=0.932  sens[c1]=0.564 | spec[c0]=0.564  spec[c1]=0.932
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5818     422
+yes csPCa     199     257
+  ↳ no improvement (4/10)
+[009] train: loss 0.0413 bacc 0.9840 acc 0.9840 f1 0.9840 | val: loss 0.4106 acc 0.9183 BAL-acc 0.7316 f1 0.7090 | acc[c0]=0.948  acc[c1]=0.515 | auc[c0]=0.822  auc[c1]=0.822 | macroAUC=0.822 | macroSens=0.732 macroSpec=0.732 | sens[c0]=0.948  sens[c1]=0.515 | spec[c0]=0.515  spec[c1]=0.948
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5914     326
+yes csPCa     221     235
+  ↳ no improvement (5/10)
+[010] train: loss 0.0292 bacc 0.9891 acc 0.9891 f1 0.9891 | val: loss 0.5046 acc 0.9229 BAL-acc 0.7066 f1 0.7025 | acc[c0]=0.957  acc[c1]=0.456 | auc[c0]=0.773  auc[c1]=0.773 | macroAUC=0.773 | macroSens=0.707 macroSpec=0.707 | sens[c0]=0.957  sens[c1]=0.456 | spec[c0]=0.456  spec[c1]=0.957
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5972     268
+yes csPCa     248     208
+  ↳ no improvement (6/10)
+[011] train: loss 0.0262 bacc 0.9916 acc 0.9917 f1 0.9917 | val: loss 0.5705 acc 0.9241 BAL-acc 0.6798 f1 0.6878 | acc[c0]=0.963  acc[c1]=0.397 | auc[c0]=0.739  auc[c1]=0.739 | macroAUC=0.739 | macroSens=0.680 macroSpec=0.680 | sens[c0]=0.963  sens[c1]=0.397 | spec[c0]=0.397  spec[c1]=0.963
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    6007     233
+yes csPCa     275     181
+  ↳ no improvement (7/10)
+[012] train: loss 0.0221 bacc 0.9930 acc 0.9930 f1 0.9930 | val: loss 0.6013 acc 0.9259 BAL-acc 0.6869 f1 0.6951 | acc[c0]=0.964  acc[c1]=0.410 | auc[c0]=0.754  auc[c1]=0.754 | macroAUC=0.754 | macroSens=0.687 macroSpec=0.687 | sens[c0]=0.964  sens[c1]=0.410 | spec[c0]=0.410  spec[c1]=0.964
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    6013     227
+yes csPCa     269     187
+  ↳ no improvement (8/10)
+[013] train: loss 0.0133 bacc 0.9959 acc 0.9959 f1 0.9959 | val: loss 0.6494 acc 0.9255 BAL-acc 0.6846 f1 0.6930 | acc[c0]=0.963  acc[c1]=0.406 | auc[c0]=0.753  auc[c1]=0.753 | macroAUC=0.753 | macroSens=0.685 macroSpec=0.685 | sens[c0]=0.963  sens[c1]=0.406 | spec[c0]=0.406  spec[c1]=0.963
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    6012     228
+yes csPCa     271     185
+  ↳ no improvement (9/10)
+[014] train: loss 0.0118 bacc 0.9965 acc 0.9965 f1 0.9965 | val: loss 0.6755 acc 0.9234 BAL-acc 0.6835 f1 0.6890 | acc[c0]=0.961  acc[c1]=0.406 | auc[c0]=0.756  auc[c1]=0.756 | macroAUC=0.756 | macroSens=0.683 macroSpec=0.683 | sens[c0]=0.961  sens[c1]=0.406 | spec[c0]=0.406  spec[c1]=0.961
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5998     242
+yes csPCa     271     185
+  ↳ no improvement (10/10)
+Early stopping at epoch 14.
+
+=== Final model: Sensitivity at fixed specificity === (validation)
+       class |          AUC |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec97 |  Sens@Spec99
+          c0 |        0.898 |        0.859 |        0.728 |        0.510 |        0.348 |        0.179
+          c1 |        0.898 |        0.855 |        0.721 |        0.542 |        0.382 |        0.228
+       macro |        0.898 |        0.857 |        0.725 |        0.526 |        0.365 |        0.204
+[TEST] loss 0.1916 acc 0.8620 f1 0.6771 | acc[c0]=0.875  acc[c1]=0.699 | auc[c0]=0.866  auc[c1]=0.866 | macroAUC=0.866 | macroSens=0.787 macroSpec=0.787 | sens[c0]=0.875  sens[c1]=0.699 | spec[c0]=0.699  spec[c1]=0.875
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred no csPCa yes csPCa
+ no csPCa    5473     780
+yes csPCa     153     356
+
+=== Final model: Sensitivity at fixed specificity === (test)
+       class |          AUC |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec97 |  Sens@Spec99
+          c0 |        0.866 |        0.759 |        0.549 |        0.407 |        0.268 |        0.118
+          c1 |        0.866 |        0.774 |        0.660 |        0.536 |        0.436 |        0.297
+       macro |        0.866 |        0.767 |        0.605 |        0.472 |        0.352 |        0.207
+wandb: updating run metadata
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:             aux/lr ▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/test/macro_tnr ▁
+wandb: aux/test/macro_tpr ▁
+wandb:      aux/train/acc ▁▃▄▆▇▇████████
+wandb: aux/train/f1_macro ▁▃▅▆▇▇████████
+wandb:  aux/val/macro_tnr ▃▄▆██▆▅▄▃▂▁▁▁▁
+wandb:  aux/val/macro_tpr ▃▄▆██▆▅▄▃▂▁▁▁▁
+wandb:              epoch ▁▁▁▂▂▂▂▂▂▃▃▃▃▃█
+wandb:        test/acc_c0 ▁
+wandb:        test/acc_c1 ▁
+wandb:                +14 ...
+wandb: 
+wandb: Run summary:
+wandb:             aux/lr 1e-05
+wandb: aux/test/macro_tnr 0.78734
+wandb: aux/test/macro_tpr 0.78734
+wandb:      aux/train/acc 0.99649
+wandb: aux/train/f1_macro 0.99649
+wandb:  aux/val/macro_tnr 0.68346
+wandb:  aux/val/macro_tpr 0.68346
+wandb:              epoch 40
+wandb:        test/acc_c0 0.87526
+wandb:        test/acc_c1 0.69941
+wandb:                +14 ...
+wandb: 
+wandb: 🚀 View run baseline-binary at: https://wandb.ai/jesande7-queens/mri-training/runs/3ic4x2jn
+wandb: ⭐️ View project at: https://wandb.ai/jesande7-queens/mri-training
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20251116_161411-3ic4x2jn/logs

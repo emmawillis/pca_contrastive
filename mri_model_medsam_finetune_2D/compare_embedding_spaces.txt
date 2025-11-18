@@ -1,0 +1,54 @@
+TRIPLET - isup3 - test sets:
+
+(venv) ewillis@klogin04:~/projects/aip-medilab/ewillis/pca_contrastive$ python ./mri_model_medsam_finetune_2D/compare_embedding_spaces.py --histo-pt /home/ewillis/projects/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/test_isup3.pt --mri-pt /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/triplet/test_embeddings/test.pt 
+/project/6106383/ewillis/pca_contrastive/./mri_model_medsam_finetune_2D/compare_embedding_spaces.py:65: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword
+  y = np.array(y, dtype=np.int64)
+
+=== Alignment Report (Histopathology vs MRI) ===
+- Normalization: none
+- Distance metric: cosine
+
+[Geometry]
+  Centroid cosine (class 0): 0.4237
+  Centroid cosine (class 1): 0.3820
+  Centroid cosine (class 2): 0.3354
+  Inter-class Spearman rank correlation (centroid distances): 0.5000
+  Orthogonal Procrustes disparity (centroids): 0.127535
+
+[Distribution]
+  Fréchet distance (overall): 512.609372
+  Maximum Mean Discrepancy MMD^2 (RBF, overall): 0.483890
+
+[Cross-domain transfer]
+  k-Nearest Neighbors (kNN) histopathology→MRI: accuracy=0.9164, balanced_accuracy=0.5024
+  k-Nearest Neighbors (kNN) MRI→histopathology: accuracy=0.6006, balanced_accuracy=0.4405
+  Prototype (nearest-centroid) histopathology→MRI: accuracy=0.9005, balanced_accuracy=0.5053
+  Prototype (nearest-centroid) MRI→histopathology: accuracy=0.6027, balanced_accuracy=0.4989
+
+
+BASELINE - isup3 - test set:
+(venv) ewillis@klogin04:~/projects/aip-medilab/ewillis/pca_contrastive$ python ./mri_model_medsam_finetune_2D/compare_embedding_spaces.py --histo-pt /home/ewillis/projects/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/test_isup3.pt --mri-pt /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/baseline/
+test_embeddings/test.pt 
+/project/6106383/ewillis/pca_contrastive/./mri_model_medsam_finetune_2D/compare_embedding_spaces.py:65: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword
+  y = np.array(y, dtype=np.int64)
+
+=== Alignment Report (Histopathology vs MRI) ===
+- Normalization: none
+- Distance metric: cosine
+
+[Geometry]
+  Centroid cosine (class 0): 0.3078
+  Centroid cosine (class 1): 0.3523
+  Centroid cosine (class 2): 0.3754
+  Inter-class Spearman rank correlation (centroid distances): 0.5000
+  Orthogonal Procrustes disparity (centroids): 0.474235
+
+[Distribution]
+  Fréchet distance (overall): 354.406850
+  Maximum Mean Discrepancy MMD^2 (RBF, overall): 0.460171
+
+[Cross-domain transfer]
+  k-Nearest Neighbors (kNN) histopathology→MRI: accuracy=0.8285, balanced_accuracy=0.3677
+  k-Nearest Neighbors (kNN) MRI→histopathology: accuracy=0.5304, balanced_accuracy=0.3720
+  Prototype (nearest-centroid) histopathology→MRI: accuracy=0.7873, balanced_accuracy=0.3488
+  Prototype (nearest-centroid) MRI→histopathology: accuracy=0.1971, balanced_accuracy=0.2738

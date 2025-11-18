@@ -401,7 +401,7 @@ def main():
     model.to(device).eval()
 
     # -------- Final VAL/TEST (using best head; collect outputs for OP table) --------
-    spec_targets = (0.8, 0.9, 0.95, 0.975, 0.99)
+    spec_targets = (0.4, 0.6, 0.8, 0.9, 0.95, 0.99)
 
     val_final = evaluate_loader(val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, collect_outputs=True)
     pcs_v, auc_v = format_perclass_acc_auc(val_final["per_acc"], val_final["per_auc"], val_final["macro_auc"], n_classes)

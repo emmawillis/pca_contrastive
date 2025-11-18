@@ -18,10 +18,10 @@ from train_utils import (
     print_operating_points_table,
 )
 
-def load_model(n_classes, proj_dim, model_ckpt_path, device="cuda"):
+def load_model(n_classes, proj_dim, sam_checkpoint, model_ckpt_path, device="cuda"):
     # --- Build MedSAM backbone ---
     sam = sam_model_registry["vit_b"]()
-    # sam.load_state_dict(torch.load(sam_checkpoint, map_location="cpu"), strict=True)
+    sam.load_state_dict(torch.load(sam_checkpoint, map_location="cpu"), strict=True)
 
     model = MedSAMSliceSpatialAttn(
         sam_model=sam,
@@ -61,7 +61,7 @@ def collect_logits_and_labels(loader, model, device="cuda", n_classes=2):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--manifest", required=True)
-    # p.add_argument("--sam_checkpoint", required=True, help="Path to MedSAM ViT-B checkpoint.")
+    p.add_argument("--sam_checkpoint", required=True, help="Path to MedSAM ViT-B checkpoint.")
     p.add_argument("--model_ckpt", required=True, help="Trained model checkpoint to evaluate (e.g., ckpt_best.pt).")
     p.add_argument("--outdir", default="./runs/eval")
     p.add_argument("--target", choices=["isup3","isup6","binary_low_high","binary_all"], default="isup3")
@@ -105,6 +105,7 @@ def main():
         n_classes=n_classes,
         proj_dim=args.proj_dim,
         model_ckpt_path=args.model_ckpt,
+        sam_checkpoint=args.sam_checkpoint,
         device=device
     )
 

@@ -1,0 +1,35 @@
+Got noisy labels from this kaggle discussion:
+https://www.kaggle.com/competitions/prostate-cancer-grade-assessment/writeups/barelybears-6th-place-solution-noise-robust-learni
+
+and this github repo:
+https://github.com/analokmaus/kaggle-panda-challenge-public
+
+which has train.csv with these columns:
+,image_id,data_provider,isup_grade,gleason_score,loss_rank,weight,weight2,noise_ratio_5,noise_ratio_10,noise_ratio_15,noise_ratio_20
+
+
+which i analyzed with this script:
+/Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology/data/get_noisy_count_train.py
+
+
+RESULTS - assuming noise column == 0 means it is noisy:
+(picai) emma@MacBook-Pro contrastive % python temp.py --csv /Users/emma/Downloads/train.csv
+Total rows: 10616
+Target kept: 9555
+
+noise_ratio_10    omitted= 1061, kept= 9555  (Δ kept vs 9555: +0)
+noise_ratio_15    omitted= 1592, kept= 9024  (Δ kept vs 9555: -531)
+noise_ratio_20    omitted= 2123, kept= 8493  (Δ kept vs 9555: -1062)
+noise_ratio_5     omitted=  530, kept=10086  (Δ kept vs 9555: +531)
+
+
+USING column noise_ratio_10 with 0=noisy resulted in 9555 samples being kept, which matches the paper
+
+
+
+generated new folds with 10% test and using only the 9555 clean samples :
+
+python /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology/data/generate_5_folds_noisy.py \
+  --csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology/data/train_noisy_labels.csv \
+  --out_csv /Users/emma/Desktop/QUEENS/THESIS/contrastive/histopathology/data/panda_clean_noise10_folds.csv \
+  --seed 42

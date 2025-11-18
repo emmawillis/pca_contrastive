@@ -1,0 +1,58 @@
+Running BASELINE job
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Thu Nov 20 23:24:40 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:65:00.0 Off |                    0 |
+| N/A   27C    P8             33W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+SCRIPT: train_baseline_oldSPIE.py
+ARGS: Namespace(seed=42, manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', target='isup6', folds_train='1,2,3', folds_val='0', folds_test='4', batch_size=16, pos_ratio=0.33, use_skip=False, label6_column='merged_ISUP', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', proj_dim=128, strip_neck=False, epochs=40, patience=10, lr=1e-05, wd=0.0, outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS/baseline', wandb=True, wandb_project='mri-training', wandb_run_name='newSPIE-baseline-isup6-128D')
+wandb: Currently logged in as: jesande7 (jesande7-queens) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: creating run
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /project/6106383/shared/picai/wandb/run-20251120_232504-yzit5v2x
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run newSPIE-baseline-isup6-128D
+wandb: ⭐️ View project at https://wandb.ai/jesande7-queens/mri-training
+wandb: 🚀 View run at https://wandb.ai/jesande7-queens/mri-training/runs/yzit5v2x
+[001] train: loss 1.5236 bacc 0.1709 acc 0.1237 f1 0.0670 || val: loss 0.9798 acc 0.1795 BAL-acc 0.1667 f1 0.0507 | acc[c0]=0.000  acc[c1]=1.000  acc[c2]=0.000  acc[c3]=0.000  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.483  auc[c1]=0.561  auc[c2]=0.676  auc[c3]=0.785  auc[c4]=0.712  auc[c5]=0.684 | macroAUC=0.650 | macroSens=0.167 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=1.000  sens[c2]=0.000  sens[c3]=0.000  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=0.000  spec[c2]=1.000  spec[c3]=1.000  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0    5038       0       0       0       0
+    ISUP1       0    1202       0       0       0       0
+    ISUP2       0     231       0       0       0       0
+    ISUP3       0     115       0       0       0       0
+    ISUP4       0      36       0       0       0       0
+    ISUP5       0      74       0       0       0       0
+  ↳ saved best (BAL-acc=0.1667)
+[002] train: loss 0.8564 bacc 0.1667 acc 0.1004 f1 0.0304 || val: loss 0.2660 acc 0.1795 BAL-acc 0.1667 f1 0.0507 | acc[c0]=0.000  acc[c1]=1.000  acc[c2]=0.000  acc[c3]=0.000  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.442  auc[c1]=0.543  auc[c2]=0.715  auc[c3]=0.859  auc[c4]=0.745  auc[c5]=0.763 | macroAUC=0.678 | macroSens=0.167 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=1.000  sens[c2]=0.000  sens[c3]=0.000  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=0.000  spec[c2]=1.000  spec[c3]=1.000  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0    5038       0       0       0       0
+    ISUP1       0    1202       0       0       0       0
+    ISUP2       0     231       0       0       0       0
+    ISUP3       0     115       0       0       0       0
+    ISUP4       0      36       0       0       0       0
+    ISUP5       0      74       0       0       0       0
+  ↳ no improvement (1/10)
