@@ -10,8 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from dataset_picai_slices import map_binary_all, map_binary_low_high, map_isup3, PicaiSliceDataset
-
+from dataset_picai_slices import map_binary_all, map_binary_low_high, map_isup3, map_isup0145, PicaiSliceDataset
+from dataset_frozen_medsam import PicaiSliceFrozenEncodingDataset
 from sklearn.metrics import (
     accuracy_score, balanced_accuracy_score, f1_score, confusion_matrix,
     roc_auc_score, auc, roc_curve
@@ -29,6 +29,8 @@ def get_label_names(target = None, n_classes = None):
         return ["no csPCa", "yes csPCa"]
     elif target == "binary_low_high":
         return ["LOW(ISUP01)", "HIGH(ISUP45)"]
+    elif target == "isup0145":
+        return ["ISUP0", "ISUP1", "ISUP4", "ISUP5"]  # c0,c1,c2
     else:
         return ["ISUP0", "ISUP1", "ISUP2", "ISUP3", "ISUP4", "ISUP5"]
 
@@ -60,29 +62,30 @@ def make_pos_sampler(df: pd.DataFrame, pos_ratio: float = 0.33, seed: int = 1337
     w = np.where(is_pos==1, w_pos, w_neg).astype(np.float64)
     return WeightedRandomSampler(weights=torch.from_numpy(w), num_samples=len(w), replacement=True)
 
-def class_weights_from_train(df: pd.DataFrame, target: str):
-    if target == "isup3":
-        y = df["label6"].map(map_isup3)
-    elif target == "binary_low_high":
-        y = df["label6"].map(map_binary_low_high)
-    elif target == "binary_all":
-        y = df["label6"].map(map_binary_all)
-    else:
-        y = df["label6"]
+def class_weights_from_train(df, target="isup0145", label6_column=None):
+    """
+    df now contains:
+      - isup (raw 0,1,4,5 from filename)
+      - no manifest ISUP labels are used anymore
+    """
+    if "isup" not in df.columns:
+        raise ValueError("train_ds.df must contain an 'isup' column extracted from filenames")
+    
+    # Raw labels: 0,1,4,5
+    y_raw = df["isup"].astype(int)
 
-    # FIXED: Always 6 classes for ISUP6
-    if target == "isup6":
-        classes = list(range(6))
-    else:
-        classes = sorted(int(c) for c in y.unique())
+    # Map to contiguous 0–3 (only once; dataset maps again during __getitem__)
+    y = y_raw.map(map_isup0145)
 
-    cnt = Counter(int(v) for v in y.tolist())
-    K, N = len(classes), len(y)
+    classes_present = sorted(y.unique())
 
-    ws = [N / (K * max(1, cnt.get(c, 0))) for c in classes]
-    m = sum(ws)/len(ws)
-    ws = [w/m for w in ws]
-    return torch.tensor(ws, dtype=torch.float32), classes
+    # Compute simple inverse-frequency weights
+    counts = y.value_counts().sort_index()
+    total = counts.sum()
+    weights = total / (len(counts) * counts)
+    w_ce = torch.tensor(weights.values, dtype=torch.float32)
+
+    return w_ce, classes_present
 
 # =========================
 # Metrics Helpers
@@ -196,69 +199,107 @@ def build_datasets_and_loaders(
     pos_ratio: float = 0.33,
     num_workers: int = 4,
     pin_memory: bool = True,
+    use_frozen: bool = False,
+    medsam_encodings = "/home/ewillis/projects/aip-medilab/shared/picai/picai_medsam_zero_shot_encodings"
 ):
-    # Train
-    train_ds = PicaiSliceDataset(
-        manifest_csv=manifest,
-        folds=folds_train,
-        use_skip=use_skip,
-        label6_column=label6_column,
-        target=target,
-        channels=channels,
-        missing_channel_mode=missing_channel_mode,
-        pct_lower=pct_lower, pct_upper=pct_upper,
-        cache_size=cache_train,
-    )
-    # Val
-    val_ds = PicaiSliceDataset(
-        manifest_csv=manifest,
-        folds=folds_val,
-        use_skip=use_skip,
-        label6_column=label6_column,
-        target=target,
-        channels=channels,
-        missing_channel_mode=missing_channel_mode,
-        pct_lower=pct_lower, pct_upper=pct_upper,
-        cache_size=cache_val,
-    )
-
-    # weights / classes (from train only)
-    w_ce, classes_present = class_weights_from_train(train_ds.df, target=target)
-    n_classes = len(classes_present)
-    if target == "isup6":
-        n_classes = 6
-
-    # samplers / loaders
-    sampler = make_pos_sampler(train_ds.df, pos_ratio=pos_ratio)
-    train_loader = DataLoader(
-        train_ds, batch_size=batch_size, sampler=sampler,
-        num_workers=num_workers, pin_memory=pin_memory,
-        collate_fn=collate_resize_to_imgsize
-    )
-    val_loader = DataLoader(
-        val_ds, batch_size=batch_size, shuffle=False,
-        num_workers=num_workers, pin_memory=pin_memory,
-        collate_fn=collate_resize_to_imgsize
-    )
-
-    # Optional TEST
-    test_ds, test_loader = None, None
-    if folds_test is not None:
-        test_ds = PicaiSliceDataset(
+    if use_frozen:
+        train_ds = PicaiSliceFrozenEncodingDataset(
             manifest_csv=manifest,
-            folds=folds_test,
+            encoding_dir=medsam_encodings,
+            folds=folds_train,
+            target=target,
+            label6_column=label6_column
+        )
+        val_ds = PicaiSliceFrozenEncodingDataset(
+            manifest_csv=manifest,
+            encoding_dir=medsam_encodings,
+            folds=folds_val,
+            target=target,
+            label6_column=label6_column
+        )
+    else:
+        # Train
+        train_ds = PicaiSliceDataset(
+            manifest_csv=manifest,
+            folds=folds_train,
             use_skip=use_skip,
             label6_column=label6_column,
             target=target,
             channels=channels,
             missing_channel_mode=missing_channel_mode,
             pct_lower=pct_lower, pct_upper=pct_upper,
-            cache_size=cache_test,
+            cache_size=cache_train,
         )
+        # Val
+        val_ds = PicaiSliceDataset(
+            manifest_csv=manifest,
+            folds=folds_val,
+            use_skip=use_skip,
+            label6_column=label6_column,
+            target=target,
+            channels=channels,
+            missing_channel_mode=missing_channel_mode,
+            pct_lower=pct_lower, pct_upper=pct_upper,
+            cache_size=cache_val,
+        )
+
+    # weights / classes (from train only)
+    w_ce, classes_present = class_weights_from_train(train_ds.df, target=target, label6_column=label6_column)
+    n_classes = len(classes_present)
+    if target == "isup6":
+        n_classes = 6
+    if target == "isup0145":
+        n_classes = 4
+
+    # samplers / loaders
+    if use_frozen:
+        collate_fn = lambda batch: {
+            "image": torch.stack([b["image"] for b in batch], 0),
+            "label": torch.tensor([b["label"] for b in batch]),
+            **{k: [b[k] for b in batch] for k in batch[0].keys() if k not in ("image","label")}
+        }
+    else:
+        collate_fn = collate_resize_to_imgsize
+
+    sampler = make_pos_sampler(train_ds.df, pos_ratio=pos_ratio)
+    train_loader = DataLoader(
+        train_ds, batch_size=batch_size, sampler=sampler,
+        num_workers=num_workers, pin_memory=pin_memory,
+        collate_fn=collate_fn
+    )
+    val_loader = DataLoader(
+        val_ds, batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=pin_memory,
+        collate_fn=collate_fn
+    )
+
+    # Optional TEST
+    test_ds, test_loader = None, None
+    if folds_test is not None:
+        if use_frozen:
+            test_ds = PicaiSliceFrozenEncodingDataset(
+                manifest_csv=manifest,
+                encoding_dir=medsam_encodings,
+                folds=folds_test,
+                target=target,
+                label6_column=label6_column
+            )
+        else:
+            test_ds = PicaiSliceDataset(
+                manifest_csv=manifest,
+                folds=folds_test,
+                use_skip=use_skip,
+                label6_column=label6_column,
+                target=target,
+                channels=channels,
+                missing_channel_mode=missing_channel_mode,
+                pct_lower=pct_lower, pct_upper=pct_upper,
+                cache_size=cache_test,
+            )
         test_loader = DataLoader(
             test_ds, batch_size=batch_size, shuffle=False,
             num_workers=num_workers, pin_memory=pin_memory,
-            collate_fn=collate_resize_to_imgsize
+            collate_fn=collate_fn
         )
 
     return (

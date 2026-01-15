@@ -1,0 +1,12 @@
+ran build_labeled_slice_manifest.py
+
+
+(venv) ewillis@klogin01:~/projects/aip-medilab/ewillis/pca_contrastive$ python /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/build_labeled_slice_manifest.py \
+--in_manifest /home/ewillis/projects/aip-medilab/shared/picai/manifests/slices_manifest.csv \
+--out_manifest /home/ewillis/projects/aip-medilab/shared/picai/manifests/slices_manifest_olivia_lesion.csv
+
+Number of cases with lesion masks: 408
+Mean lesion slice fraction over masked cases: 0.233 (min=0.048, max=0.741)
+Original #rows: 33704
+New #rows (kept slices only): 7654
+Wrote new manifest to: /home/ewillis/projects/aip-medilab/shared/picai/manifests/slices_manifest_olivia_lesion.csv

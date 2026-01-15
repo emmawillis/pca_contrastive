@@ -23,6 +23,8 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import umap.umap_ as umap
+from cnn_frozen import MRIClassifierFrozenCNN
+from dataset_frozen_medsam import PicaiSliceFrozenEncodingDataset
 
 from sklearn.metrics import (
     accuracy_score, f1_score, balanced_accuracy_score,
@@ -218,12 +220,15 @@ def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda"):
 # ----------------------------------------------------------
 def main():
     p = argparse.ArgumentParser()
+    p.add_argument("--use-frozen", action=argparse.BooleanOptionalAction, default=True)
+    p.add_argument("--medsam_encodings", default="/home/ewillis/projects/aip-medilab/shared/picai/picai_medsam_zero_shot_encodings")
+
     p.add_argument("--seed", type=int, default=42)
 
     # Dataset
     p.add_argument("--manifest", required=True)
     p.add_argument("--target",
-                   choices=["isup3", "isup6", "binary_low_high", "binary_all"],
+                   choices=["isup3", "isup6", "binary_low_high", "binary_all", "isup0145"],
                    default="isup3")
     p.add_argument("--folds_train", default="1,2,3")
     p.add_argument("--folds_val",   default="0")
@@ -305,6 +310,8 @@ def main():
         label6_column=args.label6_column,
         batch_size=args.batch_size,
         pos_ratio=args.pos_ratio,
+        use_frozen=args.use_frozen,
+        medsam_encodings=args.medsam_encodings
     )
     w_ce = w_ce.to(device)
 
@@ -341,16 +348,22 @@ def main():
     sam = sam_model_registry["vit_b"]()
     sam.load_state_dict(torch.load(args.sam_checkpoint, map_location="cpu"), strict=True)
 
-    model = MRIClassifierCNN(
-        sam_model=sam,
-        num_classes=n_classes,
-        proj_dim=args.proj_dim,
-        use_pre_neck=args.strip_neck
-    ).to(device)
+    if args.use_frozen:
+        model = MRIClassifierFrozenCNN(
+            num_classes=n_classes,     # or whatever you're predicting
+            proj_dim=args.proj_dim       # or any projection size you want
+        ).to(device)
 
-    # Freeze MedSAM ALWAYS (SPIE style)
-    for p in model.encoder.parameters():
-        p.requires_grad = False
+    else:
+        model = MRIClassifierCNN(
+            sam_model=sam,
+            num_classes=n_classes,
+            proj_dim=args.proj_dim,
+            use_pre_neck=args.strip_neck
+        ).to(device)
+        # Freeze MedSAM ALWAYS (SPIE style)
+        for p in model.encoder.parameters():
+            p.requires_grad = False
 
     # ======================================
     # PHASE 1 — TRIPLET ALIGNMENT
@@ -457,8 +470,6 @@ def main():
 
     # Unfreeze classifier head (+ projection optionally)
     trainables = list(model.classifier.parameters())
-    if args.train_proj:
-        trainables += list(model.projection.parameters())
 
     for p in trainables:
         p.requires_grad = True
@@ -475,7 +486,7 @@ def main():
             train_loader, model, w_ce=w_ce,
             optimizer=optimizer_head, device=device
         )
-        val_res = evaluate_loader(val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes)
+        val_res = evaluate_loader(val_loader, model, collect_outputs=True, w_ce=w_ce, device=device, n_classes=n_classes)
 
         pcs, auc_str = format_perclass_acc_auc(
             val_res["per_acc"], val_res["per_auc"], val_res["macro_auc"], n_classes
@@ -526,9 +537,9 @@ def main():
     # ======================================
     # FINAL VAL
     # ======================================
-    val_final = evaluate_loader(val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes)
+    val_final = evaluate_loader(val_loader, model, collect_outputs=True, w_ce=w_ce, device=device, n_classes=n_classes)
     torch.save({
-        "embeddings": torch.cat(val_final["embeddings_list"]).cpu(),
+        "embeddings": val_final["embeddings"].cpu(),
         "labels": torch.tensor(val_ds.df[args.label6_column].values)
     }, outdir / "val_embeddings.pt")
 
@@ -540,9 +551,10 @@ def main():
         wandb_finish(wb)
         return
 
-    test_final = evaluate_loader(test_loader, model, w_ce=w_ce, device=device, n_classes=n_classes)
-    emb_test = torch.cat(test_final["embeddings_list"]).cpu()
-    y_test = torch.tensor(test_ds.df[args.label6_column].values)
+    test_final = evaluate_loader(test_loader, model, collect_outputs=True, w_ce=w_ce, device=device, n_classes=n_classes)
+    emb_test = test_final["embeddings"].cpu()
+    y_test = test_final["labels"]
+
     torch.save({"embeddings": emb_test, "labels": y_test}, outdir / "test_embeddings.pt")
 
     print("\n===== FINAL TEST METRICS =====")
@@ -554,8 +566,15 @@ def main():
         test_final["macro_tpr"], test_final["macro_tnr"],
         n_classes
     )
-    print(f"[TEST] loss={test_final['loss']:.4f} acc={test_final['acc']:.4f} "
-          f"bacc={test_final['bacc']:.4f} | {pcs_t}{auc_t}{extra_t}")
+    # --- CHANGED LINE: now includes f1 and matches other script's style ---
+    print(
+        "[TEST] "
+        f"loss {test_final['loss']:.4f} "
+        f"acc {test_final['acc']:.4f} "
+        f"BAL-acc {test_final['bacc']:.4f} "
+        f"f1 {test_final['f1_macro']:.4f} | "
+        f"{pcs_t}{auc_t}{extra_t}"
+    )
     print(format_confusion_matrix(test_final["cm"], n_classes))
 
     # ============================

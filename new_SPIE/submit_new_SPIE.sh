@@ -8,7 +8,7 @@ set -euo pipefail
 # COMMON PATHS
 ###########################################
 
-LOGDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS
+LOGDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS_final/isup6
 mkdir -p "$LOGDIR"
 
 BASELINE_SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/train_baseline_oldSPIE.py
@@ -17,8 +17,8 @@ TRIPLET_SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SP
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
-OUTDIR_BASE=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS/baseline
-OUTDIR_TRIP=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS/triplet
+OUTDIR_BASE=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS_final/baseline_isup6
+OUTDIR_TRIP=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/new_SPIE/RESULTS_final/triplet_isup6
 
 HISTO_DIR=/home/ewillis/projects/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_128D/embeddings_128
 HISTO_MARKSHEET=/home/ewillis/projects/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits
@@ -113,7 +113,7 @@ srun -u python -u "$TRIPLET_SCRIPT" \
   --triplet_lr 1e-5 \
   --triplet_wd 0 \
   --triplet_margin 0.2 \
-  --lr_max_iter 5 \
+  --lr_max_iter 15 \
   --head_epochs 40 \
   --head_patience 10 \
   --head_lr 1e-5 \

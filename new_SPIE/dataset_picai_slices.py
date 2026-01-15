@@ -46,6 +46,13 @@ def map_binary_all(y6: int) -> int:
     if y6 in (0, 1): return 0
     return 1
 
+def map_isup0145(y6: int) -> int:
+    if y6 == 0: return 0
+    if y6 == 1: return 1
+    if y6 == 4: return 2
+    if y6 == 5: return 3
+    raise ValueError(f"Unsupported label {y6} for target=isup0145")
+
 def _clean_path(p: Union[str, Path]) -> Path:
     return Path(str(p).strip())
 
@@ -131,7 +138,7 @@ class PicaiSliceDataset(Dataset):
 
         # store config
         self.target = target
-        assert self.target in ("isup3", "isup6", "binary_low_high", "binary_all")
+        assert self.target in ("isup3", "isup6", "binary_low_high", "binary_all", "isup0145")
         self.channels = tuple(channels)
         self.missing_channel_mode = missing_channel_mode
         assert self.missing_channel_mode in ("zeros", "repeat_t2")
@@ -243,6 +250,8 @@ class PicaiSliceDataset(Dataset):
             y = map_binary_low_high(y6)
         elif self.target == "binary_all":
             y = map_binary_all(y6)
+        elif self.target == "isup0145":
+            y = map_isup0145(y6)
         else:
             y = y6
 

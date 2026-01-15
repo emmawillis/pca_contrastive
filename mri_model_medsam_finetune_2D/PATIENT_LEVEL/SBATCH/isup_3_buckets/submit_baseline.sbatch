@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J merged-isup3-baseline
+#SBATCH -J fixed-dims-baseline
 #SBATCH -A aip-medilab
 #SBATCH -t 2-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/baseline/baseline-%j.out
+#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/isup6/baseline/baseline-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -23,16 +23,15 @@ nvidia-smi || true
 
 # --- paths (EDIT ME) ---
 SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train.py
-# SCRIPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/train_coral_loss.py
-MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
+MANIFEST=/home/ewillis/projects/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/results_no_loading/baseline
+OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/isup6/baseline
 
 # --- run ---
 srun -u python -u "$SCRIPT" \
   --manifest "$MANIFEST" \
   --sam_checkpoint "$CKPT" \
-  --target isup3 \
+  --target isup6 \
   --folds_train 1,2,3 \
   --folds_val 0 \
   --folds_test 4 \
@@ -46,4 +45,4 @@ srun -u python -u "$SCRIPT" \
   --wd 0 \
   --no-use-skip \
   --label6_column merged_ISUP \
-  --wandb_run_name baseline-isup3
+  --wandb_run_name fixed-dims-base-isup6

@@ -5,7 +5,7 @@
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai 
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/CHECKING/final/test/BASELINE_WITH_SAM_CKPT-%j.out
+#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/baseline/eval_test/TRIPLET_WITH_SAM_CKPT-%j.out
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -24,8 +24,8 @@ nvidia-smi || true
 # --- paths (EDIT ME) ---
 SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/eval_test.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/TRIPLET/all_providers/head_only
-MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/PATIENT_LEVEL/RESULTS_MERGED_PATIENT_LEVEL/isup3/results512/baseline/ckpt_best.pt
+OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/triplet/eval_test
+MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/triplet/ckpt_head_best.pt
 SAM_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
 # --- run ---
@@ -41,4 +41,6 @@ srun -u python -u "$SCRIPT" \
   --outdir "$OUTDIR" \
   --proj_dim 512 \
   --no-use-skip \
-  --label6_column merged_ISUP
+  --label6_column merged_ISUP \
+  --csv_path /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/results.csv \
+  --pred_col_name aligned_prediction
