@@ -24,8 +24,8 @@ nvidia-smi || true
 # --- paths (EDIT ME) ---
 SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/eval_test.py
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/triplet/eval_test
-MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/triplet/ckpt_head_best.pt
+OUTDIR="/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/eval_test"
+MODEL_CKPT="/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/two_stage-head_and_proj/ckpt_head_best.pt"
 SAM_CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
 # --- run ---
@@ -42,5 +42,5 @@ srun -u python -u "$SCRIPT" \
   --proj_dim 512 \
   --no-use-skip \
   --label6_column merged_ISUP \
-  --csv_path /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/fixed_medsam_dims/results.csv \
+  --csv_path "/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/results-head_and_proj.csv" \
   --pred_col_name aligned_prediction

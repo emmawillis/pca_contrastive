@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# train.py
+# train_triplet_full.py
 #
 # Modes:
 #   --train_mode two_stage : Triplet alignment (encoder+proj) -> CE head training (head [+proj])
@@ -8,6 +8,7 @@
 # Updates in this version:
 #   1) Enforces NO patient-id overlap across train/val/test splits (raises ValueError if overlap found)
 #   2) Uses ONE learning rate + weight decay for BOTH triplet and CE phases (no separate triplet_lr/head_lr)
+#   3) LoRA parameter adaptation for SAM/MedSAM encoder (optional)  # LoRA changes
 
 import argparse
 from pathlib import Path
@@ -42,7 +43,7 @@ from train_utils import (
 )
 from sklearn.linear_model import LogisticRegression
 
-from peft import apply_adapters_to_sam_encoder, get_adapter_params  #Adaptor mode
+from peft import apply_lora_to_sam_encoder  # LoRA changes
 
 
 # ---------------- Triplet phase helpers ----------------
@@ -239,6 +240,16 @@ def assert_no_patient_overlap(train_df, val_df, test_df=None, *, patient_col="pa
         raise ValueError(msg)
 
 
+# ---------------- LoRA helpers ----------------
+def _set_requires_grad(module: nn.Module, flag: bool):  # LoRA changes
+    for p in module.parameters():
+        p.requires_grad = flag
+
+
+def _count_trainable_params(module: nn.Module) -> int:  # LoRA changes
+    return sum(p.numel() for p in module.parameters() if p.requires_grad)
+
+
 # ---------------- Main ----------------
 def main():
     p = argparse.ArgumentParser()
@@ -246,7 +257,7 @@ def main():
     # Mode control
     p.add_argument(
         "--train_mode",
-        choices=["two_stage", "baseline", "kl"],
+        choices=["two_stage", "baseline"],
         default="two_stage",
         help="two_stage: triplet alignment then head CE. baseline: end-to-end CE for triplet_epochs+head_epochs.",
     )
@@ -282,19 +293,35 @@ def main():
     p.add_argument("--head_patience", type=int, default=10)
     p.add_argument(
         "--stage2_scope",
-        choices=["head_only", "head_and_proj", "head_pool_and_proj", "all", "adaptor"],  #Adaptor mode
+        choices=["head_only", "head_and_proj", "all"],
         default="head_only",
         help="two_stage only: Stage 2 CE training scope. "
              "head_only freezes encoder+proj and trains only classifier head. "
-             "head_and_proj trains head+proj (encoder frozen). "
-             "all trains encoder+proj+head (triplet acts as pretraining). "
-             "adaptor trains head+proj plus adapter weights inside encoder (base encoder frozen).",  #Adaptor mode
+             "all trains encoder+proj+head (triplet acts as pretraining).",
     )
 
     # Unified optimization hyperparams (used for BOTH triplet and CE)
     p.add_argument("--lr", type=float, default=3e-4, help="Unified learning rate for both triplet and CE.")
     p.add_argument("--wd", type=float, default=1e-4, help="Unified weight decay for both triplet and CE.")
     p.add_argument("--enc_lr_mult", type=float, default=0.1, help="Encoder LR multiplier relative to --lr.")
+
+    # LoRA args  # LoRA changes
+    p.add_argument("--lora_r", type=int, default=8, help="LoRA rank. Set <=0 to disable LoRA.")
+    p.add_argument("--lora_alpha", type=float, default=16.0, help="LoRA alpha scaling.")
+    p.add_argument("--lora_dropout", type=float, default=0.05, help="LoRA dropout.")
+    p.add_argument(
+        "--lora_last_n_blocks",
+        type=int,
+        default=6,
+        help="Apply LoRA to last N ViT blocks of the SAM image_encoder. "
+             "Use -1 for all blocks. Use 0 to disable LoRA injection.",
+    )
+    p.add_argument(
+        "--lora_targets",
+        type=str,
+        default="qkv,proj",
+        help="Comma-separated target Linear names inside attention to LoRA-wrap (e.g. 'qkv,proj').",
+    )
 
     # Leakage/split checks
     p.add_argument("--patient_col", default="patient_id", help="Column name for patient id (if present).")
@@ -307,7 +334,7 @@ def main():
     p.add_argument("--wandb_run_name", default=None)
 
     args = p.parse_args()
-    print("SCRIPT: train.py")
+    print("SCRIPT: train_triplet_full.py")
     print("ARGS:", args)
 
     # Enforce histo args only when needed
@@ -353,16 +380,36 @@ def main():
     # -------- Build model --------
     sam = sam_model_registry["vit_b"]()
     sam.load_state_dict(torch.load(args.sam_checkpoint, map_location="cpu"), strict=True)
-
-    # Attach adapter modules to the encoder (no-op unless stage2_scope=adaptor) #Adaptor mode
-    apply_adapters_to_sam_encoder(sam.image_encoder)  #Adaptor mode
-
     model = MedSAMSliceSpatialAttn(
         sam_model=sam, num_classes=n_classes,
         proj_dim=args.proj_dim, attn_dim=256,
         head_hidden=256, head_dropout=0.1,
         use_pre_neck=True, pixel_mean_std=None,
     ).to(device)
+
+    # Inject LoRA into the SAM/MedSAM encoder (model.encoder == sam_model.image_encoder)  # LoRA changes
+    lora_enabled = (args.lora_r is not None and args.lora_r > 0 and args.lora_last_n_blocks != 0)  # LoRA changes
+    lora_params = []  # LoRA changes
+    if lora_enabled:  # LoRA changes
+        targets = [t.strip() for t in args.lora_targets.split(",") if t.strip()]  # LoRA changes
+        lora_params = apply_lora_to_sam_encoder(  # LoRA changes
+            model.encoder,
+            r=args.lora_r,
+            alpha=args.lora_alpha,
+            dropout=args.lora_dropout,
+            target_modules=targets,
+            last_n_blocks=args.lora_last_n_blocks,
+        )
+        # Freeze base encoder weights; LoRA params should remain trainable  # LoRA changes
+        _set_requires_grad(model.encoder, False)  # LoRA changes
+        for p_ in lora_params:  # LoRA changes
+            p_.requires_grad = True  # LoRA changes
+
+        print(f"[LoRA] enabled: r={args.lora_r} alpha={args.lora_alpha} drop={args.lora_dropout} "
+              f"targets={targets} last_n_blocks={args.lora_last_n_blocks}")  # LoRA changes
+        print(f"[LoRA] trainable LoRA params: {sum(p.numel() for p in lora_params)}")  # LoRA changes
+    else:  # LoRA changes
+        print("[LoRA] disabled")  # LoRA changes
 
     # W&B
     wb = wandb_init(bool(args.wandb), args.wandb_project, args.wandb_run_name, config=vars(args))
@@ -380,17 +427,36 @@ def main():
         print(f"[baseline] End-to-end CE training for total_epochs={total_epochs}")
         print(f"[baseline] lr={args.lr:g} wd={args.wd:g} enc_lr_mult={args.enc_lr_mult:g}")
 
-        # Unfreeze everything
-        for p_ in model.parameters():
-            p_.requires_grad = True
+        # If LoRA is enabled: train head+proj+LoRA (base encoder frozen). Else: train full encoder+proj+head.  # LoRA changes
+        if lora_enabled:  # LoRA changes
+            _set_requires_grad(model, False)  # LoRA changes
+            _set_requires_grad(model.head, True)  # LoRA changes
+            _set_requires_grad(model.proj, True)  # LoRA changes
+            for p_ in lora_params:  # LoRA changes
+                p_.requires_grad = True  # LoRA changes
 
-        optimizer_base = torch.optim.AdamW(
-            [
-                {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
-                {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
-                {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
-            ]
-        )
+            optimizer_base = torch.optim.AdamW(  # LoRA changes
+                [
+                    {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": lora_params, "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                ]
+            )
+            print(f"[baseline][LoRA] trainable params: head={_count_trainable_params(model.head)} "
+                  f"proj={_count_trainable_params(model.proj)} lora={sum(p.numel() for p in lora_params)}")  # LoRA changes
+        else:
+            # Unfreeze everything (original behavior)
+            for p_ in model.parameters():
+                p_.requires_grad = True
+
+            optimizer_base = torch.optim.AdamW(
+                [
+                    {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                ]
+            )
+
         early_base = EarlyStopper(patience=args.head_patience)
 
         for epoch in range(1, total_epochs + 1):
@@ -411,7 +477,7 @@ def main():
                     "epoch": epoch,
                     "aux/baseline/lr_head": lrs[0] if len(lrs) > 0 else None,
                     "aux/baseline/lr_proj": lrs[1] if len(lrs) > 1 else None,
-                    "aux/baseline/lr_enc": lrs[2] if len(lrs) > 2 else None,
+                    "aux/baseline/lr_enc":  lrs[2] if len(lrs) > 2 else None,
                     "train/loss": tr_loss,
                     "train/bacc": tr_bacc,
                     "aux/train/acc": tr_acc,
@@ -460,20 +526,29 @@ def main():
         # =========================
         # Phase 1: Triplet (encoder + proj)
         # =========================
-        for p_ in model.parameters():
-            p_.requires_grad = False
-        for p_ in model.encoder.parameters():
-            p_.requires_grad = True
-        for p_ in model.proj.parameters():
-            p_.requires_grad = True
+        # If LoRA enabled: train proj + LoRA only (base encoder frozen). Else: train encoder + proj.  # LoRA changes
+        _set_requires_grad(model, False)  # LoRA changes
+        _set_requires_grad(model.proj, True)  # LoRA changes
 
-        optimizer_triplet = torch.optim.AdamW(
-            [
-                {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
-                {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
-            ]
-        )
-        print(f"[triplet] lr_proj={args.lr:g} | lr_enc={args.lr * args.enc_lr_mult:g}")
+        if lora_enabled:  # LoRA changes
+            for p_ in lora_params:
+                p_.requires_grad = True
+            optimizer_triplet = torch.optim.AdamW(  # LoRA changes
+                [
+                    {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": lora_params, "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                ]
+            )
+            print(f"[triplet][LoRA] lr_proj={args.lr:g} | lr_lora={args.lr * args.enc_lr_mult:g}")  # LoRA changes
+        else:
+            _set_requires_grad(model.encoder, True)  # original behavior when LoRA disabled
+            optimizer_triplet = torch.optim.AdamW(
+                [
+                    {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                ]
+            )
+            print(f"[triplet] lr_proj={args.lr:g} | lr_enc={args.lr * args.enc_lr_mult:g}")
 
         def train_triplet_fn(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
             return triplet_loss_batch(
@@ -484,42 +559,14 @@ def main():
             return triplet_loss_batch(
                 embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin
             )
-        
-        from kl_align_utils import HistoGaussianStats, classwise_diag_gaussian_kl_loss
-
-        histo_train = HistoGaussianStats.load("/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/kl_gaussian_stats/histo_stats_train.pt", device=device)
-        histo_val = HistoGaussianStats.load("/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/kl_gaussian_stats/histo_stats_val.pt", device=device)
-
-        def train_kl_align_fn(emb, y):
-            return classwise_diag_gaussian_kl_loss(
-                emb, y, histo_train.mu, histo_train.var,
-                direction="mri_to_histo",
-                min_count_per_class=1,
-                weight_by_batch_count=True,
-            )
-        
-        def val_kl_align_fn(emb, y):
-            return classwise_diag_gaussian_kl_loss(
-                emb, y, histo_val.mu, histo_val.var,
-                direction="mri_to_histo",
-                min_count_per_class=1,
-                weight_by_batch_count=True,
-            )
-
-        if args.train_mode == "kl":
-            train_fn = train_kl_align_fn
-            val_fn = val_kl_align_fn
-        else:
-            train_fn = train_triplet_fn
-            val_fn = val_triplet_fn
 
         early_triplet = EarlyStopper(patience=args.triplet_patience)
         best_lr_clf = None
         last_lr_clf = None
 
         for epoch in range(1, args.triplet_epochs + 1):
-            tr_loss = run_epoch_triplet(train_loader, model, train_fn, optimizer=optimizer_triplet, device=device)
-            va_loss = run_epoch_triplet(val_loader, model, val_fn, optimizer=None, device=device)
+            tr_loss = run_epoch_triplet(train_loader, model, train_triplet_fn, optimizer=optimizer_triplet, device=device)
+            va_loss = run_epoch_triplet(val_loader, model, val_triplet_fn, optimizer=None, device=device)
 
             # Embed + LR proxy on VAL
             X_tr, y_tr = extract_embeddings(train_loader, model, device=device)
@@ -532,7 +579,7 @@ def main():
                 payload = {
                     "epoch": epoch,
                     "aux/triplet/lr_proj": lrs[0] if lrs else None,
-                    "aux/triplet/lr_enc": lrs[1] if len(lrs) > 1 else None,
+                    "aux/triplet/lr_enc":  lrs[1] if len(lrs) > 1 else None,
                     "aux/triplet/train_loss": tr_loss,
                     "aux/triplet/val_loss": va_loss,
                     "aux/lr_val/acc": lr_metrics["acc"],
@@ -566,89 +613,56 @@ def main():
         # =========================
         if args.stage2_scope == "head_only":
             # Freeze everything; train only classifier head
-            for p_ in model.parameters():
-                p_.requires_grad = False
-            for p_ in model.head.parameters():
-                p_.requires_grad = True
+            _set_requires_grad(model, False)  # LoRA changes (replaces manual loops)
+            _set_requires_grad(model.head, True)  # LoRA changes
 
             optimizer_head = torch.optim.AdamW(model.head.parameters(), lr=args.lr, weight_decay=args.wd)
             print("[stage2] scope=head_only (training head only)")
 
         elif args.stage2_scope == "head_and_proj":
-            for p_ in model.parameters():
-                p_.requires_grad = False
-            for p_ in model.head.parameters():
-                p_.requires_grad = True
-            for p_ in model.proj.parameters():
-                p_.requires_grad = True
-
-            optimizer_head = torch.optim.AdamW(
-                [
-                    {"params": model.head.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                    {"params": model.proj.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                ]
-            )
-            print("[stage2] scope=head_and_proj (training head and projector, not encoder)")
-
-        elif args.stage2_scope == "head_pool_and_proj":
-            for p_ in model.parameters():
-                p_.requires_grad = False
-            for p_ in model.head.parameters():
-                p_.requires_grad = True
-            for p_ in model.proj.parameters():
-                p_.requires_grad = True
-            for p_ in model.pool.parameters():
-                p_.requires_grad = True
-            optimizer_head = torch.optim.AdamW(
-                [
-                    {"params": model.head.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                    {"params": model.proj.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                ]
-            )
-            print("[stage2] scope=head_and_proj (training head and projector, not encoder)")
-
-
-        elif args.stage2_scope == "adaptor":  #Adaptor mode
-            # Train head + proj + adapter weights only; keep base encoder frozen #Adaptor mode
-            for p_ in model.parameters():
-                p_.requires_grad = False
-            for p_ in model.head.parameters():
-                p_.requires_grad = True
-            for p_ in model.proj.parameters():
-                p_.requires_grad = True
-
-            adapter_params = list(get_adapter_params(model.encoder))  #Adaptor mode
-            if len(adapter_params) == 0:  #Adaptor mode
-                raise RuntimeError(
-                    "[stage2][adaptor] No adapter parameters were found. "
-                    "Check peft.py apply_adapters_to_sam_encoder() and get_adapter_params()."
-                )  #Adaptor mode
-            for p_ in adapter_params:  #Adaptor mode
-                p_.requires_grad = True  #Adaptor mode
+            _set_requires_grad(model, False)  # LoRA changes
+            _set_requires_grad(model.head, True)  # LoRA changes
+            _set_requires_grad(model.proj, True)  # LoRA changes
 
             optimizer_head = torch.optim.AdamW(
                 [
                     {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
                     {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
-                    {"params": adapter_params,          "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
-                ]
-            )  #Adaptor mode
-            print(f"[stage2] scope=adaptor (training head+proj + encoder adapters only; base encoder frozen). "
-                  f"n_adapter_params={sum(p.numel() for p in adapter_params):,}")  #Adaptor mode
-
-        elif args.stage2_scope == "all":
-            # Train everything (triplet is pretraining)
-            for p_ in model.parameters():
-                p_.requires_grad = True
-
-            optimizer_head = torch.optim.AdamW(
-                [
-                    {"params": model.head.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                    {"params": model.proj.parameters(),    "lr": args.lr, "weight_decay": args.wd},
-                    {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
                 ]
             )
-            print("[stage2] scope=all (training encoder+proj+head)")
+            print("[stage2] scope=head_and_proj (training head and projector, not encoder)")
+
+        elif args.stage2_scope == "all":
+            # Original meaning was "train encoder+proj+head".
+            # With LoRA enabled, we keep base encoder frozen and train LoRA+proj+head.  # LoRA changes
+            if lora_enabled:  # LoRA changes
+                _set_requires_grad(model, False)  # LoRA changes
+                _set_requires_grad(model.head, True)  # LoRA changes
+                _set_requires_grad(model.proj, True)  # LoRA changes
+                for p_ in lora_params:
+                    p_.requires_grad = True
+
+                optimizer_head = torch.optim.AdamW(  # LoRA changes
+                    [
+                        {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                        {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                        {"params": lora_params, "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                    ]
+                )
+                print("[stage2] scope=all (training LoRA+proj+head; base encoder frozen)")  # LoRA changes
+            else:
+                # Train everything (triplet is pretraining)
+                for p_ in model.parameters():
+                    p_.requires_grad = True
+
+                optimizer_head = torch.optim.AdamW(
+                    [
+                        {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                        {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                        {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
+                    ]
+                )
+                print("[stage2] scope=all (training encoder+proj+head)")
 
         else:
             raise ValueError(f"Unknown stage2_scope: {args.stage2_scope}")

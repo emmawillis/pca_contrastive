@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J isup3-proj-triplet
+#SBATCH -J kl-align
 #SBATCH -A aip-medilab
 #SBATCH -t 2-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai
-#SBATCH -o /home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup3/triplet_head_and_proj-%j.out
+#SBATCH -o '/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/kl-align-%j.out'
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -25,7 +25,7 @@ SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_meds
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
-OUTDIR=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup3
+OUTDIR='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3'
 
 HISTO_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/embeddings_512
 HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits
@@ -35,12 +35,18 @@ HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/U
 
 TRAIN_MODE=two_stage
 # TRAIN_MODE=baseline
+TRAIN_MODE=kl
+
 
 # STAGE2_SCOPE=all
 STAGE2_SCOPE=head_and_proj
+# STAGE2_SCOPE=head_pool_and_proj
+# STAGE2_SCOPE=head_only
+# STAGE2_SCOPE=adaptor
 
 # Make outputs separable per mode (avoids overwriting checkpoints)
-OUTDIR_MODE="${OUTDIR}/${TRAIN_MODE}-head_and_proj"
+# OUTDIR_MODE="${OUTDIR}/${TRAIN_MODE}-head_and_proj"
+OUTDIR_MODE="${OUTDIR}/${TRAIN_MODE}-${STAGE2_SCOPE}"
 
 # --- common args ---
 COMMON_ARGS=(
@@ -70,7 +76,7 @@ COMMON_ARGS=(
 )
 
 # --- add histo args only for two_stage ---
-if [[ "$TRAIN_MODE" == "two_stage" ]]; then
+if [[ "$TRAIN_MODE" != "baseline" ]]; then
   COMMON_ARGS+=(
     --histo_dir "$HISTO_DIR"
     --histo_marksheet_dir "$HISTO_MARKSHEET_DIR"

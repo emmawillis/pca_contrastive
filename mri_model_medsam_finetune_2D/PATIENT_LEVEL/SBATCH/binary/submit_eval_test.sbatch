@@ -31,7 +31,7 @@ MODEL_CKPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_
 srun -u python -u "$SCRIPT" \
   --manifest "$MANIFEST" \
   --model_ckpt "$MODEL_CKPT" \
-  --target binary_all \
+  --target isup3 \
   --folds_train 1,2,3 \
   --fold_test 4 \
   --batch_size 16 \
