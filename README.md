@@ -39,7 +39,7 @@ License: CC-BY-NC-ND-4.0
   year={2024}
 }
 
-To reproduce the histopathology embeddings, clone the MIL-Lab repo https://github.com/mahmoodlab/MIL-Lab, then paste in and run the `./train-histopathology-MIL.py` script at the top level of this repo
+To reproduce the histopathology embeddings, clone the MIL-Lab repo https://github.com/mahmoodlab/MIL-Lab, then paste in the files from `./train_histopathology_MIL` at the top level of the MIL-Lab repo, and run the `train_histopathology_MIL.py` script 
 
 # MRI DATASET:
 mpMRI from here: https://pi-cai.grand-challenge.org/ 
