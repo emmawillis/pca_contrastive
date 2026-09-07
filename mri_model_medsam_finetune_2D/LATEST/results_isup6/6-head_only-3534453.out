@@ -1,0 +1,601 @@
+Host: kn057
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Tue May 12 12:33:28 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:65:00.0 Off |                    0 |
+| N/A   41C    P8             70W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+TRAIN_MODE=two_stage
+OUTDIR_MODE=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup6/two_stage-head_only
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+SCRIPT: train.py
+ARGS: Namespace(train_mode='two_stage', seed=42, manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', target='isup6', folds_train='1,2,3', folds_val='0', folds_test='4', batch_size=16, pos_ratio=0.33, use_skip=False, label6_column='merged_ISUP', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', proj_dim=512, histo_dir='/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/embeddings_512', histo_marksheet_dir='/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits', provider='all', triplet_epochs=40, triplet_patience=10, triplet_margin=0.2, lr_max_iter=5, head_epochs=40, head_patience=10, stage2_scope='head_only', lr=1e-05, wd=0.0, enc_lr_mult=0.1, patient_col='patient_id', case_col='case_id', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup6/two_stage-head_only', wandb=True, wandb_project='MID_DEC_KILLARNEY_NEW_SPIE', wandb_run_name='isup3-two_stage-scope-head_only')
+!!!!!! classes_present [0, 1, 2, 3, 4, 5]
+[split-check] #patients: train=885, val=295, test=296
+[split-check] patient overlaps: train∩val=0, train∩test=0, val∩test=0
+wandb: Currently logged in as: jesande7 (jesande7-queens) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: creating run
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /project/6106383/shared/picai/wandb/run-20260512_123351-dw976577
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run isup3-two_stage-scope-head_only
+wandb: ⭐️ View project at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: 🚀 View run at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/dw976577
+[two_stage] lr=1e-05 wd=0 enc_lr_mult=0.1 margin=0.2
+[triplet] lr_proj=1e-05 | lr_enc=1e-06
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] new best (val BAL-acc=0.1667) snapshot stored in memory
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (1/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (2/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (3/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (4/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (5/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (6/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (7/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (8/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (9/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (10/10)
+[triplet] Early stopping at epoch 11.
+[stage2] scope=head_only (training head only)
+[HEAD 001] train: loss 1.6480 bacc 0.1657 acc 0.1001 f1 0.0775 || val: loss 0.2339 acc 0.0172 BAL-acc 0.1667 f1 0.0056 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.000  acc[c3]=1.000  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.598  auc[c1]=0.495  auc[c2]=0.394  auc[c3]=0.636  auc[c4]=0.392  auc[c5]=0.723 | macroAUC=0.540 | macroSens=0.167 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.000  sens[c3]=1.000  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.999  spec[c3]=0.001  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0       4    5034       0       0
+    ISUP1       0       0       2    1200       0       0
+    ISUP2       0       0       0     231       0       0
+    ISUP3       0       0       0     115       0       0
+    ISUP4       0       0       0      36       0       0
+    ISUP5       0       0       0      74       0       0
+  ↳ [head] new best (val BAL-acc=0.1667) snapshot stored in memory
+[HEAD 002] train: loss 1.6228 bacc 0.1759 acc 0.1113 f1 0.0814 || val: loss 0.2326 acc 0.0172 BAL-acc 0.1667 f1 0.0057 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.000  acc[c3]=1.000  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.629  auc[c1]=0.491  auc[c2]=0.347  auc[c3]=0.797  auc[c4]=0.424  auc[c5]=0.743 | macroAUC=0.572 | macroSens=0.167 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.000  sens[c3]=1.000  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.991  spec[c3]=0.009  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0      45    4993       0       0
+    ISUP1       0       0      14    1188       0       0
+    ISUP2       0       0       0     231       0       0
+    ISUP3       0       0       0     115       0       0
+    ISUP4       0       0       0      36       0       0
+    ISUP5       0       0       0      74       0       0
+  ↳ [head] no improvement (1/10)
+[HEAD 003] train: loss 1.6151 bacc 0.1864 acc 0.1221 f1 0.0818 || val: loss 0.2336 acc 0.0182 BAL-acc 0.1876 f1 0.0157 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.065  acc[c3]=0.696  acc[c4]=0.000  acc[c5]=0.365 | auc[c0]=0.630  auc[c1]=0.494  auc[c2]=0.330  auc[c3]=0.831  auc[c4]=0.464  auc[c5]=0.749 | macroAUC=0.583 | macroSens=0.188 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.065  sens[c3]=0.696  sens[c4]=0.000  sens[c5]=0.365 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.774  spec[c3]=0.592  spec[c4]=1.000  spec[c5]=0.634
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0    1171    1886       0    1981
+    ISUP1       0       0     286     560       0     356
+    ISUP2       0       0      15     178       0      38
+    ISUP3       0       0       2      80       0      33
+    ISUP4       0       0       0      20       0      16
+    ISUP5       0       0       3      44       0      27
+  ↳ [head] new best (val BAL-acc=0.1876) snapshot stored in memory
+[HEAD 004] train: loss 1.6004 bacc 0.1886 acc 0.1133 f1 0.0838 || val: loss 0.2297 acc 0.0239 BAL-acc 0.1831 f1 0.0173 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.290  acc[c3]=0.809  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.629  auc[c1]=0.494  auc[c2]=0.325  auc[c3]=0.849  auc[c4]=0.502  auc[c5]=0.753 | macroAUC=0.592 | macroSens=0.183 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.290  sens[c3]=0.809  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.342  spec[c3]=0.653  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0    3434    1604       0       0
+    ISUP1       0       0     775     427       0       0
+    ISUP2       0       0      67     164       0       0
+    ISUP3       0       0      22      93       0       0
+    ISUP4       0       0       6      30       0       0
+    ISUP5       0       0      15      59       0       0
+  ↳ [head] no improvement (1/10)
+[HEAD 005] train: loss 1.6028 bacc 0.2061 acc 0.1278 f1 0.0940 || val: loss 0.2252 acc 0.0300 BAL-acc 0.1840 f1 0.0369 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.662  acc[c3]=0.374  acc[c4]=0.000  acc[c5]=0.068 | auc[c0]=0.628  auc[c1]=0.495  auc[c2]=0.330  auc[c3]=0.853  auc[c4]=0.587  auc[c5]=0.752 | macroAUC=0.608 | macroSens=0.184 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.662  sens[c3]=0.374  sens[c4]=0.000  sens[c5]=0.068 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.116  spec[c3]=0.936  spec[c4]=1.000  spec[c5]=0.945
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0    4531     228       0     279
+    ISUP1       0       0    1068      92       0      42
+    ISUP2       0       0     153      66       0      12
+    ISUP3       0       0      53      43       0      19
+    ISUP4       0       0      18       7       0      11
+    ISUP5       0       0      42      27       0       5
+  ↳ [head] no improvement (2/10)
+[HEAD 006] train: loss 1.5932 bacc 0.2074 acc 0.1269 f1 0.0977 || val: loss 0.2264 acc 0.0205 BAL-acc 0.1774 f1 0.0123 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.126  acc[c3]=0.939  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.627  auc[c1]=0.497  auc[c2]=0.328  auc[c3]=0.851  auc[c4]=0.578  auc[c5]=0.746 | macroAUC=0.605 | macroSens=0.177 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.126  sens[c3]=0.939  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.563  spec[c3]=0.438  spec[c4]=1.000  spec[c5]=0.995
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0    2282    2728       0      28
+    ISUP1       0       0     532     667       0       3
+    ISUP2       0       0      29     202       0       0
+    ISUP3       0       0       7     108       0       0
+    ISUP4       0       0       1      35       0       0
+    ISUP5       0       0       5      69       0       0
+  ↳ [head] no improvement (3/10)
+[HEAD 007] train: loss 1.5829 bacc 0.2107 acc 0.1260 f1 0.1015 || val: loss 0.2252 acc 0.0231 BAL-acc 0.1795 f1 0.0159 | acc[c0]=0.000  acc[c1]=0.000  acc[c2]=0.268  acc[c3]=0.809  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.627  auc[c1]=0.496  auc[c2]=0.339  auc[c3]=0.853  auc[c4]=0.609  auc[c5]=0.739 | macroAUC=0.611 | macroSens=0.180 macroSpec=0.833 | sens[c0]=0.000  sens[c1]=0.000  sens[c2]=0.268  sens[c3]=0.809  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=1.000  spec[c1]=1.000  spec[c2]=0.394  spec[c3]=0.601  spec[c4]=1.000  spec[c5]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       0       0    3163    1875       0       0
+    ISUP1       0       0     714     488       0       0
+    ISUP2       0       0      62     169       0       0
+    ISUP3       0       0      22      93       0       0
+    ISUP4       0       0       4      32       0       0
+    ISUP5       0       0      13      61       0       0
+  ↳ [head] no improvement (4/10)
+[HEAD 008] train: loss 1.5684 bacc 0.2046 acc 0.1288 f1 0.0952 || val: loss 0.2235 acc 0.0251 BAL-acc 0.1825 f1 0.0200 | acc[c0]=0.001  acc[c1]=0.000  acc[c2]=0.338  acc[c3]=0.757  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.626  auc[c1]=0.497  auc[c2]=0.346  auc[c3]=0.854  auc[c4]=0.614  auc[c5]=0.747 | macroAUC=0.614 | macroSens=0.182 macroSpec=0.833 | sens[c0]=0.001  sens[c1]=0.000  sens[c2]=0.338  sens[c3]=0.757  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=0.999  spec[c1]=1.000  spec[c2]=0.312  spec[c3]=0.724  spec[c4]=1.000  spec[c5]=0.960
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0       3       0    3566    1242       0     227
+    ISUP1       2       0     823     345       0      32
+    ISUP2       0       0      78     151       0       2
+    ISUP3       0       0      27      87       0       1
+    ISUP4       0       0       8      26       0       2
+    ISUP5       0       0      21      53       0       0
+  ↳ [head] no improvement (5/10)
+[HEAD 009] train: loss 1.5656 bacc 0.2103 acc 0.1294 f1 0.1009 || val: loss 0.2217 acc 0.0290 BAL-acc 0.1902 f1 0.0215 | acc[c0]=0.004  acc[c1]=0.000  acc[c2]=0.372  acc[c3]=0.765  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.627  auc[c1]=0.497  auc[c2]=0.354  auc[c3]=0.855  auc[c4]=0.642  auc[c5]=0.748 | macroAUC=0.621 | macroSens=0.190 macroSpec=0.833 | sens[c0]=0.004  sens[c1]=0.000  sens[c2]=0.372  sens[c3]=0.765  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=0.997  spec[c1]=1.000  spec[c2]=0.281  spec[c3]=0.722  spec[c4]=1.000  spec[c5]=0.997
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0      20       0    3728    1273       0      17
+    ISUP1       5       0     858     335       0       4
+    ISUP2       0       0      86     145       0       0
+    ISUP3       0       0      27      88       0       0
+    ISUP4       0       0      11      25       0       0
+    ISUP5       0       0      22      52       0       0
+  ↳ [head] new best (val BAL-acc=0.1902) snapshot stored in memory
+[HEAD 010] train: loss 1.5606 bacc 0.2042 acc 0.1304 f1 0.0941 || val: loss 0.2193 acc 0.0223 BAL-acc 0.1850 f1 0.0184 | acc[c0]=0.009  acc[c1]=0.000  acc[c2]=0.143  acc[c3]=0.026  acc[c4]=0.000  acc[c5]=0.932 | auc[c0]=0.625  auc[c1]=0.500  auc[c2]=0.363  auc[c3]=0.857  auc[c4]=0.623  auc[c5]=0.752 | macroAUC=0.620 | macroSens=0.185 macroSpec=0.832 | sens[c0]=0.009  sens[c1]=0.000  sens[c2]=0.143  sens[c3]=0.026  sens[c4]=0.000  sens[c5]=0.932 | spec[c0]=0.987  spec[c1]=1.000  spec[c2]=0.666  spec[c3]=0.992  spec[c4]=1.000  spec[c5]=0.348
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0      44       0    1707      19       0    3268
+    ISUP1      21       0     435      20       0     726
+    ISUP2       0       0      33      14       0     184
+    ISUP3       0       0       9       3       0     103
+    ISUP4       0       0       1       0       0      35
+    ISUP5       0       0       5       0       0      69
+  ↳ [head] no improvement (1/10)
+[HEAD 011] train: loss 1.5572 bacc 0.2155 acc 0.1422 f1 0.1103 || val: loss 0.2191 acc 0.0255 BAL-acc 0.1555 f1 0.0220 | acc[c0]=0.011  acc[c1]=0.000  acc[c2]=0.303  acc[c3]=0.052  acc[c4]=0.000  acc[c5]=0.568 | auc[c0]=0.626  auc[c1]=0.498  auc[c2]=0.373  auc[c3]=0.852  auc[c4]=0.652  auc[c5]=0.744 | macroAUC=0.624 | macroSens=0.156 macroSpec=0.832 | sens[c0]=0.011  sens[c1]=0.000  sens[c2]=0.303  sens[c3]=0.052  sens[c4]=0.000  sens[c5]=0.568 | spec[c0]=0.986  spec[c1]=1.000  spec[c2]=0.447  spec[c3]=0.975  spec[c4]=0.946  spec[c5]=0.637
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0      53       0    2836      74     252    1823
+    ISUP1      23       0     691      48      88     352
+    ISUP2       0       0      70      33       6     122
+    ISUP3       0       0      23       6       5      81
+    ISUP4       0       0       6       1       0      29
+    ISUP5       0       0      17       9       6      42
+  ↳ [head] no improvement (2/10)
+[HEAD 012] train: loss 1.5448 bacc 0.2121 acc 0.1416 f1 0.1078 || val: loss 0.2161 acc 0.0336 BAL-acc 0.1819 f1 0.0203 | acc[c0]=0.014  acc[c1]=0.000  acc[c2]=0.260  acc[c3]=0.817  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.627  auc[c1]=0.498  auc[c2]=0.377  auc[c3]=0.854  auc[c4]=0.667  auc[c5]=0.744 | macroAUC=0.628 | macroSens=0.182 macroSpec=0.832 | sens[c0]=0.014  sens[c1]=0.000  sens[c2]=0.260  sens[c3]=0.817  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=0.984  spec[c1]=1.000  spec[c2]=0.429  spec[c3]=0.584  spec[c4]=1.000  spec[c5]=0.997
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0      71       0    2980    1972       0      15
+    ISUP1      26       0     675     499       0       2
+    ISUP2       0       0      60     171       0       0
+    ISUP3       0       0      21      94       0       0
+    ISUP4       0       0       4      32       0       0
+    ISUP5       0       0      12      62       0       0
+  ↳ [head] no improvement (3/10)
+[HEAD 013] train: loss 1.5416 bacc 0.2246 acc 0.1512 f1 0.1160 || val: loss 0.2115 acc 0.0427 BAL-acc 0.1807 f1 0.0336 | acc[c0]=0.023  acc[c1]=0.000  acc[c2]=0.416  acc[c3]=0.591  acc[c4]=0.000  acc[c5]=0.054 | auc[c0]=0.627  auc[c1]=0.498  auc[c2]=0.404  auc[c3]=0.854  auc[c4]=0.688  auc[c5]=0.748 | macroAUC=0.636 | macroSens=0.181 macroSpec=0.833 | sens[c0]=0.023  sens[c1]=0.000  sens[c2]=0.416  sens[c3]=0.591  sens[c4]=0.000  sens[c5]=0.054 | spec[c0]=0.975  spec[c1]=1.000  spec[c2]=0.291  spec[c3]=0.833  spec[c4]=0.997  spec[c5]=0.899
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     118       0    3658     704      12     546
+    ISUP1      42       0     854     219       6      81
+    ISUP2       0       0      96     118       0      17
+    ISUP3       0       0      32      68       0      15
+    ISUP4       0       0      11      16       0       9
+    ISUP5       0       0      28      42       0       4
+  ↳ [head] no improvement (4/10)
+[HEAD 014] train: loss 1.5401 bacc 0.2306 acc 0.1559 f1 0.1297 || val: loss 0.2135 acc 0.0439 BAL-acc 0.1731 f1 0.0384 | acc[c0]=0.027  acc[c1]=0.000  acc[c2]=0.429  acc[c3]=0.461  acc[c4]=0.028  acc[c5]=0.095 | auc[c0]=0.627  auc[c1]=0.497  auc[c2]=0.411  auc[c3]=0.851  auc[c4]=0.679  auc[c5]=0.742 | macroAUC=0.635 | macroSens=0.173 macroSpec=0.832 | sens[c0]=0.027  sens[c1]=0.000  sens[c2]=0.429  sens[c3]=0.461  sens[c4]=0.028  sens[c5]=0.095 | spec[c0]=0.968  spec[c1]=1.000  spec[c2]=0.343  spec[c3]=0.888  spec[c4]=0.922  spec[c5]=0.873
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     134       0    3397     445     388     674
+    ISUP1      53       0     785     154     113      97
+    ISUP2       0       0      99      95       4      33
+    ISUP3       0       0      29      53       8      25
+    ISUP4       0       0      11      12       1      12
+    ISUP5       0       0      27      31       9       7
+  ↳ [head] no improvement (5/10)
+[HEAD 015] train: loss 1.5219 bacc 0.2378 acc 0.1692 f1 0.1360 || val: loss 0.2117 acc 0.0460 BAL-acc 0.1758 f1 0.0342 | acc[c0]=0.030  acc[c1]=0.000  acc[c2]=0.372  acc[c3]=0.530  acc[c4]=0.000  acc[c5]=0.122 | auc[c0]=0.627  auc[c1]=0.498  auc[c2]=0.420  auc[c3]=0.854  auc[c4]=0.657  auc[c5]=0.748 | macroAUC=0.634 | macroSens=0.176 macroSpec=0.832 | sens[c0]=0.030  sens[c1]=0.000  sens[c2]=0.372  sens[c3]=0.530  sens[c4]=0.000  sens[c5]=0.122 | spec[c0]=0.963  spec[c1]=1.000  spec[c2]=0.359  spec[c3]=0.828  spec[c4]=1.000  spec[c5]=0.842
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     152       0    3323     721       0     842
+    ISUP1      62       0     758     245       0     137
+    ISUP2       0       0      86     113       0      32
+    ISUP3       0       0      28      61       0      26
+    ISUP4       0       0      10      15       0      11
+    ISUP5       0       0      24      41       0       9
+  ↳ [head] no improvement (6/10)
+[HEAD 016] train: loss 1.5167 bacc 0.2347 acc 0.1722 f1 0.1301 || val: loss 0.2124 acc 0.0499 BAL-acc 0.1911 f1 0.0323 | acc[c0]=0.033  acc[c1]=0.000  acc[c2]=0.355  acc[c3]=0.730  acc[c4]=0.028  acc[c5]=0.000 | auc[c0]=0.628  auc[c1]=0.497  auc[c2]=0.427  auc[c3]=0.849  auc[c4]=0.687  auc[c5]=0.733 | macroAUC=0.637 | macroSens=0.191 macroSpec=0.832 | sens[c0]=0.033  sens[c1]=0.000  sens[c2]=0.355  sens[c3]=0.730  sens[c4]=0.028  sens[c5]=0.000 | spec[c0]=0.958  spec[c1]=1.000  spec[c2]=0.366  spec[c3]=0.742  spec[c4]=0.943  spec[c5]=0.983
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     167       0    3305    1183     285      98
+    ISUP1      69       0     735     294      89      15
+    ISUP2       0       0      82     148       1       0
+    ISUP3       0       0      27      84       3       1
+    ISUP4       0       0      11      24       1       0
+    ISUP5       0       0      22      48       4       0
+  ↳ [head] new best (val BAL-acc=0.1911) snapshot stored in memory
+[HEAD 017] train: loss 1.5131 bacc 0.2365 acc 0.1789 f1 0.1343 || val: loss 0.2092 acc 0.0612 BAL-acc 0.1834 f1 0.0482 | acc[c0]=0.045  acc[c1]=0.000  acc[c2]=0.593  acc[c3]=0.339  acc[c4]=0.056  acc[c5]=0.068 | auc[c0]=0.629  auc[c1]=0.497  auc[c2]=0.452  auc[c3]=0.850  auc[c4]=0.713  auc[c5]=0.741 | macroAUC=0.647 | macroSens=0.183 macroSpec=0.833 | sens[c0]=0.045  sens[c1]=0.000  sens[c2]=0.593  sens[c3]=0.339  sens[c4]=0.056  sens[c5]=0.068 | spec[c0]=0.951  spec[c1]=1.000  spec[c2]=0.252  spec[c3]=0.928  spec[c4]=0.957  spec[c5]=0.908
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     227       0    3860     271     204     476
+    ISUP1      82       0     878      99      70      73
+    ISUP2       0       0     137      68       0      26
+    ISUP3       0       0      46      39       7      23
+    ISUP4       0       0      18       7       2       9
+    ISUP5       0       0      36      26       7       5
+  ↳ [head] no improvement (1/10)
+[HEAD 018] train: loss 1.5097 bacc 0.2419 acc 0.1783 f1 0.1445 || val: loss 0.2128 acc 0.0554 BAL-acc 0.1812 f1 0.0454 | acc[c0]=0.038  acc[c1]=0.000  acc[c2]=0.563  acc[c3]=0.365  acc[c4]=0.000  acc[c5]=0.122 | auc[c0]=0.628  auc[c1]=0.497  auc[c2]=0.442  auc[c3]=0.847  auc[c4]=0.687  auc[c5]=0.737 | macroAUC=0.640 | macroSens=0.181 macroSpec=0.832 | sens[c0]=0.038  sens[c1]=0.000  sens[c2]=0.563  sens[c3]=0.365  sens[c4]=0.000  sens[c5]=0.122 | spec[c0]=0.954  spec[c1]=1.000  spec[c2]=0.247  spec[c3]=0.927  spec[c4]=0.991  spec[c5]=0.873
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     190       0    3870     274      44     660
+    ISUP1      77       0     901     107      17     100
+    ISUP2       0       0     130      64       0      37
+    ISUP3       0       0      46      42       0      27
+    ISUP4       0       0      16       6       0      14
+    ISUP5       0       0      35      30       0       9
+  ↳ [head] no improvement (2/10)
+[HEAD 019] train: loss 1.5100 bacc 0.2383 acc 0.1798 f1 0.1414 || val: loss 0.2088 acc 0.0674 BAL-acc 0.1957 f1 0.0428 | acc[c0]=0.053  acc[c1]=0.000  acc[c2]=0.468  acc[c3]=0.626  acc[c4]=0.000  acc[c5]=0.027 | auc[c0]=0.629  auc[c1]=0.497  auc[c2]=0.455  auc[c3]=0.848  auc[c4]=0.698  auc[c5]=0.743 | macroAUC=0.645 | macroSens=0.196 macroSpec=0.833 | sens[c0]=0.053  sens[c1]=0.000  sens[c2]=0.468  sens[c3]=0.626  sens[c4]=0.000  sens[c5]=0.027 | spec[c0]=0.943  spec[c1]=1.000  spec[c2]=0.313  spec[c3]=0.819  spec[c4]=0.987  spec[c5]=0.936
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     269       0    3556     793      67     353
+    ISUP1      94       0     809     227      22      50
+    ISUP2       0       0     108     120       0       3
+    ISUP3       0       0      32      72       0      11
+    ISUP4       0       0      13      14       0       9
+    ISUP5       0       0      32      40       0       2
+  ↳ [head] new best (val BAL-acc=0.1957) snapshot stored in memory
+[HEAD 020] train: loss 1.5100 bacc 0.2445 acc 0.1848 f1 0.1488 || val: loss 0.2089 acc 0.0690 BAL-acc 0.1853 f1 0.0479 | acc[c0]=0.059  acc[c1]=0.000  acc[c2]=0.429  acc[c3]=0.487  acc[c4]=0.056  acc[c5]=0.081 | auc[c0]=0.629  auc[c1]=0.497  auc[c2]=0.460  auc[c3]=0.847  auc[c4]=0.689  auc[c5]=0.736 | macroAUC=0.643 | macroSens=0.185 macroSpec=0.833 | sens[c0]=0.059  sens[c1]=0.000  sens[c2]=0.429  sens[c3]=0.487  sens[c4]=0.056  sens[c5]=0.081 | spec[c0]=0.941  spec[c1]=1.000  spec[c2]=0.382  spec[c3]=0.872  spec[c4]=0.933  spec[c5]=0.872
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     299       0    3191     527     336     685
+    ISUP1      97       0     736     171      97     101
+    ISUP2       0       0      99     101       2      29
+    ISUP3       0       0      30      56       7      22
+    ISUP4       0       0      11      13       2      10
+    ISUP5       0       0      28      33       7       6
+  ↳ [head] no improvement (1/10)
+[HEAD 021] train: loss 1.5022 bacc 0.2416 acc 0.1892 f1 0.1481 || val: loss 0.2077 acc 0.0754 BAL-acc 0.1957 f1 0.0555 | acc[c0]=0.069  acc[c1]=0.000  acc[c2]=0.437  acc[c3]=0.313  acc[c4]=0.139  acc[c5]=0.216 | auc[c0]=0.629  auc[c1]=0.497  auc[c2]=0.474  auc[c3]=0.845  auc[c4]=0.694  auc[c5]=0.736 | macroAUC=0.646 | macroSens=0.196 macroSpec=0.834 | sens[c0]=0.069  sens[c1]=0.000  sens[c2]=0.437  sens[c3]=0.313  sens[c4]=0.139  sens[c5]=0.216 | spec[c0]=0.936  spec[c1]=1.000  spec[c2]=0.423  spec[c3]=0.930  spec[c4]=0.888  spec[c5]=0.826
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     347       0    2968     275     548     900
+    ISUP1     106       0     698      97     151     150
+    ISUP2       0       0     101      64      10      56
+    ISUP3       0       0      29      36      20      30
+    ISUP4       0       0      10       3       5      18
+    ISUP5       0       0      23      19      16      16
+  ↳ [head] new best (val BAL-acc=0.1957) snapshot stored in memory
+[HEAD 022] train: loss 1.4902 bacc 0.2607 acc 0.1965 f1 0.1624 || val: loss 0.2128 acc 0.0690 BAL-acc 0.1890 f1 0.0544 | acc[c0]=0.059  acc[c1]=0.000  acc[c2]=0.494  acc[c3]=0.296  acc[c4]=0.083  acc[c5]=0.203 | auc[c0]=0.629  auc[c1]=0.497  auc[c2]=0.461  auc[c3]=0.842  auc[c4]=0.682  auc[c5]=0.725 | macroAUC=0.639 | macroSens=0.189 macroSpec=0.833 | sens[c0]=0.059  sens[c1]=0.000  sens[c2]=0.494  sens[c3]=0.296  sens[c4]=0.083  sens[c5]=0.203 | spec[c0]=0.942  spec[c1]=1.000  spec[c2]=0.367  spec[c3]=0.944  spec[c4]=0.921  spec[c5]=0.826
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     296       0    3259     215     373     895
+    ISUP1      96       0     758      80     120     148
+    ISUP2       0       0     114      55       4      58
+    ISUP3       0       0      34      34      15      32
+    ISUP4       0       0      13       2       3      18
+    ISUP5       0       0      28      17      14      15
+  ↳ [head] no improvement (1/10)
+[HEAD 023] train: loss 1.4845 bacc 0.2608 acc 0.1990 f1 0.1641 || val: loss 0.2074 acc 0.0853 BAL-acc 0.2033 f1 0.0615 | acc[c0]=0.079  acc[c1]=0.000  acc[c2]=0.481  acc[c3]=0.374  acc[c4]=0.083  acc[c5]=0.203 | auc[c0]=0.630  auc[c1]=0.497  auc[c2]=0.481  auc[c3]=0.846  auc[c4]=0.695  auc[c5]=0.731 | macroAUC=0.647 | macroSens=0.203 macroSpec=0.834 | sens[c0]=0.079  sens[c1]=0.000  sens[c2]=0.481  sens[c3]=0.374  sens[c4]=0.083  sens[c5]=0.203 | spec[c0]=0.928  spec[c1]=1.000  spec[c2]=0.387  spec[c3]=0.928  spec[c4]=0.939  spec[c5]=0.823
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     399       0    3151     289     290     909
+    ISUP1     119       0     736      95      95     157
+    ISUP2       0       0     111      64       2      54
+    ISUP3       0       0      34      43       7      31
+    ISUP4       0       0      12       3       3      18
+    ISUP5       0       0      28      22       9      15
+  ↳ [head] new best (val BAL-acc=0.2033) snapshot stored in memory
+[HEAD 024] train: loss 1.4916 bacc 0.2484 acc 0.2030 f1 0.1575 || val: loss 0.2072 acc 0.0983 BAL-acc 0.1850 f1 0.0543 | acc[c0]=0.100  acc[c1]=0.000  acc[c2]=0.359  acc[c3]=0.583  acc[c4]=0.028  acc[c5]=0.041 | auc[c0]=0.630  auc[c1]=0.497  auc[c2]=0.485  auc[c3]=0.845  auc[c4]=0.696  auc[c5]=0.725 | macroAUC=0.646 | macroSens=0.185 macroSpec=0.836 | sens[c0]=0.100  sens[c1]=0.000  sens[c2]=0.359  sens[c3]=0.583  sens[c4]=0.028  sens[c5]=0.041 | spec[c0]=0.920  spec[c1]=1.000  spec[c2]=0.442  spec[c3]=0.809  spec[c4]=0.949  spec[c5]=0.895
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     504       0    2880     832     255     567
+    ISUP1     132       0     665     243      75      87
+    ISUP2       0       0      83     128       1      19
+    ISUP3       0       0      31      67       2      15
+    ISUP4       0       0      10      15       1      10
+    ISUP5       0       0      24      42       5       3
+  ↳ [head] no improvement (1/10)
+[HEAD 025] train: loss 1.4866 bacc 0.2605 acc 0.2097 f1 0.1673 || val: loss 0.2100 acc 0.0883 BAL-acc 0.2168 f1 0.0644 | acc[c0]=0.083  acc[c1]=0.000  acc[c2]=0.468  acc[c3]=0.357  acc[c4]=0.083  acc[c5]=0.311 | auc[c0]=0.630  auc[c1]=0.497  auc[c2]=0.482  auc[c3]=0.843  auc[c4]=0.685  auc[c5]=0.719 | macroAUC=0.643 | macroSens=0.217 macroSpec=0.835 | sens[c0]=0.083  sens[c1]=0.000  sens[c2]=0.468  sens[c3]=0.357  sens[c4]=0.083  sens[c5]=0.311 | spec[c0]=0.927  spec[c1]=1.000  spec[c2]=0.395  spec[c3]=0.931  spec[c4]=0.964  spec[c5]=0.792
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     416       0    3108     270     174    1070
+    ISUP1     121       0     729     105      58     189
+    ISUP2       0       0     108      58       1      64
+    ISUP3       0       0      34      41       4      36
+    ISUP4       0       0      12       3       3      18
+    ISUP5       0       0      26      20       5      23
+  ↳ [head] new best (val BAL-acc=0.2168) snapshot stored in memory
+[HEAD 026] train: loss 1.4774 bacc 0.2644 acc 0.2140 f1 0.1705 || val: loss 0.2039 acc 0.1196 BAL-acc 0.2132 f1 0.0611 | acc[c0]=0.121  acc[c1]=0.000  acc[c2]=0.515  acc[c3]=0.643  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.631  auc[c1]=0.496  auc[c2]=0.514  auc[c3]=0.848  auc[c4]=0.724  auc[c5]=0.732 | macroAUC=0.657 | macroSens=0.213 macroSpec=0.837 | sens[c0]=0.121  sens[c1]=0.000  sens[c2]=0.515  sens[c3]=0.643  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=0.909  spec[c1]=1.000  spec[c2]=0.345  spec[c3]=0.815  spec[c4]=0.997  spec[c5]=0.959
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     608       0    3363     824      15     228
+    ISUP1     150       0     786     230       6      30
+    ISUP2       1       0     119     110       0       1
+    ISUP3       0       0      36      74       0       5
+    ISUP4       0       0      16      14       0       6
+    ISUP5       0       0      32      42       0       0
+  ↳ [head] no improvement (1/10)
+[HEAD 027] train: loss 1.4815 bacc 0.2656 acc 0.2200 f1 0.1735 || val: loss 0.2073 acc 0.1210 BAL-acc 0.1911 f1 0.0661 | acc[c0]=0.133  acc[c1]=0.000  acc[c2]=0.290  acc[c3]=0.426  acc[c4]=0.000  acc[c5]=0.297 | auc[c0]=0.630  auc[c1]=0.498  auc[c2]=0.491  auc[c3]=0.843  auc[c4]=0.676  auc[c5]=0.720 | macroAUC=0.643 | macroSens=0.191 macroSpec=0.838 | sens[c0]=0.133  sens[c1]=0.000  sens[c2]=0.290  sens[c3]=0.426  sens[c4]=0.000  sens[c5]=0.297 | spec[c0]=0.908  spec[c1]=1.000  spec[c2]=0.559  spec[c3]=0.879  spec[c4]=0.958  spec[c5]=0.728
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     672       0    2248     501     205    1412
+    ISUP1     152       0     555     182      66     247
+    ISUP2       1       0      67      82       2      79
+    ISUP3       0       0      25      49       2      39
+    ISUP4       0       0       7       5       0      24
+    ISUP5       0       0      19      28       5      22
+  ↳ [head] no improvement (2/10)
+[HEAD 028] train: loss 1.4803 bacc 0.2600 acc 0.2166 f1 0.1698 || val: loss 0.2070 acc 0.1153 BAL-acc 0.1995 f1 0.0706 | acc[c0]=0.119  acc[c1]=0.000  acc[c2]=0.528  acc[c3]=0.330  acc[c4]=0.111  acc[c5]=0.108 | auc[c0]=0.632  auc[c1]=0.496  auc[c2]=0.515  auc[c3]=0.841  auc[c4]=0.711  auc[c5]=0.713 | macroAUC=0.651 | macroSens=0.199 macroSpec=0.837 | sens[c0]=0.119  sens[c1]=0.000  sens[c2]=0.528  sens[c3]=0.330  sens[c4]=0.111  sens[c5]=0.108 | spec[c0]=0.911  spec[c1]=1.000  spec[c2]=0.374  spec[c3]=0.932  spec[c4]=0.934  spec[c5]=0.872
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     600       0    3197     261     310     670
+    ISUP1     146       0     760      91     103     102
+    ISUP2       1       0     122      68       3      37
+    ISUP3       0       0      39      38      13      25
+    ISUP4       0       0      15       5       4      12
+    ISUP5       0       0      34      22      10       8
+  ↳ [head] no improvement (3/10)
+[HEAD 029] train: loss 1.4702 bacc 0.2655 acc 0.2248 f1 0.1754 || val: loss 0.2061 acc 0.1057 BAL-acc 0.1989 f1 0.0701 | acc[c0]=0.107  acc[c1]=0.000  acc[c2]=0.532  acc[c3]=0.174  acc[c4]=0.056  acc[c5]=0.324 | auc[c0]=0.632  auc[c1]=0.498  auc[c2]=0.519  auc[c3]=0.841  auc[c4]=0.699  auc[c5]=0.716 | macroAUC=0.651 | macroSens=0.199 macroSpec=0.837 | sens[c0]=0.107  sens[c1]=0.000  sens[c2]=0.532  sens[c3]=0.174  sens[c4]=0.056  sens[c5]=0.324 | spec[c0]=0.918  spec[c1]=1.000  spec[c2]=0.385  spec[c3]=0.973  spec[c4]=0.969  spec[c5]=0.775
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     539       0    3121      91     138    1149
+    ISUP1     136       0     767      40      57     202
+    ISUP2       0       0     123      33       0      75
+    ISUP3       0       0      41      20       6      48
+    ISUP4       0       0      14       1       2      19
+    ISUP5       0       0      33      11       6      24
+  ↳ [head] no improvement (4/10)
+[HEAD 030] train: loss 1.4687 bacc 0.2629 acc 0.2317 f1 0.1763 || val: loss 0.2046 acc 0.1353 BAL-acc 0.2014 f1 0.0725 | acc[c0]=0.145  acc[c1]=0.000  acc[c2]=0.481  acc[c3]=0.461  acc[c4]=0.000  acc[c5]=0.122 | auc[c0]=0.632  auc[c1]=0.497  auc[c2]=0.525  auc[c3]=0.842  auc[c4]=0.705  auc[c5]=0.713 | macroAUC=0.652 | macroSens=0.201 macroSpec=0.840 | sens[c0]=0.145  sens[c1]=0.000  sens[c2]=0.481  sens[c3]=0.461  sens[c4]=0.000  sens[c5]=0.122 | spec[c0]=0.901  spec[c1]=1.000  spec[c2]=0.421  spec[c3]=0.887  spec[c4]=0.974  spec[c5]=0.854
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     733       0    2939     467     123     776
+    ISUP1     163       0     725     157      43     114
+    ISUP2       1       0     111      79       0      40
+    ISUP3       0       0      36      53       1      25
+    ISUP4       0       0      14       9       0      13
+    ISUP5       0       0      32      30       3       9
+  ↳ [head] no improvement (5/10)
+[HEAD 031] train: loss 1.4768 bacc 0.2701 acc 0.2258 f1 0.1808 || val: loss 0.2052 acc 0.1271 BAL-acc 0.1992 f1 0.0594 | acc[c0]=0.136  acc[c1]=0.000  acc[c2]=0.372  acc[c3]=0.687  acc[c4]=0.000  acc[c5]=0.000 | auc[c0]=0.632  auc[c1]=0.496  auc[c2]=0.521  auc[c3]=0.841  auc[c4]=0.703  auc[c5]=0.706 | macroAUC=0.650 | macroSens=0.199 macroSpec=0.839 | sens[c0]=0.136  sens[c1]=0.000  sens[c2]=0.372  sens[c3]=0.687  sens[c4]=0.000  sens[c5]=0.000 | spec[c0]=0.905  spec[c1]=1.000  spec[c2]=0.461  spec[c3]=0.722  spec[c4]=0.989  spec[c5]=0.955
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     686       0    2757    1283      54     258
+    ISUP1     157       0     657     336      20      32
+    ISUP2       1       0      86     142       0       2
+    ISUP3       0       0      32      79       0       4
+    ISUP4       0       0      12      20       0       4
+    ISUP5       0       0      28      46       0       0
+  ↳ [head] no improvement (6/10)
+[HEAD 032] train: loss 1.4659 bacc 0.2768 acc 0.2377 f1 0.1870 || val: loss 0.2076 acc 0.1316 BAL-acc 0.2039 f1 0.0774 | acc[c0]=0.141  acc[c1]=0.000  acc[c2]=0.502  acc[c3]=0.348  acc[c4]=0.083  acc[c5]=0.149 | auc[c0]=0.632  auc[c1]=0.497  auc[c2]=0.525  auc[c3]=0.838  auc[c4]=0.697  auc[c5]=0.702 | macroAUC=0.648 | macroSens=0.204 macroSpec=0.839 | sens[c0]=0.141  sens[c1]=0.000  sens[c2]=0.502  sens[c3]=0.348  sens[c4]=0.083  sens[c5]=0.149 | spec[c0]=0.903  spec[c1]=1.000  spec[c2]=0.417  spec[c3]=0.932  spec[c4]=0.947  spec[c5]=0.836
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     711       0    2957     265     245     860
+    ISUP1     160       0     726      93      91     132
+    ISUP2       1       0     116      63       1      50
+    ISUP3       0       0      38      40       9      28
+    ISUP4       0       0      13       4       3      16
+    ISUP5       0       0      32      21      10      11
+  ↳ [head] no improvement (7/10)
+[HEAD 033] train: loss 1.4590 bacc 0.2772 acc 0.2385 f1 0.1870 || val: loss 0.2046 acc 0.1438 BAL-acc 0.2118 f1 0.0762 | acc[c0]=0.159  acc[c1]=0.000  acc[c2]=0.398  acc[c3]=0.443  acc[c4]=0.000  acc[c5]=0.270 | auc[c0]=0.632  auc[c1]=0.498  auc[c2]=0.528  auc[c3]=0.841  auc[c4]=0.683  auc[c5]=0.708 | macroAUC=0.648 | macroSens=0.212 macroSpec=0.840 | sens[c0]=0.159  sens[c1]=0.000  sens[c2]=0.398  sens[c3]=0.443  sens[c4]=0.000  sens[c5]=0.270 | spec[c0]=0.891  spec[c1]=1.000  spec[c2]=0.501  spec[c3]=0.889  spec[c4]=0.982  spec[c5]=0.776
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     800       0    2528     454      88    1168
+    ISUP1     179       0     628     166      30     199
+    ISUP2       1       0      92      73       0      65
+    ISUP3       0       0      32      51       0      32
+    ISUP4       0       0      10       8       0      18
+    ISUP5       0       0      26      27       1      20
+  ↳ [head] no improvement (8/10)
+[HEAD 034] train: loss 1.4651 bacc 0.2702 acc 0.2373 f1 0.1847 || val: loss 0.2025 acc 0.1501 BAL-acc 0.2058 f1 0.0815 | acc[c0]=0.162  acc[c1]=0.000  acc[c2]=0.632  acc[c3]=0.304  acc[c4]=0.056  acc[c5]=0.081 | auc[c0]=0.634  auc[c1]=0.496  auc[c2]=0.558  auc[c3]=0.839  auc[c4]=0.726  auc[c5]=0.713 | macroAUC=0.661 | macroSens=0.206 macroSpec=0.841 | sens[c0]=0.162  sens[c1]=0.000  sens[c2]=0.632  sens[c3]=0.304  sens[c4]=0.056  sens[c5]=0.081 | spec[c0]=0.891  spec[c1]=1.000  spec[c2]=0.347  spec[c3]=0.937  spec[c4]=0.962  spec[c5]=0.907
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     816       0    3309     246     175     492
+    ISUP1     179       0     806      86      64      67
+    ISUP2       1       0     146      58       0      26
+    ISUP3       0       0      51      35       6      23
+    ISUP4       0       0      17       6       2      11
+    ISUP5       0       0      41      18       9       6
+  ↳ [head] no improvement (9/10)
+[HEAD 035] train: loss 1.4615 bacc 0.2806 acc 0.2379 f1 0.1920 || val: loss 0.2046 acc 0.1498 BAL-acc 0.2045 f1 0.0821 | acc[c0]=0.168  acc[c1]=0.000  acc[c2]=0.429  acc[c3]=0.252  acc[c4]=0.000  acc[c5]=0.378 | auc[c0]=0.632  auc[c1]=0.498  auc[c2]=0.536  auc[c3]=0.838  auc[c4]=0.678  auc[c5]=0.714 | macroAUC=0.650 | macroSens=0.205 macroSpec=0.841 | sens[c0]=0.168  sens[c1]=0.000  sens[c2]=0.429  sens[c3]=0.252  sens[c4]=0.000  sens[c5]=0.378 | spec[c0]=0.888  spec[c1]=1.000  spec[c2]=0.502  spec[c3]=0.954  spec[c4]=0.978  spec[c5]=0.723
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     847       0    2505     175     101    1410
+    ISUP1     185       0     646      72      40     259
+    ISUP2       1       0      99      42       0      89
+    ISUP3       0       0      35      29       2      49
+    ISUP4       0       0       9       1       0      26
+    ISUP5       0       0      27      16       3      28
+  ↳ [head] no improvement (10/10)
+[head] Early stopping at epoch 35.
+[FINAL VAL] loss 0.2100 acc 0.0883 f1 0.0644 | acc[c0]=0.083  acc[c1]=0.000  acc[c2]=0.468  acc[c3]=0.357  acc[c4]=0.083  acc[c5]=0.311 | auc[c0]=0.630  auc[c1]=0.497  auc[c2]=0.482  auc[c3]=0.843  auc[c4]=0.685  auc[c5]=0.719 | macroAUC=0.643 | macroSens=0.217 macroSpec=0.835 | sens[c0]=0.083  sens[c1]=0.000  sens[c2]=0.468  sens[c3]=0.357  sens[c4]=0.083  sens[c5]=0.311 | spec[c0]=0.927  spec[c1]=1.000  spec[c2]=0.395  spec[c3]=0.931  spec[c4]=0.964  spec[c5]=0.792
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     416       0    3108     270     174    1070
+    ISUP1     121       0     729     105      58     189
+    ISUP2       0       0     108      58       1      64
+    ISUP3       0       0      34      41       4      36
+    ISUP4       0       0      12       3       3      18
+    ISUP5       0       0      26      20       5      23
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.630 |        0.810 |        0.591 |        0.301 |        0.138 |        0.050 |        0.007
+          c1 |        0.497 |        0.581 |        0.389 |        0.207 |        0.124 |        0.075 |        0.016
+          c2 |        0.482 |        0.580 |        0.346 |        0.173 |        0.069 |        0.052 |        0.009
+          c3 |        0.843 |        0.983 |        0.896 |        0.748 |        0.548 |        0.330 |        0.130
+          c4 |        0.685 |        0.861 |        0.639 |        0.361 |        0.222 |        0.111 |        0.028
+          c5 |        0.719 |        0.932 |        0.770 |        0.419 |        0.162 |        0.095 |        0.000
+       macro |        0.643 |        0.791 |        0.605 |        0.368 |        0.211 |        0.119 |        0.032
+[FINAL TEST] loss 0.2078 acc 0.1054 f1 0.0726 | acc[c0]=0.098  acc[c1]=0.000  acc[c2]=0.500  acc[c3]=0.287  acc[c4]=0.095  acc[c5]=0.500 | auc[c0]=0.646  auc[c1]=0.474  auc[c2]=0.484  auc[c3]=0.837  auc[c4]=0.805  auc[c5]=0.723 | macroAUC=0.662 | macroSens=0.247 macroSpec=0.836 | sens[c0]=0.098  sens[c1]=0.000  sens[c2]=0.500  sens[c3]=0.287  sens[c4]=0.095  sens[c5]=0.500 | spec[c0]=0.922  spec[c1]=1.000  spec[c2]=0.381  spec[c3]=0.940  spec[c4]=0.960  spec[c5]=0.814
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred   ISUP0   ISUP1   ISUP2   ISUP3   ISUP4   ISUP5
+    ISUP0     503       0    3231     217     227     978
+    ISUP1     124       0     686      92      33     162
+    ISUP2       1       0     142      66       3      72
+    ISUP3       0       0      55      37       6      31
+    ISUP4       0       0      14      16       4       8
+    ISUP5       0       0      22       4       1      27
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.646 |        0.830 |        0.623 |        0.323 |        0.126 |        0.063 |        0.012
+          c1 |        0.474 |        0.545 |        0.359 |        0.203 |        0.127 |        0.062 |        0.014
+          c2 |        0.484 |        0.585 |        0.391 |        0.187 |        0.102 |        0.035 |        0.004
+          c3 |        0.837 |        0.938 |        0.884 |        0.736 |        0.504 |        0.318 |        0.140
+          c4 |        0.805 |        0.857 |        0.833 |        0.667 |        0.524 |        0.333 |        0.000
+          c5 |        0.723 |        0.870 |        0.685 |        0.481 |        0.315 |        0.185 |        0.074
+       macro |        0.662 |        0.771 |        0.629 |        0.433 |        0.283 |        0.166 |        0.040
+wandb: updating run metadata
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:       aux/head/lr ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    aux/lr_val/acc ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c0 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c1 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c2 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c3 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c4 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/acc_c5 ▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/auc_c0 ▁▁▂▅▇▆▆▇▇█▇
+wandb: aux/lr_val/auc_c1 ▂▂▁▇█▇▃▅▄▄▁
+wandb:               +50 ...
+wandb: 
+wandb: Run summary:
+wandb:       aux/head/lr 1e-05
+wandb:    aux/lr_val/acc 0.75239
+wandb: aux/lr_val/acc_c0 1
+wandb: aux/lr_val/acc_c1 0
+wandb: aux/lr_val/acc_c2 0
+wandb: aux/lr_val/acc_c3 0
+wandb: aux/lr_val/acc_c4 0
+wandb: aux/lr_val/acc_c5 0
+wandb: aux/lr_val/auc_c0 0.61569
+wandb: aux/lr_val/auc_c1 0.52257
+wandb:               +50 ...
+wandb: 
+wandb: 🚀 View run isup3-two_stage-scope-head_only at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/dw976577
+wandb: ⭐️ View project at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260512_123351-dw976577/logs

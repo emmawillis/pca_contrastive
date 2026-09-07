@@ -1,0 +1,195 @@
+Host: kn069
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Mon Mar 30 15:27:32 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:17:00.0 Off |                    0 |
+| N/A   40C    P8             53W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+TRAIN_MODE=baseline
+OUTDIR_MODE=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/baseline/val1-test3/baseline-head_only
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+SCRIPT: train.py
+ARGS: Namespace(train_mode='baseline', seed=42, manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', target='isup3', folds_train='0,2,4', folds_val='1', folds_test='3', batch_size=16, pos_ratio=0.33, use_skip=False, label6_column='merged_ISUP', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', proj_dim=512, histo_dir=None, histo_marksheet_dir=None, provider='all', triplet_epochs=40, triplet_patience=10, triplet_margin=0.2, lr_max_iter=5, head_epochs=40, head_patience=10, stage2_scope='head_only', lr=1e-05, wd=0.0, enc_lr_mult=0.1, patient_col='patient_id', case_col='case_id', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/baseline/val1-test3/baseline-head_only', wandb=True, wandb_project='MID_DEC_KILLARNEY_NEW_SPIE', wandb_run_name='isup3-baseline-scope-head_only')
+!!!!!! classes_present [0, 1, 2]
+[split-check] #patients: train=886, val=295, test=295
+[split-check] patient overlaps: train∩val=0, train∩test=0, val∩test=0
+wandb: Currently logged in as: jesande7 (jesande7-queens) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /project/6106383/shared/picai/wandb/run-20260330_152741-tgv18t9p
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run isup3-baseline-scope-head_only
+wandb: ⭐️ View project at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: 🚀 View run at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/tgv18t9p
+[baseline] End-to-end CE training for total_epochs=80
+[baseline] lr=1e-05 wd=0 enc_lr_mult=0.1
+[BASELINE 001] train: loss 0.7963 bacc 0.4832 acc 0.3634 f1 0.3397 || val: loss 0.1381 acc 0.4703 BAL-acc 0.4823 f1 0.2979 | acc[c0]=0.459  acc[c1]=0.736  acc[c2]=0.252 | auc[c0]=0.848  auc[c1]=0.683  auc[c2]=0.743 | macroAUC=0.758 | macroSens=0.482 macroSpec=0.795 | sens[c0]=0.459  sens[c1]=0.736  sens[c2]=0.252 | spec[c0]=0.937  spec[c1]=0.510  spec[c2]=0.936
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2804    2963     340
+   ISUP23      24     273      74
+   ISUP45       8      96      35
+  ↳ [baseline] new best (val BAL-acc=0.4823) snapshot stored in memory
+[BASELINE 002] train: loss 0.5236 bacc 0.7131 acc 0.6259 f1 0.6108 || val: loss 0.1808 acc 0.5489 BAL-acc 0.5134 f1 0.3350 | acc[c0]=0.543  acc[c1]=0.752  acc[c2]=0.245 | auc[c0]=0.854  auc[c1]=0.719  auc[c2]=0.674 | macroAUC=0.749 | macroSens=0.513 macroSpec=0.819 | sens[c0]=0.543  sens[c1]=0.752  sens[c2]=0.245 | spec[c0]=0.927  spec[c1]=0.583  spec[c2]=0.947
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3319    2511     277
+   ISUP23      27     279      65
+   ISUP45      10      95      34
+  ↳ [baseline] new best (val BAL-acc=0.5134) snapshot stored in memory
+[BASELINE 003] train: loss 0.2827 bacc 0.8337 acc 0.7562 f1 0.7549 || val: loss 0.2440 acc 0.6968 BAL-acc 0.5361 f1 0.3901 | acc[c0]=0.708  acc[c1]=0.706  acc[c2]=0.194 | auc[c0]=0.852  auc[c1]=0.768  auc[c2]=0.645 | macroAUC=0.755 | macroSens=0.536 macroSpec=0.847 | sens[c0]=0.708  sens[c1]=0.706  sens[c2]=0.194 | spec[c0]=0.847  spec[c1]=0.739  spec[c2]=0.954
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4322    1535     250
+   ISUP23      59     262      50
+   ISUP45      19      93      27
+  ↳ [baseline] new best (val BAL-acc=0.5361) snapshot stored in memory
+[BASELINE 004] train: loss 0.1690 bacc 0.9054 acc 0.8496 f1 0.8509 || val: loss 0.3071 acc 0.8128 BAL-acc 0.5250 f1 0.4394 | acc[c0]=0.842  acc[c1]=0.582  acc[c2]=0.151 | auc[c0]=0.848  auc[c1]=0.798  auc[c2]=0.631 | macroAUC=0.759 | macroSens=0.525 macroSpec=0.837 | sens[c0]=0.842  sens[c1]=0.582  sens[c2]=0.151 | spec[c0]=0.682  spec[c1]=0.854  spec[c2]=0.974
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5141     833     133
+   ISUP23     121     216      34
+   ISUP45      41      77      21
+  ↳ [baseline] no improvement (1/10)
+[BASELINE 005] train: loss 0.1213 bacc 0.9431 acc 0.9088 f1 0.9036 || val: loss 0.3321 acc 0.8579 BAL-acc 0.5038 f1 0.4571 | acc[c0]=0.900  acc[c1]=0.410  acc[c2]=0.201 | auc[c0]=0.838  auc[c1]=0.774  auc[c2]=0.668 | macroAUC=0.760 | macroSens=0.504 macroSpec=0.817 | sens[c0]=0.900  sens[c1]=0.410  sens[c2]=0.201 | spec[c0]=0.565  spec[c1]=0.923  spec[c2]=0.964
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5497     431     179
+   ISUP23     164     152      55
+   ISUP45      58      53      28
+  ↳ [baseline] no improvement (2/10)
+[BASELINE 006] train: loss 0.0829 bacc 0.9701 acc 0.9526 f1 0.9499 || val: loss 0.3993 acc 0.8688 BAL-acc 0.4955 f1 0.4605 | acc[c0]=0.912  acc[c1]=0.423  acc[c2]=0.151 | auc[c0]=0.837  auc[c1]=0.785  auc[c2]=0.631 | macroAUC=0.751 | macroSens=0.495 macroSpec=0.810 | sens[c0]=0.912  sens[c1]=0.423  sens[c2]=0.151 | spec[c0]=0.529  spec[c1]=0.925  spec[c2]=0.975
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5571     415     121
+   ISUP23     175     157      39
+   ISUP45      65      53      21
+  ↳ [baseline] no improvement (3/10)
+[BASELINE 007] train: loss 0.0689 bacc 0.9794 acc 0.9714 f1 0.9677 || val: loss 0.4819 acc 0.8910 BAL-acc 0.4702 f1 0.4628 | acc[c0]=0.941  acc[c1]=0.369  acc[c2]=0.101 | auc[c0]=0.820  auc[c1]=0.776  auc[c2]=0.599 | macroAUC=0.732 | macroSens=0.470 macroSpec=0.786 | sens[c0]=0.941  sens[c1]=0.369  sens[c2]=0.101 | spec[c0]=0.425  spec[c1]=0.942  spec[c2]=0.990
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5745     313      49
+   ISUP23     215     137      19
+   ISUP45      78      47      14
+  ↳ [baseline] no improvement (4/10)
+[BASELINE 008] train: loss 0.0535 bacc 0.9866 acc 0.9827 f1 0.9797 || val: loss 0.5162 acc 0.9025 BAL-acc 0.4442 f1 0.4530 | acc[c0]=0.959  acc[c1]=0.280  acc[c2]=0.094 | auc[c0]=0.803  auc[c1]=0.751  auc[c2]=0.618 | macroAUC=0.724 | macroSens=0.444 macroSpec=0.765 | sens[c0]=0.959  sens[c1]=0.280  sens[c2]=0.094 | spec[c0]=0.345  spec[c1]=0.963  spec[c2]=0.987
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5855     190      62
+   ISUP23     248     104      19
+   ISUP45      86      40      13
+  ↳ [baseline] no improvement (5/10)
+[BASELINE 009] train: loss 0.0443 bacc 0.9899 acc 0.9890 f1 0.9864 || val: loss 0.5488 acc 0.8867 BAL-acc 0.4652 f1 0.4533 | acc[c0]=0.935  acc[c1]=0.388  acc[c2]=0.072 | auc[c0]=0.799  auc[c1]=0.758  auc[c2]=0.551 | macroAUC=0.703 | macroSens=0.465 macroSpec=0.782 | sens[c0]=0.935  sens[c1]=0.388  sens[c2]=0.072 | spec[c0]=0.420  spec[c1]=0.933  spec[c2]=0.994
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5713     370      24
+   ISUP23     215     144      12
+   ISUP45      81      48      10
+  ↳ [baseline] no improvement (6/10)
+[BASELINE 010] train: loss 0.0368 bacc 0.9922 acc 0.9928 f1 0.9914 || val: loss 0.5909 acc 0.9066 BAL-acc 0.4397 f1 0.4510 | acc[c0]=0.963  acc[c1]=0.291  acc[c2]=0.065 | auc[c0]=0.761  auc[c1]=0.718  auc[c2]=0.568 | macroAUC=0.682 | macroSens=0.440 macroSpec=0.762 | sens[c0]=0.963  sens[c1]=0.291  sens[c2]=0.065 | spec[c0]=0.331  spec[c1]=0.960  spec[c2]=0.996
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5882     207      18
+   ISUP23     253     108      10
+   ISUP45      88      42       9
+  ↳ [baseline] no improvement (7/10)
+[BASELINE 011] train: loss 0.0233 bacc 0.9949 acc 0.9955 f1 0.9947 || val: loss 0.6477 acc 0.9101 BAL-acc 0.4222 f1 0.4398 | acc[c0]=0.971  acc[c1]=0.224  acc[c2]=0.072 | auc[c0]=0.747  auc[c1]=0.684  auc[c2]=0.616 | macroAUC=0.682 | macroSens=0.422 macroSpec=0.747 | sens[c0]=0.971  sens[c1]=0.224  sens[c2]=0.072 | spec[c0]=0.276  spec[c1]=0.973  spec[c2]=0.991
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5929     137      41
+   ISUP23     273      83      15
+   ISUP45      96      33      10
+  ↳ [baseline] no improvement (8/10)
+[BASELINE 012] train: loss 0.0133 bacc 0.9969 acc 0.9973 f1 0.9969 || val: loss 0.6500 acc 0.9098 BAL-acc 0.4240 f1 0.4426 | acc[c0]=0.971  acc[c1]=0.208  acc[c2]=0.094 | auc[c0]=0.748  auc[c1]=0.665  auc[c2]=0.644 | macroAUC=0.686 | macroSens=0.424 macroSpec=0.746 | sens[c0]=0.971  sens[c1]=0.208  sens[c2]=0.094 | spec[c0]=0.273  spec[c1]=0.975  spec[c2]=0.989
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5930     127      50
+   ISUP23     274      77      20
+   ISUP45      97      29      13
+  ↳ [baseline] no improvement (9/10)
+[BASELINE 013] train: loss 0.0147 bacc 0.9970 acc 0.9979 f1 0.9971 || val: loss 0.7507 acc 0.9116 BAL-acc 0.4284 f1 0.4493 | acc[c0]=0.972  acc[c1]=0.235  acc[c2]=0.079 | auc[c0]=0.739  auc[c1]=0.685  auc[c2]=0.616 | macroAUC=0.680 | macroSens=0.428 macroSpec=0.749 | sens[c0]=0.972  sens[c1]=0.235  sens[c2]=0.079 | spec[c0]=0.280  spec[c1]=0.970  spec[c2]=0.995
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    5934     154      19
+   ISUP23     272      87      12
+   ISUP45      95      33      11
+  ↳ [baseline] no improvement (10/10)
+[baseline] Early stopping at epoch 13.
+[FINAL VAL] loss 0.2440 acc 0.6968 f1 0.3901 | acc[c0]=0.708  acc[c1]=0.706  acc[c2]=0.194 | auc[c0]=0.852  auc[c1]=0.768  auc[c2]=0.645 | macroAUC=0.755 | macroSens=0.536 macroSpec=0.847 | sens[c0]=0.708  sens[c1]=0.706  sens[c2]=0.194 | spec[c0]=0.847  spec[c1]=0.739  spec[c2]=0.954
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4322    1535     250
+   ISUP23      59     262      50
+   ISUP45      19      93      27
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.852 |        0.963 |        0.896 |        0.771 |        0.608 |        0.361 |        0.064
+          c1 |        0.768 |        0.881 |        0.801 |        0.631 |        0.437 |        0.313 |        0.129
+          c2 |        0.645 |        0.748 |        0.626 |        0.504 |        0.353 |        0.201 |        0.072
+       macro |        0.755 |        0.864 |        0.774 |        0.635 |        0.466 |        0.292 |        0.089
+[FINAL TEST] loss 0.2092 acc 0.7056 f1 0.4064 | acc[c0]=0.716  acc[c1]=0.656  acc[c2]=0.321 | auc[c0]=0.840  auc[c1]=0.742  auc[c2]=0.682 | macroAUC=0.755 | macroSens=0.564 macroSpec=0.840 | sens[c0]=0.716  sens[c1]=0.656  sens[c2]=0.321 | spec[c0]=0.815  spec[c1]=0.747  spec[c2]=0.958
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    4560    1586     221
+   ISUP23      61     229      59
+   ISUP45      28      61      42
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.840 |        0.966 |        0.904 |        0.737 |        0.445 |        0.289 |        0.103
+          c1 |        0.742 |        0.845 |        0.751 |        0.593 |        0.450 |        0.295 |        0.126
+          c2 |        0.682 |        0.763 |        0.634 |        0.542 |        0.427 |        0.359 |        0.145
+       macro |        0.755 |        0.858 |        0.763 |        0.624 |        0.441 |        0.314 |        0.125
+wandb: updating run metadata
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  aux/baseline/lr_enc ▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/baseline/lr_head ▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: aux/baseline/lr_proj ▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:   aux/test/macro_tnr ▁
+wandb:   aux/test/macro_tpr ▁
+wandb:        aux/train/acc ▁▄▅▆▇████████
+wandb:   aux/train/f1_macro ▁▄▅▆▇▇███████
+wandb:    aux/val/macro_tnr ▄▆█▇▆▅▄▂▄▂▁▁▁
+wandb:    aux/val/macro_tpr ▅▇█▇▆▆▄▂▄▂▁▁▁
+wandb:                epoch ▁▁▁▁▁▁▂▂▂▂▂▂▂█
+wandb:                  +20 ...
+wandb: 
+wandb: Run summary:
+wandb:  aux/baseline/lr_enc 0.0
+wandb: aux/baseline/lr_head 1e-05
+wandb: aux/baseline/lr_proj 1e-05
+wandb:   aux/test/macro_tnr 0.83981
+wandb:   aux/test/macro_tpr 0.56432
+wandb:        aux/train/acc 0.99788
+wandb:   aux/train/f1_macro 0.99712
+wandb:    aux/val/macro_tnr 0.74856
+wandb:    aux/val/macro_tpr 0.42844
+wandb:                epoch 80
+wandb:                  +20 ...
+wandb: 
+wandb: 🚀 View run isup3-baseline-scope-head_only at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/tgv18t9p
+wandb: ⭐️ View project at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260330_152741-tgv18t9p/logs

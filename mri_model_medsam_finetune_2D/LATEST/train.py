@@ -28,6 +28,10 @@ from triplet_loss_utils import (
     get_histo_by_isup,
     triplet_loss_batch,
 )
+from prototype_loss_utils import (
+    load_histo_prototypes,
+    prototype_alignment_loss,
+)
 import train_utils
 from train_utils import (
     build_datasets_and_loaders,
@@ -125,18 +129,31 @@ def eval_with_logreg(X_train, y_train, X_val, y_val, n_classes, max_iter=5):
 
 
 # ---------------- CE phase helpers ----------------
-def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda"):
+def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda", n_classes=3, loss_type="weighted_ce"):
     """Train/eval one epoch with CE; returns (loss, acc, f1_macro, bacc)."""
     train_mode = optimizer is not None
     model.train(train_mode)
-    ce = nn.CrossEntropyLoss(weight=w_ce)
+    if loss_type == "weighted_ce":
+        ce = nn.CrossEntropyLoss(weight=w_ce)
+    elif loss_type == "coral":
+        ce = None
+    else:
+        raise ValueError(f"Unknown loss_type: {loss_type}")
     total_loss, total_n, total_correct = 0.0, 0, 0
     all_pred, all_true = [], []
     for batch in loader:
         x = batch["image"].to(device, non_blocking=True)
         y = batch["label"].to(device, non_blocking=True)
         logits, _ = model(x)
-        loss = ce(logits, y)
+        if loss_type == "weighted_ce":
+            loss = ce(logits, y)
+        else:
+            loss = train_utils.coral_loss(
+                logits,
+                y,
+                n_classes=n_classes,
+                class_weights=w_ce,
+            )
         if train_mode:
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -145,7 +162,10 @@ def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda"):
         bs = x.size(0)
         total_loss += float(loss.item()) * bs
         total_n += bs
-        pred = logits.argmax(1)
+        if loss_type == "weighted_ce":
+            pred = logits.argmax(1)
+        else:
+            pred = train_utils.coral_predict(logits)
         total_correct += (pred == y).sum().item()
         all_pred.append(pred.detach().cpu())
         all_true.append(y.detach().cpu())
@@ -163,9 +183,15 @@ def run_epoch_ce(loader, model, w_ce, optimizer=None, device="cuda"):
     return avg_loss, acc, f1m, bacc
 
 
-def run_eval_print(val_loader, model, w_ce, device, n_classes):
+def run_eval_print(val_loader, model, w_ce, device, n_classes, loss_type="weighted_ce"):
     val = evaluate_loader(
-        val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, collect_outputs=False
+        val_loader,
+        model,
+        w_ce=w_ce,
+        device=device,
+        n_classes=n_classes,
+        collect_outputs=False,
+        loss_type=loss_type,
     )
     pcs, auc_part = format_perclass_acc_auc(val["per_acc"], val["per_auc"], val["macro_auc"], n_classes)
     extra2 = format_sens_spec(val["per_tpr"], val["per_tnr"], val["macro_tpr"], val["macro_tnr"], n_classes)
@@ -246,9 +272,14 @@ def main():
     # Mode control
     p.add_argument(
         "--train_mode",
-        choices=["two_stage", "baseline", "kl"],
+        choices=["two_stage", "baseline", "kl", "prototype"],
         default="two_stage",
-        help="two_stage: triplet alignment then head CE. baseline: end-to-end CE for triplet_epochs+head_epochs.",
+        help=(
+            "two_stage: triplet alignment then head classification. "
+            "prototype: prototype alignment then head classification. "
+            "kl: KL alignment then head classification. "
+            "baseline: end-to-end classification."
+        ),
     )
 
     p.add_argument("--seed", type=int, default=42)
@@ -305,16 +336,38 @@ def main():
     p.add_argument("--wandb", action=argparse.BooleanOptionalAction, default=True)
     p.add_argument("--wandb_project", default="MID_DEC_KILLARNEY_NEW_SPIE")
     p.add_argument("--wandb_run_name", default=None)
+    p.add_argument(
+        "--loss_type",
+        choices=["weighted_ce", "coral"],
+        default="weighted_ce",
+    )
+    p.add_argument(
+        "--prototype_path",
+        type=str,
+        default=None,
+        help="Path to histology prototype .pt file. Required when --train_mode=prototype.",
+    )
+
+    p.add_argument(
+        "--prototype_temperature",
+        type=float,
+        default=0.1,
+        help="Temperature for prototype cosine-similarity alignment loss.",
+    )
 
     args = p.parse_args()
     print("SCRIPT: train.py")
     print("ARGS:", args)
 
-    # Enforce histo args only when needed
+    # Enforce alignment args only when needed
     if args.train_mode == "two_stage":
         if args.histo_dir is None or args.histo_marksheet_dir is None:
             raise ValueError("--histo_dir and --histo_marksheet_dir are required when --train_mode=two_stage")
 
+    if args.train_mode == "prototype":
+        if args.prototype_path is None:
+            raise ValueError("--prototype_path is required when --train_mode=prototype")
+    
     set_seed(args.seed)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -357,8 +410,10 @@ def main():
     # Attach adapter modules to the encoder (no-op unless stage2_scope=adaptor) #Adaptor mode
     apply_adapters_to_sam_encoder(sam.image_encoder)  #Adaptor mode
 
+    head_out_dim = n_classes - 1 if args.loss_type == "coral" else n_classes
+
     model = MedSAMSliceSpatialAttn(
-        sam_model=sam, num_classes=n_classes,
+        sam_model=sam, num_classes=head_out_dim,
         proj_dim=args.proj_dim, attn_dim=256,
         head_hidden=256, head_dropout=0.1,
         use_pre_neck=True, pixel_mean_std=None,
@@ -388,6 +443,7 @@ def main():
             [
                 {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
                 {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                {"params": model.pool.parameters(), "lr": args.lr, "weight_decay": args.wd},
                 {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
             ]
         )
@@ -395,9 +451,15 @@ def main():
 
         for epoch in range(1, total_epochs + 1):
             tr_loss, tr_acc, tr_f1, tr_bacc = run_epoch_ce(
-                train_loader, model, w_ce=w_ce, optimizer=optimizer_base, device=device
+                train_loader,
+                model,
+                w_ce=w_ce,
+                optimizer=optimizer_base,
+                device=device,
+                n_classes=n_classes,
+                loss_type=args.loss_type,
             )
-            val, pcs, auc_part, extra2 = run_eval_print(val_loader, model, w_ce, device, n_classes)
+            val, pcs, auc_part, extra2 = run_eval_print(val_loader, model, w_ce, device, n_classes, loss_type=args.loss_type)
 
             print(f"[BASELINE {epoch:03d}] "
                   f"train: loss {tr_loss:.4f} bacc {tr_bacc:.4f} acc {tr_acc:.4f} f1 {tr_f1:.4f} || "
@@ -445,35 +507,66 @@ def main():
     else:
         print(f"[two_stage] lr={args.lr:g} wd={args.wd:g} enc_lr_mult={args.enc_lr_mult:g} margin={args.triplet_margin:g}")
 
-        # -------- Histo buckets for triplet --------
-        train_histo_buckets = get_histo_by_isup(
-            encodings_dir=str(Path(args.histo_dir) / "train"),
-            marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
-            num_classes=n_classes, provider=args.provider
-        )
-        val_histo_buckets = get_histo_by_isup(
-            encodings_dir=str(Path(args.histo_dir) / "val"),
-            marksheet_csv=str(Path(args.histo_marksheet_dir) / "val.csv"),
-            num_classes=n_classes, provider=args.provider
-        )
+        # -------- Alignment loss setup --------
+        train_histo_buckets = None
+        val_histo_buckets = None
+        histo_prototypes = None
+
+        if args.train_mode == "two_stage":
+            train_histo_buckets = get_histo_by_isup(
+                encodings_dir=str(Path(args.histo_dir) / "train"),
+                marksheet_csv=str(Path(args.histo_marksheet_dir) / "train.csv"),
+                num_classes=n_classes,
+                provider=args.provider,
+            )
+            val_histo_buckets = get_histo_by_isup(
+                encodings_dir=str(Path(args.histo_dir) / "val"),
+                marksheet_csv=str(Path(args.histo_marksheet_dir) / "val.csv"),
+                num_classes=n_classes,
+                provider=args.provider,
+            )
+
+        elif args.train_mode == "prototype":
+            histo_prototypes = load_histo_prototypes(
+                args.prototype_path,
+                device=device,
+                normalize=True,
+            )
+
+            if histo_prototypes.shape[0] != n_classes:
+                raise ValueError(
+                    f"Prototype class count mismatch: prototypes have K={histo_prototypes.shape[0]}, "
+                    f"but current target has n_classes={n_classes}"
+                )
+
+            if histo_prototypes.shape[1] != args.proj_dim:
+                print(
+                    f"[prototype][warn] prototype dim={histo_prototypes.shape[1]} "
+                    f"but args.proj_dim={args.proj_dim}. This is okay only if model embeddings "
+                    f"actually have dim={histo_prototypes.shape[1]}."
+                )
 
         # =========================
         # Phase 1: Triplet (encoder + proj)
         # =========================
         for p_ in model.parameters():
             p_.requires_grad = False
+    
         for p_ in model.encoder.parameters():
             p_.requires_grad = True
         for p_ in model.proj.parameters():
+            p_.requires_grad = True
+        for p_ in model.pool.parameters():
             p_.requires_grad = True
 
         optimizer_triplet = torch.optim.AdamW(
             [
                 {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                {"params": model.pool.parameters(), "lr": args.lr, "weight_decay": args.wd},
                 {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
             ]
         )
-        print(f"[triplet] lr_proj={args.lr:g} | lr_enc={args.lr * args.enc_lr_mult:g}")
+        print(f"[alignment] lr_proj={args.lr:g} | lr_enc={args.lr * args.enc_lr_mult:g}")
 
         def train_triplet_fn(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
             return triplet_loss_batch(
@@ -484,6 +577,27 @@ def main():
             return triplet_loss_batch(
                 embeddings, labels, val_histo_buckets, num_classes=n_classes, margin=args.triplet_margin
             )
+
+        def train_prototype_fn(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+            return prototype_alignment_loss(
+                embeddings,
+                labels,
+                histo_prototypes,
+                temperature=args.prototype_temperature,
+                normalize_embeddings=True,
+                normalize_prototypes=True,
+            )
+
+
+        def val_prototype_fn(embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+            return prototype_alignment_loss(
+                embeddings,
+                labels,
+                histo_prototypes,
+                temperature=args.prototype_temperature,
+                normalize_embeddings=True,
+                normalize_prototypes=True,
+            )   
         
         from kl_align_utils import HistoGaussianStats, classwise_diag_gaussian_kl_loss
 
@@ -506,12 +620,22 @@ def main():
                 weight_by_batch_count=True,
             )
 
-        if args.train_mode == "kl":
-            train_fn = train_kl_align_fn
-            val_fn = val_kl_align_fn
-        else:
+        if args.train_mode == "two_stage":
             train_fn = train_triplet_fn
             val_fn = val_triplet_fn
+            align_name = "triplet"
+
+        elif args.train_mode == "prototype":
+            train_fn = train_prototype_fn
+            val_fn = val_prototype_fn
+            align_name = "prototype"
+
+        elif args.train_mode == "kl":
+            train_fn = train_kl_align_fn
+            val_fn = val_kl_align_fn
+            align_name = "kl"
+        else:
+            raise ValueError(f"Unsupported alignment train_mode: {args.train_mode}")
 
         early_triplet = EarlyStopper(patience=args.triplet_patience)
         best_lr_clf = None
@@ -531,10 +655,10 @@ def main():
                 lrs = [pg.get("lr", None) for pg in optimizer_triplet.param_groups]
                 payload = {
                     "epoch": epoch,
-                    "aux/triplet/lr_proj": lrs[0] if lrs else None,
-                    "aux/triplet/lr_enc": lrs[1] if len(lrs) > 1 else None,
-                    "aux/triplet/train_loss": tr_loss,
-                    "aux/triplet/val_loss": va_loss,
+                    f"aux/{align_name}/lr_proj": lrs[0] if lrs else None,
+                    f"aux/{align_name}/lr_enc": lrs[1] if len(lrs) > 1 else None,
+                    f"aux/{align_name}/train_loss": tr_loss,
+                    f"aux/{align_name}/val_loss": va_loss,
                     "aux/lr_val/acc": lr_metrics["acc"],
                     "aux/lr_val/bacc": lr_metrics["bacc"],
                     "aux/lr_val/f1_macro": lr_metrics["f1_macro"],
@@ -547,15 +671,15 @@ def main():
 
             if early_triplet.update(lr_metrics["bacc"], model, save_path=outdir / "ckpt_triplet_best.pt"):
                 best_lr_clf = lr_metrics["clf"]
-                print(f"  ↳ [triplet] new best (val BAL-acc={early_triplet.best:.4f}) snapshot stored in memory")
+                print(f"  ↳ [alignment] new best (val BAL-acc={early_triplet.best:.4f}) snapshot stored in memory")
             else:
-                print(f"  ↳ [triplet] no improvement ({early_triplet.num_bad}/{early_triplet.patience})")
+                print(f"  ↳ [alignment] no improvement ({early_triplet.num_bad}/{early_triplet.patience})")
                 if early_triplet.num_bad >= early_triplet.patience:
-                    print(f"[triplet] Early stopping at epoch {epoch}.")
+                    print(f"[alignment] Early stopping at epoch {epoch}.")
                     break
 
         if not early_triplet.load_best_into(model, strict=False):
-            print("[triplet][warn] No improvement recorded; using last encoder/proj.")
+            print("[alignment][warn] No improvement recorded; using last encoder/proj.")
             if best_lr_clf is None:
                 best_lr_clf = last_lr_clf
 
@@ -603,6 +727,7 @@ def main():
                 [
                     {"params": model.head.parameters(),    "lr": args.lr, "weight_decay": args.wd},
                     {"params": model.proj.parameters(),    "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.pool.parameters(),    "lr": args.lr, "weight_decay": args.wd},
                 ]
             )
             print("[stage2] scope=head_and_proj (training head and projector, not encoder)")
@@ -630,6 +755,7 @@ def main():
                 [
                     {"params": model.head.parameters(), "lr": args.lr, "weight_decay": args.wd},
                     {"params": model.proj.parameters(), "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.pool.parameters(), "lr": args.lr, "weight_decay": args.wd},
                     {"params": adapter_params,          "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
                 ]
             )  #Adaptor mode
@@ -645,6 +771,7 @@ def main():
                 [
                     {"params": model.head.parameters(),    "lr": args.lr, "weight_decay": args.wd},
                     {"params": model.proj.parameters(),    "lr": args.lr, "weight_decay": args.wd},
+                    {"params": model.pool.parameters(),    "lr": args.lr, "weight_decay": args.wd},
                     {"params": model.encoder.parameters(), "lr": args.lr * args.enc_lr_mult, "weight_decay": args.wd},
                 ]
             )
@@ -657,9 +784,15 @@ def main():
 
         for epoch in range(1, args.head_epochs + 1):
             tr_loss, tr_acc, tr_f1, tr_bacc = run_epoch_ce(
-                train_loader, model, w_ce=w_ce, optimizer=optimizer_head, device=device
+                train_loader,
+                model,
+                w_ce=w_ce,
+                optimizer=optimizer_head,
+                device=device,
+                n_classes=n_classes,
+                loss_type=args.loss_type,
             )
-            val, pcs, auc_part, extra2 = run_eval_print(val_loader, model, w_ce, device, n_classes)
+            val, pcs, auc_part, extra2 = run_eval_print(val_loader, model, w_ce, device, n_classes, loss_type=args.loss_type)
 
             print(f"[HEAD {epoch:03d}] "
                   f"train: loss {tr_loss:.4f} bacc {tr_bacc:.4f} acc {tr_acc:.4f} f1 {tr_f1:.4f} || "
@@ -702,13 +835,16 @@ def main():
     # -------- Final VAL/TEST (best checkpoint; collect outputs for OP table) --------
     spec_targets = (0.4, 0.6, 0.8, 0.9, 0.95, 0.99)
 
-    val_final = evaluate_loader(val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, collect_outputs=True)
+    val_final = evaluate_loader(val_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, loss_type=args.loss_type, collect_outputs=True)
     pcs_v, auc_v = format_perclass_acc_auc(val_final["per_acc"], val_final["per_auc"], val_final["macro_auc"], n_classes)
     extra_v = format_sens_spec(val_final["per_tpr"], val_final["per_tnr"], val_final["macro_tpr"], val_final["macro_tnr"], n_classes)
     print(f"[FINAL VAL] loss {val_final['loss']:.4f} acc {val_final['acc']:.4f} f1 {val_final['f1_macro']:.4f} | {pcs_v}{auc_v}{extra_v}")
     print(train_utils.format_confusion_matrix(val_final["cm"], n_classes=n_classes))
     if val_final["logits"].numel():
-        probs_val = torch.softmax(val_final["logits"], dim=1).numpy()
+        if args.loss_type == "weighted_ce":
+            probs_val = torch.softmax(val_final["logits"], dim=1).numpy()
+        else:
+            probs_val = val_final["logits"].numpy()
         y_val = val_final["labels"].numpy()
         per_cls_val, macro_val = train_utils.per_class_operating_points(y_val, probs_val, spec_targets)
         print_operating_points_table(per_cls_val, macro_val, spec_targets)
@@ -716,13 +852,16 @@ def main():
     save_embeddings(outdir / "val_embeddings", "val.pt", val_final["embeddings"], val_final["labels"])
 
     if test_loader is not None:
-        test_final = evaluate_loader(test_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, collect_outputs=True)
+        test_final = evaluate_loader(test_loader, model, w_ce=w_ce, device=device, n_classes=n_classes, loss_type=args.loss_type, collect_outputs=True)
         pcs_t, auc_t = format_perclass_acc_auc(test_final["per_acc"], test_final["per_auc"], test_final["macro_auc"], n_classes)
         extra_t = format_sens_spec(test_final["per_tpr"], test_final["per_tnr"], test_final["macro_tpr"], test_final["macro_tnr"], n_classes)
         print(f"[FINAL TEST] loss {test_final['loss']:.4f} acc {test_final['acc']:.4f} f1 {test_final['f1_macro']:.4f} | {pcs_t}{auc_t}{extra_t}")
         print(train_utils.format_confusion_matrix(test_final["cm"], n_classes=n_classes))
         if test_final["logits"].numel():
-            probs_test = torch.softmax(test_final["logits"], dim=1).numpy()
+            if args.loss_type == "weighted_ce":
+                probs_test = torch.softmax(test_final["logits"], dim=1).numpy()
+            else:
+                probs_test = test_final["logits"].numpy()
             y_test = test_final["labels"].numpy()
             per_cls_test, macro_test = train_utils.per_class_operating_points(y_test, probs_test, spec_targets)
             print_operating_points_table(per_cls_test, macro_test, spec_targets)

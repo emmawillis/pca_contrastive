@@ -142,10 +142,19 @@ def format_confusion_matrix(cm: np.ndarray, n_classes: int):
         lines.append(f"{labels[i]:>9} {row}")
     return "\n".join(lines)
 
-def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
-    K = logits.shape[1]
+def per_class_metrics(
+    scores: torch.Tensor,
+    y: torch.Tensor,
+    y_pred: torch.Tensor | None = None,
+    already_probs: bool = False,
+):
+    K = scores.shape[1]
     y_np = y.cpu().numpy()
-    y_pred = logits.argmax(dim=1).cpu().numpy()
+
+    if y_pred is None:
+        y_pred_np = scores.argmax(dim=1).cpu().numpy()
+    else:
+        y_pred_np = y_pred.cpu().numpy()
 
     # per-class accuracy
     accs = {}
@@ -154,13 +163,18 @@ def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
         if mask.sum() == 0:
             accs[c] = float("nan")
         else:
-            accs[c] = float((y_pred[mask] == c).mean())
+            accs[c] = float((y_pred_np[mask] == c).mean())
 
-    # per-class AUC (OvR)
+    # per-class AUC
     aucs = {}
     macro_auc = None
-    probs = torch.softmax(logits, dim=1).cpu().numpy()
-    auc_vals = [];
+
+    if already_probs:
+        probs = scores.cpu().numpy()
+    else:
+        probs = torch.softmax(scores, dim=1).cpu().numpy()
+
+    auc_vals = []
     for c in range(K):
         y_bin = (y_np == c).astype(np.int32)
         if y_bin.sum() > 0 and (1 - y_bin).sum() > 0:
@@ -172,6 +186,7 @@ def per_class_metrics(logits: torch.Tensor, y: torch.Tensor):
                 aucs[c] = float("nan")
         else:
             aucs[c] = float("nan")
+
     if len(auc_vals) > 0:
         macro_auc = float(np.nanmean(auc_vals))
 
@@ -278,6 +293,7 @@ def evaluate_loader(
     device: str = "cuda",
     n_classes: int = 3,
     collect_outputs: bool = False,
+    loss_type="weighted_ce",
 ):
     """
     Standard evaluation. If collect_outputs=True, also returns:
@@ -286,7 +302,12 @@ def evaluate_loader(
       - embeddings (torch.Tensor on CPU, if model returns them)
     """
     model.eval()
-    ce_loss = nn.CrossEntropyLoss(reduction="sum", weight=w_ce.to(device))
+    if loss_type == "weighted_ce":
+        ce_loss = nn.CrossEntropyLoss(reduction="sum", weight=w_ce.to(device))
+    elif loss_type == "coral":
+        ce_loss = None
+    else:
+        raise ValueError(f"Unknown loss_type: {loss_type}")    
     ys, yps, logits_list = [], [], []
     total_loss, total_n = 0.0, 0
     emb_list = [] if collect_outputs else None
@@ -295,13 +316,29 @@ def evaluate_loader(
         x = batch["image"].to(device, non_blocking=True)
         y = batch["label"].to(device, non_blocking=True)
         logits, embs = model(x)
-        loss = ce_loss(logits, y)
+        if loss_type == "weighted_ce":
+            loss = ce_loss(logits, y)
+        else:
+            loss = coral_loss(
+                logits,
+                y,
+                n_classes=n_classes,
+                class_weights=w_ce.to(device),
+                reduction="sum",
+            )
 
         total_loss += float(loss.item())
         total_n += x.size(0)
         ys.append(y.cpu())
-        yps.append(logits.argmax(1).cpu())
-        logits_list.append(logits.cpu())
+        if loss_type == "weighted_ce":
+            preds = logits.argmax(1)
+            class_scores = logits
+        else:
+            preds = coral_predict(logits)
+            class_scores = coral_probs(logits)
+
+        yps.append(preds.cpu())
+        logits_list.append(class_scores.cpu())
         if collect_outputs and embs is not None:
             emb_list.append(embs.detach().cpu())
 
@@ -334,7 +371,14 @@ def evaluate_loader(
     bacc = float(balanced_accuracy_score(y_np, y_pred_all))
     f1m = float(f1_score(y_np, y_pred_all, average="macro"))
 
-    per_acc, per_auc, _bacc_from_fn, macro_auc = per_class_metrics(logits_all, y_all)
+    y_pred_tensor = torch.from_numpy(y_pred_all)
+
+    per_acc, per_auc, _bacc_from_fn, macro_auc = per_class_metrics(
+        logits_all,
+        y_all,
+        y_pred=y_pred_tensor,
+        already_probs=(loss_type == "coral"),
+    )
 
     cm = confusion_matrix(y_np, y_pred_all, labels=list(range(n_classes)))
     per_tpr, per_tnr, macro_tpr, macro_tnr = tpr_tnr_from_confusion(cm)
@@ -512,3 +556,94 @@ def set_seed(seed: int, deterministic_cudnn: bool = True):
     if deterministic_cudnn:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+
+def coral_targets(y: torch.Tensor, n_classes: int) -> torch.Tensor:
+    """
+    Convert class labels [B] into CORAL ordinal targets [B, K-1].
+
+    Example for K=6:
+      y=0 -> [0,0,0,0,0]
+      y=3 -> [1,1,1,0,0]
+      y=5 -> [1,1,1,1,1]
+    """
+    thresholds = torch.arange(n_classes - 1, device=y.device).view(1, -1)
+    return (y.view(-1, 1) > thresholds).float()
+
+
+def coral_loss(
+    logits: torch.Tensor,
+    y: torch.Tensor,
+    n_classes: int,
+    class_weights: torch.Tensor | None = None,
+    reduction: str = "mean",
+) -> torch.Tensor:
+    """
+    CORAL loss using BCE over ordinal thresholds.
+
+    logits: [B, K-1]
+    y:      [B]
+    """
+    targets = coral_targets(y, n_classes)
+
+    # BCE per threshold: [B, K-1]
+    loss_per_threshold = F.binary_cross_entropy_with_logits(
+        logits,
+        targets,
+        reduction="none",
+    )
+
+    # average thresholds per sample: [B]
+    loss_per_sample = loss_per_threshold.mean(dim=1)
+
+    # preserve your class-imbalance handling from weighted CE
+    if class_weights is not None:
+        weights = class_weights.to(y.device)[y]
+        loss_per_sample = loss_per_sample * weights
+
+        if reduction == "mean":
+            return loss_per_sample.sum() / weights.sum().clamp_min(1e-8)
+
+    if reduction == "mean":
+        return loss_per_sample.mean()
+    elif reduction == "sum":
+        return loss_per_sample.sum()
+    else:
+        return loss_per_sample
+
+
+def coral_predict(logits: torch.Tensor) -> torch.Tensor:
+    """
+    Convert CORAL threshold logits [B, K-1] to class prediction [B].
+    """
+    return (torch.sigmoid(logits) > 0.5).sum(dim=1).long()
+
+
+def coral_probs(logits: torch.Tensor) -> torch.Tensor:
+    """
+    Approximate class probabilities from CORAL threshold probabilities.
+
+    If p_k = P(y > k), then:
+      P(y=0)     = 1 - p_0
+      P(y=c)     = p_{c-1} - p_c
+      P(y=K-1)   = p_{K-2}
+
+    Returns [B, K].
+    """
+    p = torch.sigmoid(logits)  # [B, K-1]
+
+    probs = []
+    probs.append(1.0 - p[:, 0])
+
+    for c in range(1, p.shape[1]):
+        probs.append(p[:, c - 1] - p[:, c])
+
+    probs.append(p[:, -1])
+
+    probs = torch.stack(probs, dim=1)
+
+    # numerical cleanup, because independent thresholds can sometimes violate monotonicity
+    probs = probs.clamp_min(0.0)
+    probs = probs / probs.sum(dim=1, keepdim=True).clamp_min(1e-8)
+
+    return probs

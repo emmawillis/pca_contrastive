@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -J kl-align
+#SBATCH -J coral-6
 #SBATCH -A aip-medilab
-#SBATCH -t 2-00:00:00
+#SBATCH -t 3-00:00:00
 #SBATCH -c 8
 #SBATCH --mem=64G
 #SBATCH -D /project/aip-medilab/shared/picai
-#SBATCH -o '/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/kl-align-%j.out'
+#SBATCH -o '/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup6/coral/6-all-coral-%j.out'
 #SBATCH --gres=gpu:l40s:1
 
 set -euo pipefail
@@ -25,9 +25,10 @@ SCRIPT=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_meds
 MANIFEST=/project/aip-medilab/shared/picai/manifests/slices_manifest.csv
 CKPT=/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth
 
-OUTDIR='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3'
+OUTDIR='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/results_isup6/coral'
 
 HISTO_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/embeddings_512
+# HISTO_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/gigapath/embeddings_512
 HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits
 
 #   TRAIN_MODE=two_stage   -> histopathology alignment (triplet -> CE head)
@@ -35,14 +36,17 @@ HISTO_MARKSHEET_DIR=/project/aip-medilab/shared/picai/histopathology_encodings/U
 
 TRAIN_MODE=two_stage
 # TRAIN_MODE=baseline
-TRAIN_MODE=kl
+# TRAIN_MODE=kl
+# TRAIN_MODE=prototype
 
-
-# STAGE2_SCOPE=all
-STAGE2_SCOPE=head_and_proj
+STAGE2_SCOPE=all
+# STAGE2_SCOPE=head_and_proj
 # STAGE2_SCOPE=head_pool_and_proj
 # STAGE2_SCOPE=head_only
 # STAGE2_SCOPE=adaptor
+
+# LOSS=weighted_ce
+LOSS=coral
 
 # Make outputs separable per mode (avoids overwriting checkpoints)
 # OUTDIR_MODE="${OUTDIR}/${TRAIN_MODE}-head_and_proj"
@@ -53,7 +57,7 @@ COMMON_ARGS=(
   --train_mode "$TRAIN_MODE"
   --manifest "$MANIFEST"
   --sam_checkpoint "$CKPT"
-  --target isup3
+  --target isup6
   --folds_train 1,2,3
   --folds_val 0
   --folds_test 4
@@ -73,6 +77,8 @@ COMMON_ARGS=(
   --label6_column merged_ISUP
   --wandb_run_name "isup3-${TRAIN_MODE}-scope-${STAGE2_SCOPE}"
   --stage2_scope "$STAGE2_SCOPE"
+  --loss_type "$LOSS" 
+  --prototype_path /project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/histo_isup6_prototypes.pt
 )
 
 # --- add histo args only for two_stage ---

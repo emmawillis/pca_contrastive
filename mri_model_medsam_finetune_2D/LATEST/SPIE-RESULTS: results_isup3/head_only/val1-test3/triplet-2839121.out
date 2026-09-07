@@ -1,0 +1,410 @@
+Host: kn081
+/project/6106383/ewillis/pca_contrastive/venv/bin/python
+Python 3.11.4
+Tue Mar 31 12:25:45 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA L40S                    On  |   00000000:CA:00.0 Off |                    0 |
+| N/A   57C    P0            117W /  350W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+TRAIN_MODE=two_stage
+OUTDIR_MODE=/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/head_only/val1-test3/two_stage-head_only
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+SCRIPT: train.py
+ARGS: Namespace(train_mode='two_stage', seed=42, manifest='/project/aip-medilab/shared/picai/manifests/slices_manifest.csv', target='isup3', folds_train='0,2,4', folds_val='1', folds_test='3', batch_size=16, pos_ratio=0.33, use_skip=False, label6_column='merged_ISUP', sam_checkpoint='/project/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune/work_dir/MedSAM/medsam_vit_b.pth', proj_dim=512, histo_dir='/project/aip-medilab/shared/picai/histopathology_encodings/UNI2/projected_512D/embeddings_512', histo_marksheet_dir='/project/aip-medilab/shared/picai/histopathology_encodings/UNI2_splits', provider='all', triplet_epochs=40, triplet_patience=10, triplet_margin=0.2, lr_max_iter=5, head_epochs=40, head_patience=10, stage2_scope='head_only', lr=1e-05, wd=0.0, enc_lr_mult=0.1, patient_col='patient_id', case_col='case_id', outdir='/home/ewillis/projects/aip-medilab/ewillis/pca_contrastive/mri_model_medsam_finetune_2D/LATEST/SPIE-RESULTS: results_isup3/head_only/val1-test3/two_stage-head_only', wandb=True, wandb_project='MID_DEC_KILLARNEY_NEW_SPIE', wandb_run_name='isup3-two_stage-scope-head_only')
+!!!!!! classes_present [0, 1, 2]
+[split-check] #patients: train=886, val=295, test=295
+[split-check] patient overlaps: train∩val=0, train∩test=0, val∩test=0
+wandb: Currently logged in as: jesande7 (jesande7-queens) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /project/6106383/shared/picai/wandb/run-20260331_122605-yeiccuiy
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run isup3-two_stage-scope-head_only
+wandb: ⭐️ View project at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: 🚀 View run at https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/yeiccuiy
+[two_stage] lr=1e-05 wd=0 enc_lr_mult=0.1 margin=0.2
+[triplet] lr_proj=1e-05 | lr_enc=1e-06
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] new best (val BAL-acc=0.3333) snapshot stored in memory
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (1/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] new best (val BAL-acc=0.4298) snapshot stored in memory
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (1/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (2/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (3/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (4/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (5/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (6/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (7/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (8/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (9/10)
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:1272: FutureWarning: 'multi_class' was deprecated in version 1.5 and will be removed in 1.7. From then on, it will always use 'multinomial'. Leave it to its default value to avoid this warning.
+  warnings.warn(
+/project/6106383/ewillis/pca_contrastive/venv/lib/python3.11/site-packages/sklearn/linear_model/_logistic.py:473: ConvergenceWarning: lbfgs failed to converge after 5 iteration(s) (status=1):
+STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+
+Increase the number of iterations to improve the convergence (max_iter=5).
+You might also want to scale the data as shown in:
+    https://scikit-learn.org/stable/modules/preprocessing.html
+Please also refer to the documentation for alternative solver options:
+    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+  n_iter_i = _check_optimize_result(
+  ↳ [triplet] no improvement (10/10)
+[triplet] Early stopping at epoch 13.
+[stage2] scope=head_only (training head only)
+[HEAD 001] train: loss 0.8914 bacc 0.3537 acc 0.2456 f1 0.1933 || val: loss 0.1319 acc 0.1508 BAL-acc 0.3676 f1 0.1010 | acc[c0]=0.103  acc[c1]=1.000  acc[c2]=0.000 | auc[c0]=0.855  auc[c1]=0.796  auc[c2]=0.845 | macroAUC=0.832 | macroSens=0.368 macroSpec=0.699 | sens[c0]=0.103  sens[c1]=1.000  sens[c2]=0.000 | spec[c0]=0.996  spec[c1]=0.101  spec[c2]=1.000
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01     627    5479       1
+   ISUP23       0     371       0
+   ISUP45       2     137       0
+  ↳ [head] new best (val BAL-acc=0.3676) snapshot stored in memory
+[HEAD 002] train: loss 0.8182 bacc 0.4662 acc 0.4160 f1 0.3877 || val: loss 0.1235 acc 0.4293 BAL-acc 0.4323 f1 0.2730 | acc[c0]=0.415  acc[c1]=0.803  acc[c2]=0.079 | auc[c0]=0.855  auc[c1]=0.708  auc[c2]=0.845 | macroAUC=0.802 | macroSens=0.432 macroSpec=0.783 | sens[c0]=0.415  sens[c1]=0.803  sens[c2]=0.079 | spec[c0]=0.949  spec[c1]=0.412  spec[c2]=0.988
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2532    3553      22
+   ISUP23      19     298      54
+   ISUP45       7     121      11
+  ↳ [head] new best (val BAL-acc=0.4323) snapshot stored in memory
+[HEAD 003] train: loss 0.8024 bacc 0.5022 acc 0.4860 f1 0.4380 || val: loss 0.1244 acc 0.4354 BAL-acc 0.4824 f1 0.3098 | acc[c0]=0.428  acc[c1]=0.544  acc[c2]=0.475 | auc[c0]=0.855  auc[c1]=0.643  auc[c2]=0.845 | macroAUC=0.781 | macroSens=0.482 macroSpec=0.785 | sens[c0]=0.428  sens[c1]=0.544  sens[c2]=0.475 | spec[c0]=0.945  spec[c1]=0.466  spec[c2]=0.943
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2613    3270     224
+   ISUP23      21     202     148
+   ISUP45       7      66      66
+  ↳ [head] new best (val BAL-acc=0.4824) snapshot stored in memory
+[HEAD 004] train: loss 0.7881 bacc 0.5270 acc 0.5169 f1 0.4639 || val: loss 0.1243 acc 0.4694 BAL-acc 0.4801 f1 0.3215 | acc[c0]=0.465  acc[c1]=0.558  acc[c2]=0.417 | auc[c0]=0.855  auc[c1]=0.644  auc[c2]=0.845 | macroAUC=0.781 | macroSens=0.480 macroSpec=0.796 | sens[c0]=0.465  sens[c1]=0.558  sens[c2]=0.417 | spec[c0]=0.943  spec[c1]=0.495  spec[c2]=0.949
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2841    3079     187
+   ISUP23      22     207     142
+   ISUP45       7      74      58
+  ↳ [head] no improvement (1/10)
+[HEAD 005] train: loss 0.7815 bacc 0.5338 acc 0.5204 f1 0.4687 || val: loss 0.1252 acc 0.5058 BAL-acc 0.4761 f1 0.3323 | acc[c0]=0.501  acc[c1]=0.690  acc[c2]=0.237 | auc[c0]=0.855  auc[c1]=0.674  auc[c2]=0.844 | macroAUC=0.791 | macroSens=0.476 macroSpec=0.805 | sens[c0]=0.501  sens[c1]=0.690  sens[c2]=0.237 | spec[c0]=0.933  spec[c1]=0.509  spec[c2]=0.974
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3058    2969      80
+   ISUP23      26     256      89
+   ISUP45       8      98      33
+  ↳ [head] no improvement (2/10)
+[HEAD 006] train: loss 0.7879 bacc 0.5335 acc 0.5395 f1 0.4752 || val: loss 0.1273 acc 0.4842 BAL-acc 0.4723 f1 0.3257 | acc[c0]=0.477  acc[c1]=0.695  acc[c2]=0.245 | auc[c0]=0.855  auc[c1]=0.660  auc[c2]=0.844 | macroAUC=0.786 | macroSens=0.472 macroSpec=0.800 | sens[c0]=0.477  sens[c1]=0.695  sens[c2]=0.245 | spec[c0]=0.939  spec[c1]=0.485  spec[c2]=0.974
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2912    3116      79
+   ISUP23      24     258      89
+   ISUP45       7      98      34
+  ↳ [head] no improvement (3/10)
+[HEAD 007] train: loss 0.7859 bacc 0.5396 acc 0.5189 f1 0.4703 || val: loss 0.1271 acc 0.5356 BAL-acc 0.4650 f1 0.3152 | acc[c0]=0.531  acc[c1]=0.792  acc[c2]=0.072 | auc[c0]=0.855  auc[c1]=0.712  auc[c2]=0.844 | macroAUC=0.804 | macroSens=0.465 macroSpec=0.812 | sens[c0]=0.531  sens[c1]=0.792  sens[c2]=0.072 | spec[c0]=0.922  spec[c1]=0.525  spec[c2]=0.990
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3240    2849      18
+   ISUP23      30     294      47
+   ISUP45      10     119      10
+  ↳ [head] no improvement (4/10)
+[HEAD 008] train: loss 0.7752 bacc 0.5515 acc 0.5483 f1 0.4901 || val: loss 0.1221 acc 0.5509 BAL-acc 0.4969 f1 0.3481 | acc[c0]=0.556  acc[c1]=0.518  acc[c2]=0.417 | auc[c0]=0.855  auc[c1]=0.678  auc[c2]=0.844 | macroAUC=0.792 | macroSens=0.497 macroSpec=0.813 | sens[c0]=0.556  sens[c1]=0.518  sens[c2]=0.417 | spec[c0]=0.904  spec[c1]=0.589  spec[c2]=0.946
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3395    2501     211
+   ISUP23      37     192     142
+   ISUP45      12      69      58
+  ↳ [head] new best (val BAL-acc=0.4969) snapshot stored in memory
+[HEAD 009] train: loss 0.7721 bacc 0.5559 acc 0.5417 f1 0.4869 || val: loss 0.1277 acc 0.4963 BAL-acc 0.4829 f1 0.3340 | acc[c0]=0.491  acc[c1]=0.663  acc[c2]=0.295 | auc[c0]=0.855  auc[c1]=0.657  auc[c2]=0.843 | macroAUC=0.785 | macroSens=0.483 macroSpec=0.802 | sens[c0]=0.491  sens[c1]=0.663  sens[c2]=0.295 | spec[c0]=0.933  spec[c1]=0.504  spec[c2]=0.969
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2997    3005     105
+   ISUP23      26     246      99
+   ISUP45       8      90      41
+  ↳ [head] no improvement (1/10)
+[HEAD 010] train: loss 0.7833 bacc 0.5500 acc 0.5385 f1 0.4834 || val: loss 0.1316 acc 0.4742 BAL-acc 0.4535 f1 0.3030 | acc[c0]=0.464  acc[c1]=0.782  acc[c2]=0.115 | auc[c0]=0.855  auc[c1]=0.673  auc[c2]=0.842 | macroAUC=0.790 | macroSens=0.454 macroSpec=0.797 | sens[c0]=0.464  sens[c1]=0.782  sens[c2]=0.115 | spec[c0]=0.943  spec[c1]=0.461  spec[c2]=0.987
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2832    3249      26
+   ISUP23      22     290      59
+   ISUP45       7     116      16
+  ↳ [head] no improvement (2/10)
+[HEAD 011] train: loss 0.7767 bacc 0.5597 acc 0.5271 f1 0.4800 || val: loss 0.1230 acc 0.5501 BAL-acc 0.5023 f1 0.3515 | acc[c0]=0.553  acc[c1]=0.558  acc[c2]=0.396 | auc[c0]=0.855  auc[c1]=0.671  auc[c2]=0.843 | macroAUC=0.789 | macroSens=0.502 macroSpec=0.814 | sens[c0]=0.553  sens[c1]=0.558  sens[c2]=0.396 | spec[c0]=0.908  spec[c1]=0.581  spec[c2]=0.951
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3378    2543     186
+   ISUP23      35     207     129
+   ISUP45      12      72      55
+  ↳ [head] new best (val BAL-acc=0.5023) snapshot stored in memory
+[HEAD 012] train: loss 0.7668 bacc 0.5526 acc 0.5397 f1 0.4861 || val: loss 0.1304 acc 0.4523 BAL-acc 0.4730 f1 0.3150 | acc[c0]=0.442  acc[c1]=0.682  acc[c2]=0.295 | auc[c0]=0.855  auc[c1]=0.638  auc[c2]=0.841 | macroAUC=0.778 | macroSens=0.473 macroSpec=0.791 | sens[c0]=0.442  sens[c1]=0.682  sens[c2]=0.295 | spec[c0]=0.949  spec[c1]=0.458  spec[c2]=0.967
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2699    3292     116
+   ISUP23      19     253      99
+   ISUP45       7      91      41
+  ↳ [head] no improvement (1/10)
+[HEAD 013] train: loss 0.7642 bacc 0.5586 acc 0.5403 f1 0.4885 || val: loss 0.1267 acc 0.5076 BAL-acc 0.4826 f1 0.3343 | acc[c0]=0.504  acc[c1]=0.642  acc[c2]=0.302 | auc[c0]=0.855  auc[c1]=0.666  auc[c2]=0.841 | macroAUC=0.787 | macroSens=0.483 macroSpec=0.804 | sens[c0]=0.504  sens[c1]=0.642  sens[c2]=0.302 | spec[c0]=0.925  spec[c1]=0.522  spec[c2]=0.964
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3079    2899     129
+   ISUP23      29     238     104
+   ISUP45       9      88      42
+  ↳ [head] no improvement (2/10)
+[HEAD 014] train: loss 0.7687 bacc 0.5546 acc 0.5434 f1 0.4865 || val: loss 0.1330 acc 0.4756 BAL-acc 0.4607 f1 0.2982 | acc[c0]=0.463  acc[c1]=0.833  acc[c2]=0.086 | auc[c0]=0.855  auc[c1]=0.687  auc[c2]=0.838 | macroAUC=0.793 | macroSens=0.461 macroSpec=0.798 | sens[c0]=0.463  sens[c1]=0.833  sens[c2]=0.086 | spec[c0]=0.943  spec[c1]=0.459  spec[c2]=0.990
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2826    3257      24
+   ISUP23      22     309      40
+   ISUP45       7     120      12
+  ↳ [head] no improvement (3/10)
+[HEAD 015] train: loss 0.7618 bacc 0.5655 acc 0.5514 f1 0.4975 || val: loss 0.1316 acc 0.4726 BAL-acc 0.4709 f1 0.3190 | acc[c0]=0.462  acc[c1]=0.749  acc[c2]=0.201 | auc[c0]=0.855  auc[c1]=0.662  auc[c2]=0.839 | macroAUC=0.785 | macroSens=0.471 macroSpec=0.797 | sens[c0]=0.462  sens[c1]=0.749  sens[c2]=0.201 | spec[c0]=0.943  spec[c1]=0.467  spec[c2]=0.980
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2821    3225      61
+   ISUP23      22     278      71
+   ISUP45       7     104      28
+  ↳ [head] no improvement (4/10)
+[HEAD 016] train: loss 0.7603 bacc 0.5652 acc 0.5456 f1 0.4940 || val: loss 0.1268 acc 0.5153 BAL-acc 0.4841 f1 0.3350 | acc[c0]=0.512  acc[c1]=0.652  acc[c2]=0.288 | auc[c0]=0.855  auc[c1]=0.676  auc[c2]=0.838 | macroAUC=0.790 | macroSens=0.484 macroSpec=0.805 | sens[c0]=0.512  sens[c1]=0.652  sens[c2]=0.288 | spec[c0]=0.920  spec[c1]=0.530  spec[c2]=0.964
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3128    2845     134
+   ISUP23      30     242      99
+   ISUP45      11      88      40
+  ↳ [head] no improvement (5/10)
+[HEAD 017] train: loss 0.7553 bacc 0.5728 acc 0.5507 f1 0.4986 || val: loss 0.1305 acc 0.4856 BAL-acc 0.4796 f1 0.3257 | acc[c0]=0.476  acc[c1]=0.755  acc[c2]=0.209 | auc[c0]=0.855  auc[c1]=0.676  auc[c2]=0.835 | macroAUC=0.788 | macroSens=0.480 macroSpec=0.801 | sens[c0]=0.476  sens[c1]=0.755  sens[c2]=0.209 | spec[c0]=0.941  spec[c1]=0.482  spec[c2]=0.979
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    2904    3136      67
+   ISUP23      22     280      69
+   ISUP45       8     102      29
+  ↳ [head] no improvement (6/10)
+[HEAD 018] train: loss 0.7607 bacc 0.5743 acc 0.5458 f1 0.4947 || val: loss 0.1263 acc 0.5415 BAL-acc 0.4952 f1 0.3472 | acc[c0]=0.538  acc[c1]=0.725  acc[c2]=0.223 | auc[c0]=0.855  auc[c1]=0.712  auc[c2]=0.834 | macroAUC=0.800 | macroSens=0.495 macroSpec=0.811 | sens[c0]=0.538  sens[c1]=0.725  sens[c2]=0.223 | spec[c0]=0.910  spec[c1]=0.546  spec[c2]=0.976
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3283    2738      86
+   ISUP23      33     269      69
+   ISUP45      13      95      31
+  ↳ [head] no improvement (7/10)
+[HEAD 019] train: loss 0.7509 bacc 0.5818 acc 0.5507 f1 0.4991 || val: loss 0.1291 acc 0.5055 BAL-acc 0.4894 f1 0.3329 | acc[c0]=0.497  acc[c1]=0.763  acc[c2]=0.209 | auc[c0]=0.855  auc[c1]=0.698  auc[c2]=0.831 | macroAUC=0.794 | macroSens=0.489 macroSpec=0.803 | sens[c0]=0.497  sens[c1]=0.763  sens[c2]=0.209 | spec[c0]=0.927  spec[c1]=0.505  spec[c2]=0.978
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3033    2992      82
+   ISUP23      27     283      61
+   ISUP45      10     100      29
+  ↳ [head] no improvement (8/10)
+[HEAD 020] train: loss 0.7550 bacc 0.5766 acc 0.5490 f1 0.4972 || val: loss 0.1234 acc 0.5398 BAL-acc 0.5014 f1 0.3314 | acc[c0]=0.543  acc[c1]=0.515  acc[c2]=0.446 | auc[c0]=0.855  auc[c1]=0.675  auc[c2]=0.833 | macroAUC=0.788 | macroSens=0.501 macroSpec=0.811 | sens[c0]=0.543  sens[c1]=0.515  sens[c2]=0.446 | spec[c0]=0.910  spec[c1]=0.607  spec[c2]=0.916
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3319    2393     395
+   ISUP23      33     191     147
+   ISUP45      13      64      62
+  ↳ [head] no improvement (9/10)
+[HEAD 021] train: loss 0.7545 bacc 0.5703 acc 0.5459 f1 0.4905 || val: loss 0.1276 acc 0.5386 BAL-acc 0.4976 f1 0.3464 | acc[c0]=0.534  acc[c1]=0.736  acc[c2]=0.223 | auc[c0]=0.854  auc[c1]=0.714  auc[c2]=0.830 | macroAUC=0.800 | macroSens=0.498 macroSpec=0.810 | sens[c0]=0.534  sens[c1]=0.736  sens[c2]=0.223 | spec[c0]=0.910  spec[c1]=0.544  spec[c2]=0.976
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3260    2756      91
+   ISUP23      33     273      65
+   ISUP45      13      95      31
+  ↳ [head] no improvement (10/10)
+[head] Early stopping at epoch 21.
+[FINAL VAL] loss 0.1230 acc 0.5501 f1 0.3515 | acc[c0]=0.553  acc[c1]=0.558  acc[c2]=0.396 | auc[c0]=0.855  auc[c1]=0.671  auc[c2]=0.843 | macroAUC=0.789 | macroSens=0.502 macroSpec=0.814 | sens[c0]=0.553  sens[c1]=0.558  sens[c2]=0.396 | spec[c0]=0.908  spec[c1]=0.581  spec[c2]=0.951
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3378    2543     186
+   ISUP23      35     207     129
+   ISUP45      12      72      55
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.855 |        0.967 |        0.900 |        0.744 |        0.575 |        0.396 |        0.129
+          c1 |        0.671 |        0.916 |        0.636 |        0.313 |        0.143 |        0.059 |        0.005
+          c2 |        0.843 |        0.950 |        0.892 |        0.734 |        0.583 |        0.396 |        0.072
+       macro |        0.789 |        0.944 |        0.809 |        0.597 |        0.434 |        0.284 |        0.069
+[FINAL TEST] loss 0.1208 acc 0.5373 f1 0.3516 | acc[c0]=0.537  acc[c1]=0.587  acc[c2]=0.435 | auc[c0]=0.833  auc[c1]=0.692  auc[c2]=0.794 | macroAUC=0.773 | macroSens=0.520 macroSpec=0.800 | sens[c0]=0.537  sens[c1]=0.587  sens[c2]=0.435 | spec[c0]=0.877  spec[c1]=0.566  spec[c2]=0.957
+Confusion matrix (LR val): rows=true, cols=pred
+true\pred  ISUP01  ISUP23  ISUP45
+   ISUP01    3417    2768     182
+   ISUP23      37     205     107
+   ISUP45      22      52      57
+
+=== Final model: Sensitivity at fixed specificity ===
+       class |          AUC |  Sens@Spec40 |  Sens@Spec60 |  Sens@Spec80 |  Sens@Spec90 |  Sens@Spec95 |  Sens@Spec99
+          c0 |        0.833 |        0.963 |        0.883 |        0.706 |        0.468 |        0.309 |        0.180
+          c1 |        0.692 |        0.926 |        0.630 |        0.338 |        0.235 |        0.155 |        0.040
+          c2 |        0.794 |        0.878 |        0.786 |        0.634 |        0.542 |        0.450 |        0.191
+       macro |        0.773 |        0.922 |        0.767 |        0.559 |        0.415 |        0.305 |        0.137
+wandb: uploading data; updating run metadata
+wandb: uploading history steps 34-34, summary, console lines 321-333
+wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:         aux/head/lr ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      aux/lr_val/acc ▃▃▁█▃▃▃▃▃▃▃▃▃
+wandb:   aux/lr_val/acc_c0 ██▁▇█████████
+wandb:   aux/lr_val/acc_c1 ▁▁█▄▁▁▁▁▁▁▁▁▁
+wandb:   aux/lr_val/acc_c2 ▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:   aux/lr_val/auc_c0 ▁▅▇██▇▆█▅▇▆▇▇
+wandb:   aux/lr_val/auc_c1 ▁▄▆▇▇▇▆█▆▇▇▇▆
+wandb:   aux/lr_val/auc_c2 ▁▄▇██▇▅▆▂▄▄▄▅
+wandb:     aux/lr_val/bacc ▁▁█▅▁▁▁▁▁▁▁▁▁
+wandb: aux/lr_val/f1_macro ▁▁█▆▁▁▁▁▁▁▁▁▁
+wandb:                 +32 ...
+wandb: 
+wandb: Run summary:
+wandb:         aux/head/lr 1e-05
+wandb:      aux/lr_val/acc 0.92293
+wandb:   aux/lr_val/acc_c0 1
+wandb:   aux/lr_val/acc_c1 0
+wandb:   aux/lr_val/acc_c2 0
+wandb:   aux/lr_val/auc_c0 0.85485
+wandb:   aux/lr_val/auc_c1 0.84585
+wandb:   aux/lr_val/auc_c2 0.78347
+wandb:     aux/lr_val/bacc 0.33333
+wandb: aux/lr_val/f1_macro 0.31997
+wandb:                 +32 ...
+wandb: 
+wandb: 🚀 View run isup3-two_stage-scope-head_only at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE/runs/yeiccuiy
+wandb: ⭐️ View project at: https://wandb.ai/jesande7-queens/MID_DEC_KILLARNEY_NEW_SPIE
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260331_122605-yeiccuiy/logs
